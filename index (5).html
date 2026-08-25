@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MOVE Ballet Coach</title>
+<style>
+:root{--bg:#07111e;--panel:#0f1a2a;--panel2:#111e30;--border:#24344a;--muted:#98a7bb;--purple:#8d55ff;--purple2:#a96fff;--green:#49d37b;--yellow:#ffca52;--red:#ff5d63;}
+*{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at top,#0d1830 0,#07111e 45%,#050a12 100%);color:#fff;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+.app{max-width:1400px;margin:auto;padding:18px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px} .brand{display:flex;align-items:center;gap:10px} .brandmark{font-size:34px} .brand h1{margin:0;color:#9d66ff;font-size:26px;line-height:1} .brand small{display:block;color:#fff;margin-top:4px}
+.topnav{display:flex;gap:12px;align-items:center;flex-wrap:wrap} .navbtn,.toggle{background:#101d2d;border:1px solid var(--border);color:#fff;padding:12px 18px;border-radius:12px;font-weight:700}
+.grid{display:grid;grid-template-columns:260px 1fr 280px;gap:14px}
+.panel{background:linear-gradient(180deg,#101c2b,#0d1724);border:1px solid var(--border);border-radius:14px;box-shadow:0 10px 35px #0004}
+.sidebar{padding:12px;height:890px;overflow:hidden} .sidehead{display:flex;justify-content:space-between;align-items:center;padding:6px 8px 10px;font-weight:800}
+.count{background:#1b2a40;border:1px solid #30425d;border-radius:999px;padding:4px 9px}
+.exercise-list{height:780px;overflow:auto;padding-right:4px} .exercise{display:grid;grid-template-columns:30px 38px 1fr 24px;gap:8px;align-items:center;padding:9px;border-radius:10px;margin:4px 0;border:1px solid transparent;cursor:pointer}
+.exercise.active{background:linear-gradient(90deg,#47267f,#6b39af);border-color:#a36cff} .num{background:#18253a;border-radius:999px;width:26px;height:26px;display:grid;place-items:center;font-size:13px}
+.thumb{width:36px;height:46px;border-radius:6px;object-fit:cover;background:#eee} .exname{font-weight:700;font-size:13px} .extime{color:#b8c3d2;font-size:11px;margin-top:2px}
+.main{padding:16px} .titlebar{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #26354b;padding-bottom:12px} .titlebar h2{margin:0;font-size:22px} .badge{background:#392360;color:#cdb8ff;border-radius:999px;padding:6px 12px;font-size:13px}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px} .viewlabel{font-weight:800;color:#dce5f1;margin-bottom:8px}
+.photo{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:10px;background:#ddd;display:block} .photo-wrap{position:relative}
+.pose-overlay{position:absolute;inset:0;pointer-events:none} .dot{position:absolute;width:9px;height:9px;border-radius:50%;background:#d6ffe1;border:2px solid var(--green)} .line{position:absolute;height:3px;background:var(--green);transform-origin:left center;border-radius:3px}
+.help{color:#bac7d5;font-size:13px;line-height:1.5;margin-top:8px} .holdtxt{text-align:center;color:var(--green);font-weight:800;margin-top:8px}
+.bravo{margin-top:14px;padding:18px;display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center} .bravo h3{color:var(--green);font-size:22px;margin:0 0 6px}
+.primary{background:linear-gradient(90deg,#7550ff,#9c61ff);color:#fff;border:0;border-radius:12px;padding:15px 24px;font-weight:800;font-size:16px} .secondary{background:transparent;color:#c49fff;border:1px solid #7652b4;border-radius:10px;padding:10px 16px;font-weight:700}
+.right{display:flex;flex-direction:column;gap:14px} .scorebox,.feedback,.voicebox{padding:18px} .scorecircle{width:150px;height:150px;border-radius:50%;margin:14px auto;background:conic-gradient(var(--green) 0 82%,#203047 82% 100%);display:grid;place-items:center;position:relative} .scorecircle:after{content:"";position:absolute;inset:12px;background:#0f1a2a;border-radius:50%} .scoreinner{z-index:2;text-align:center} .scoreinner strong{font-size:40px} .scoreinner span{display:block;color:var(--green)}
+.progress{height:7px;background:#223249;border-radius:999px;overflow:hidden} .progress>div{height:100%;width:64%;background:var(--green)} .feedback h3,.scorebox h3,.voicebox h3{margin-top:0}
+.tip{padding:12px;border:1px solid #283b54;border-radius:10px;margin:8px 0;background:#101d2d} .tip b{display:block;margin-bottom:3px} .tip.good b{color:var(--green)} .tip.warn b{color:var(--yellow)} .tip.bad b{color:var(--red)} .voicewave{height:28px;background:repeating-linear-gradient(90deg,#9b61ff 0 3px,transparent 3px 7px);mask:linear-gradient(180deg,transparent,black 20%,black 80%,transparent)}
+.course{margin-top:14px;padding:16px} .coursehead{font-weight:900;margin-bottom:12px} .steps{display:grid;grid-template-columns:repeat(8,1fr);gap:10px} .step{padding:12px 8px;border:1px solid #2a3a51;border-radius:11px;text-align:center;background:#101a28;font-size:12px} .step.active{border-color:#8b58ff;box-shadow:0 0 0 1px #8b58ff inset}
+.footer{display:flex;justify-content:space-between;gap:10px;color:#7f8da1;font-size:12px;padding:18px 8px}
+@media(max-width:1000px){.grid{grid-template-columns:1fr}.sidebar{height:auto}.exercise-list{height:320px}.right{display:grid;grid-template-columns:repeat(3,1fr)}}
+@media(max-width:700px){.app{padding:10px}.top{align-items:flex-start}.topnav{display:none}.compare{grid-template-columns:1fr}.right{grid-template-columns:1fr}.steps{grid-template-columns:repeat(2,1fr)}.sidebar{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand"><div class="brandmark">🩰</div><div><h1>MOVE</h1><small>Ballet Coach</small></div></div>
+    <div class="topnav"><button class="navbtn">⏱ Cours 5 min</button><button class="navbtn">📖 Library</button><button class="navbtn">📊 My Progress</button><button id="voiceToggle" class="toggle">🔊 Voice Coach <b>ON</b></button><button class="navbtn">⚙</button></div>
+  </header>
+
+  <div class="grid">
+    <aside class="panel sidebar">
+      <div class="sidehead"><span>EXERCISES</span><span class="count">43</span></div>
+      <div id="exerciseList" class="exercise-list"></div>
+      <button class="secondary" style="width:100%;margin-top:8px">View all 43 exercises</button>
+    </aside>
+
+    <main>
+      <section class="panel main">
+        <div class="titlebar"><h2 id="exerciseTitle">1. First Position</h2><span class="badge">Hold for 5 seconds</span></div>
+        <div class="compare">
+          <div>
+            <div class="viewlabel">REFERENCE ⓘ</div>
+            <img id="referencePhoto" class="photo" src="reference_first.png" alt="Reference dancer">
+            <div id="instruction" class="help">Feet turned out, heels together.<br>Arms rounded in front (preparatory).<br>Lengthen up through the crown.</div>
+          </div>
+          <div>
+            <div class="viewlabel">YOU (LIVE) <span style="float:right">📷 ⛶</span></div>
+            <div class="photo-wrap">
+              <video id="camera" class="photo" autoplay playsinline muted></video>
+              <div id="poseOverlay" class="pose-overlay"></div>
+            </div>
+            <div id="holdText" class="holdtxt">Hold steady...</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel bravo">
+        <div><h3>🏆 Bravo!</h3><div>Great! You held the position.<br><span style="color:#8e9eb1">Next exercise in <span id="countdown">2</span> sec...</span></div><br><button id="skipBtn" class="secondary">Skip to Next</button></div>
+        <button id="nextBtn" class="primary">Next Exercise →</button>
+      </section>
+    </main>
+
+    <aside class="right">
+      <section class="panel scorebox">
+        <h3>YOUR SCORE</h3>
+        <div class="scorecircle"><div class="scoreinner"><strong id="score">82%</strong><span id="scoreWord">Great!</span></div></div>
+        <div style="color:#aeb9c8;font-size:13px;margin-bottom:8px">Hold 75% or more for 5 sec</div>
+        <div class="progress"><div id="holdProgress"></div></div><div style="text-align:right;color:#aeb9c8;font-size:12px;margin-top:8px"><span id="holdSeconds">3.2</span> / 5 sec</div>
+      </section>
+      <section class="panel feedback">
+        <h3>AI FEEDBACK</h3>
+        <div class="tip good"><b>✓ Great posture!</b><span>Keep it up.</span></div>
+        <div class="tip warn"><b>⚠ Shoulders a bit raised</b><span>Relax and drop your shoulders down.</span></div>
+        <div class="tip good"><b>✓ Arms a little low</b><span>Lift your hands slightly to navel height.</span></div>
+        <div class="tip bad"><b>✕ Turn out</b><span>Try to rotate your feet more from the hips.</span></div>
+        <button class="primary" style="width:100%;margin-top:8px">💡 Show Tips</button>
+      </section>
+      <section class="panel voicebox"><h3>VOICE COACH</h3><div id="voiceText">Nice job! Relax your shoulders and turn out a bit more.</div><div class="voicewave"></div></section>
+    </aside>
+  </div>
+
+  <section class="panel course">
+    <div class="coursehead">COURSE 5 MIN - 8 EXERCISES</div>
+    <div class="steps">
+      <div class="step active">1<br><b>First Position</b><br>5 sec</div><div class="step">2<br><b>Second Position</b><br>5 sec</div><div class="step">3<br><b>Demi Plié</b><br>5 sec</div><div class="step">4<br><b>Grand Plié</b><br>5 sec</div><div class="step">5<br><b>Tendu Front</b><br>5 sec</div><div class="step">6<br><b>Passé</b><br>5 sec</div><div class="step">7<br><b>Arabesque</b><br>5 sec</div><div class="step">8<br><b>Final Stretch</b><br>30 sec</div>
+    </div>
+  </section>
+
+  <footer class="footer"><span>🩰 MOVE Ballet Coach — Your personal ballet teacher, anywhere.</span><span>AI analysis is a guide. Listen to your body and train safely.</span><span>Made with ❤️ for dancers</span></footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
+<script>
+const exercises = [{"name": "First Position", "time": "5 sec"}, {"name": "Second Position", "time": "5 sec"}, {"name": "Demi Pli\u00e9", "time": "5 sec"}, {"name": "Grand Pli\u00e9", "time": "5 sec"}, {"name": "Tendu Front", "time": "5 sec"}, {"name": "Tendu Side", "time": "5 sec"}, {"name": "Battement Tendu", "time": "5 sec"}, {"name": "Pass\u00e9", "time": "5 sec"}, {"name": "Retir\u00e9", "time": "5 sec"}, {"name": "D\u00e9gag\u00e9 Front", "time": "5 sec"}, {"name": "D\u00e9gag\u00e9 Side", "time": "5 sec"}, {"name": "Battement Jet\u00e9", "time": "5 sec"}, {"name": "Arabesque", "time": "5 sec"}, {"name": "Attitude", "time": "5 sec"}, {"name": "D\u00e9velopp\u00e9 Front", "time": "5 sec"}, {"name": "D\u00e9velopp\u00e9 Side", "time": "5 sec"}, {"name": "D\u00e9velopp\u00e9 Back", "time": "5 sec"}, {"name": "Relev\u00e9", "time": "5 sec"}, {"name": "Sous-sus", "time": "5 sec"}, {"name": "\u00c9chapp\u00e9", "time": "5 sec"}, {"name": "Assembl\u00e9", "time": "5 sec"}, {"name": "Jet\u00e9", "time": "5 sec"}, {"name": "Glissade", "time": "5 sec"}, {"name": "Sissonne", "time": "5 sec"}, {"name": "Changement", "time": "5 sec"}, {"name": "Entrechat Quatre", "time": "5 sec"}, {"name": "Port de Bras", "time": "5 sec"}, {"name": "Cambr\u00e9", "time": "5 sec"}, {"name": "Rond de Jambe", "time": "5 sec"}, {"name": "Fondu", "time": "5 sec"}, {"name": "Grand Battement Front", "time": "5 sec"}, {"name": "Grand Battement Side", "time": "5 sec"}, {"name": "Grand Battement Back", "time": "5 sec"}, {"name": "Arabesque 2", "time": "5 sec"}, {"name": "Arabesque 3", "time": "5 sec"}, {"name": "Arabesque 4", "time": "5 sec"}, {"name": "Arms First", "time": "5 sec"}, {"name": "Arms Second", "time": "5 sec"}, {"name": "Arms Third", "time": "5 sec"}, {"name": "Arms Fourth", "time": "5 sec"}, {"name": "Arms Fifth", "time": "5 sec"}, {"name": "Bras Bas", "time": "5 sec"}, {"name": "Final Stretch", "time": "30 sec"}];
+let current=0, voiceOn=true, holdStart=null, holdSec=0;
+const list=document.getElementById('exerciseList');
+exercises.forEach((e,i)=>{const d=document.createElement('div');d.className='exercise'+(i===0?' active':'');d.innerHTML=`<div class="num">${i+1}</div><img class="thumb" src="reference_first.png"><div><div class="exname">${e.name}</div><div class="extime">${e.time}</div></div><div>${i===0?'✓':''}</div>`;d.onclick=()=>selectExercise(i);list.appendChild(d)});
+
+function selectExercise(i){current=i;document.querySelectorAll('.exercise').forEach((x,j)=>x.classList.toggle('active',j===i));document.getElementById('exerciseTitle').textContent=(i+1)+'. '+exercises[i].name;document.getElementById('countdown').textContent='2';holdStart=null;}
+document.getElementById('nextBtn').onclick=()=>selectExercise((current+1)%exercises.length);
+document.getElementById('skipBtn').onclick=()=>selectExercise((current+1)%exercises.length);
+document.getElementById('voiceToggle').onclick=()=>{voiceOn=!voiceOn;document.getElementById('voiceToggle').innerHTML='🔊 Voice Coach <b>'+(voiceOn?'ON':'OFF')+'</b>';if(!voiceOn&&speechSynthesis)speechSynthesis.cancel()};
+
+function speak(t){if(!voiceOn||!('speechSynthesis' in window))return; speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-US';speechSynthesis.speak(u)}
+
+async function startCamera(){try{const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});const v=document.getElementById('camera');v.srcObject=s;await v.play();startPose(v)}catch(e){document.getElementById('voiceText').textContent='Camera permission is needed to analyze your position.'}}
+
+function addOverlay(lm){const o=document.getElementById('poseOverlay');o.innerHTML='';const ids=[11,12,13,14,15,16,23,24,25,26,27,28];ids.forEach(id=>{const p=lm[id],d=document.createElement('div');d.className='dot';d.style.left=(p.x*100)+'%';d.style.top=(p.y*100)+'%';o.appendChild(d)})}
+
+function analyze(lm){let score=100,feedback=[];const LS=lm[11],RS=lm[12],LW=lm[15],RW=lm[16],LH=lm[23],RH=lm[24],LA=lm[27],RA=lm[28];
+if(Math.abs(LS.y-RS.y)>.045){score-=10;feedback.push('Relax and level your shoulders.')} 
+if(Math.abs(LH.y-RH.y)>.05){score-=12;feedback.push('Keep your pelvis more level.')} 
+if(Math.abs(LW.y-RW.y)>.08){score-=8;feedback.push('Match the height of your hands.')} 
+if(Math.abs(LA.x-RA.x)<.08){score-=8;feedback.push('Open your turnout a little more from the hips.')} 
+score=Math.max(0,Math.round(score));
+document.getElementById('score').textContent=score+'%';document.getElementById('scoreWord').textContent=score>=85?'Great!':score>=75?'Good':'Adjust';
+if(score>=75){if(!holdStart)holdStart=Date.now();holdSec=(Date.now()-holdStart)/1000;document.getElementById('holdSeconds').textContent=holdSec.toFixed(1);document.getElementById('holdProgress').style.width=Math.min(100,holdSec/5*100)+'%';if(holdSec>=5){speak('Bravo. Great job. Moving to the next exercise.');holdStart=Date.now();setTimeout(()=>selectExercise((current+1)%exercises.length),700)}} else {holdStart=null;document.getElementById('holdSeconds').textContent='0.0';document.getElementById('holdProgress').style.width='0%';if(feedback.length)document.getElementById('voiceText').textContent=feedback[0];}
+}
+
+function startPose(video){const pose=new Pose({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`});pose.setOptions({modelComplexity:0,smoothLandmarks:true,minDetectionConfidence:.5,minTrackingConfidence:.5});pose.onResults(r=>{if(r.poseLandmarks){addOverlay(r.poseLandmarks);analyze(r.poseLandmarks)}});
+let busy=false;async function loop(){if(video.readyState>=2&&!busy){busy=true;try{await pose.send({image:video})}catch(e){}busy=false}requestAnimationFrame(loop)}loop()}
+startCamera();
+</script>
+</body></html>
