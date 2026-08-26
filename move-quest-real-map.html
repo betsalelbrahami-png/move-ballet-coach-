@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080b12">
+<title>MOVE QUEST Map</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.1.0/dist/maplibre-gl.css">
+<style>
+:root{--bg:#07090e;--panel:#0e131d;--line:#303a4c;--text:#f8f9fb;--muted:#aeb8c7;--v:#9567ff;--g:#59d77a;--b:#62c8ff;--y:#ffc75b;--r:#ff7468}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;overflow:hidden}
+body{background:#080b12}
+button{font:inherit;color:#fff;background:#171e2a;border:1px solid #394456;border-radius:12px;padding:10px 12px;cursor:pointer}
+button.primary{background:linear-gradient(135deg,#7646e8,#a26fff);border:0}button.green{background:#153824;border-color:#2d7b46}button:disabled{opacity:.42}
+.app{height:100dvh;display:grid;grid-template-rows:64px minmax(0,1fr) 70px;max-width:900px;margin:auto;background:#080b12}
+header{display:flex;align-items:center;justify-content:space-between;padding:9px 11px;background:#080b12ee;border-bottom:1px solid #242d3b;z-index:20}
+.brand{font-size:20px;font-weight:950}.brand b{color:#c8a9ff}.brand small{display:block;font-size:9px;color:var(--muted);font-weight:500}
+.stats{display:flex;gap:5px}.chip{min-width:56px;text-align:center;background:#121923;border:1px solid #303a4b;border-radius:10px;padding:5px}.chip span{display:block;font-size:7px;color:#9da8b7}.chip b{font-size:13px}
+main{position:relative;min-height:0}
+.screen{position:absolute;inset:0;display:none;overflow:auto;background:#080b12}.screen.active{display:block}
+#mapScreen{overflow:hidden}.mapShell{position:absolute;inset:0}.map{position:absolute;inset:0}
+.topHud{position:absolute;z-index:10;top:9px;left:9px;right:9px;display:flex;gap:7px;pointer-events:none}.topHud>*{pointer-events:auto}
+.gpsBox{flex:1;background:#090d14ec;border:1px solid #394356;border-radius:13px;padding:8px 10px;box-shadow:0 8px 25px #0005}.gpsBox b{display:block;font-size:12px}.gpsBox small{font-size:9px;color:#b9c2cf}
+.iconBtn{background:#090d14ec}
+.sheet{position:absolute;z-index:10;left:8px;right:8px;bottom:8px;background:#0b1018f2;border:1px solid #3a4558;border-radius:17px;padding:11px;box-shadow:0 12px 38px #0009}
+.sheetTop{display:flex;justify-content:space-between;gap:8px}.type{display:inline-block;padding:4px 8px;border-radius:999px;background:#211832;color:#d7c3ff;font-size:8px;font-weight:900}
+.sheet h2{margin:5px 0 3px;font-size:17px}.sheet p{margin:0;font-size:10px;color:#bcc5d2;line-height:1.4}.meta{display:flex;gap:6px;flex-wrap:wrap;margin:7px 0}.pill{background:#151c28;border:1px solid #303a4c;border-radius:999px;padding:5px 7px;font-size:9px;color:#c6ced9}.sheetActions{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.questMarker{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;border:3px solid white;box-shadow:0 7px 20px #0008;font-size:18px}.questMarker.test{background:var(--g)}.questMarker.race{background:var(--r)}.questMarker.spot{background:var(--v)}.questMarker.copy{background:var(--b)}.questMarker.crowd{background:var(--y);color:#111}
+.userMarker{width:22px;height:22px;border-radius:50%;background:var(--b);border:4px solid white;box-shadow:0 0 0 11px rgba(98,200,255,.18),0 0 24px rgba(98,200,255,.8)}
+.zoneLabel{font-size:9px;color:#445}
+.pad{padding:12px}.hero{background:linear-gradient(145deg,#1a1430,#101720);border:1px solid #39304f;border-radius:17px;padding:13px}.hero h1{margin:0 0 4px;font-size:21px}.hero p{margin:0;font-size:11px;color:#c0c8d4;line-height:1.45}.cards{display:grid;gap:8px;margin-top:9px}.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:10px}.card h3{margin:5px 0 3px;font-size:14px}.card p{margin:0;font-size:10px;color:#b7c0ce}.row{display:flex;justify-content:space-between;gap:8px}
+.cameraCard{background:var(--panel);border:1px solid var(--line);border-radius:17px;overflow:hidden}.camStage{height:56vh;min-height:340px;position:relative;background:#05070b;display:grid;place-items:center}.camStage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}#live{transform:scaleX(-1)}#playback{display:none}.placeholder{text-align:center;padding:24px}.placeholder div{font-size:46px}.placeholder p{font-size:11px;color:#b8c2ce;max-width:330px}.camControls{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:9px}.camControls .full{grid-column:1/-1}
+.profileGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}.pbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px}.pbox span{display:block;font-size:8px;color:#aeb7c5}.pbox b{display:block;font-size:23px}
+nav{display:grid;grid-template-columns:repeat(4,1fr);background:#080b12f5;border-top:1px solid #293242;padding:6px 6px max(6px,env(safe-area-inset-bottom));z-index:20}nav button{background:transparent;border:0;border-radius:11px;color:#8f99a8;font-size:8px;padding:5px}nav button span{display:block;font-size:19px}nav button.active{background:#171323;color:#d7c4ff}
+.toast{position:fixed;z-index:50;left:50%;transform:translateX(-50%);bottom:80px;background:#101722;border:1px solid #3a4658;border-radius:999px;padding:9px 12px;font-size:10px;display:none}.toast.show{display:block}
+.maplibregl-ctrl-bottom-right{bottom:122px!important}.maplibregl-ctrl-attrib{font-size:8px!important}.maplibregl-ctrl-group{border-radius:10px!important;overflow:hidden}
+@media(min-width:800px){.sheet{left:auto;width:390px}.cards{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+ <div class="brand">MOVE <b>QUEST</b><small>Real map · GPS quests</small></div>
+ <div class="stats"><div class="chip"><span>LEVEL</span><b id="lvlTop">1</b></div><div class="chip"><span>XP</span><b id="xpTop">0</b></div></div>
+</header>
+<main>
+<section id="mapScreen" class="screen active">
+ <div class="mapShell"><div id="map" class="map"></div></div>
+ <div class="topHud"><div class="gpsBox"><b id="gpsTitle">Recherche GPS…</b><small id="gpsSub">Autorise ta position</small></div><button id="recenter" class="iconBtn">◎</button></div>
+ <div class="sheet">
+  <div class="sheetTop"><div><span class="type" id="type">MISSION</span><h2 id="title">En attente</h2><p id="desc">La carte se centre sur toi dès que le GPS est disponible.</p></div><b id="xpReward" style="color:#ffd06a">+0 XP</b></div>
+  <div class="meta"><span class="pill" id="distance">—</span><span class="pill" id="radius">—</span></div>
+  <div class="sheetActions"><button id="next">Mission suivante</button><button id="arrive" class="primary" disabled>Je suis arrivé</button></div>
+ </div>
+</section>
+
+<section id="missionsScreen" class="screen"><div class="pad"><div class="hero"><h1>Défis autour de toi</h1><p>Chaque point est placé sur la vraie carte autour de ta position GPS.</p></div><div class="cards" id="cards"></div></div></section>
+
+<section id="cameraScreen" class="screen">
+ <div class="pad"><div class="cameraCard"><div class="camStage"><video id="live" autoplay muted playsinline></video><video id="playback" controls playsinline></video><div class="placeholder" id="placeholder"><div>🎥</div><h2>Caméra MOVE</h2><p>Arrive au spot, puis filme ta danse.</p></div></div>
+ <div class="camControls"><button id="openCam">Ouvrir caméra</button><button id="rec" disabled>● Filmer</button><button id="stop" disabled>■ Stop</button><button id="redo" disabled>↺ Refaire</button><button id="publish" class="green full" disabled>Publier et gagner les XP</button></div></div>
+ <div class="hero" style="margin-top:8px"><h1 id="camTitle">Aucune mission active</h1><p id="camDesc">Choisis une mission depuis la carte.</p></div></div>
+</section>
+
+<section id="profileScreen" class="screen"><div class="pad"><div class="hero"><h1>Profil MOVE</h1><p>Progression sauvegardée sur ton téléphone.</p></div><div class="profileGrid"><div class="pbox"><span>XP</span><b id="pXP">0</b></div><div class="pbox"><span>LEVEL</span><b id="pLevel">1</b></div><div class="pbox"><span>MISSIONS</span><b id="pDone">0</b></div><div class="pbox"><span>SPOTS</span><b id="pSpots">0</b></div></div><div id="history" class="cards"></div></div></section>
+</main>
+
+<nav><button class="active" data-screen="mapScreen"><span>🗺️</span>CARTE</button><button data-screen="missionsScreen"><span>⚡</span>MISSIONS</button><button data-screen="cameraScreen"><span>🎥</span>CAMÉRA</button><button data-screen="profileScreen"><span>👤</span>PROFIL</button></nav>
+</div>
+<div id="toast" class="toast"></div>
+
+<script type="module">
+import * as maplibregl from "https://unpkg.com/maplibre-gl@6.1.0/dist/maplibre-gl.mjs";
+const $=id=>document.getElementById(id);
+const S={pos:null,missions:[],selected:0,active:null,map:null,userMarker:null,questMarkers:[],zoneIds:[],stream:null,recorder:null,chunks:[],videoURL:null,profile:loadProfile()};
+function loadProfile(){try{return JSON.parse(localStorage.getItem("moveQuestMapV2"))||{xp:0,done:[],spots:[],history:[]}}catch(e){return{xp:0,done:[],spots:[],history:[]}}}
+function save(){localStorage.setItem("moveQuestMapV2",JSON.stringify(S.profile));renderProfile();renderTop()}
+function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(e._x);e._x=setTimeout(()=>e.classList.remove("show"),2200)}
+function level(){return Math.floor(S.profile.xp/500)+1}
+const toRad=x=>x*Math.PI/180;
+function dist(a,b){const R=6371000,dLa=toRad(b.lat-a.lat),dLo=toRad(b.lon-a.lon),la1=toRad(a.lat),la2=toRad(b.lat);const h=Math.sin(dLa/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLo/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
+function offset(lat,lon,north,east){return{lat:lat+north/111320,lon:lon+east/(111320*Math.cos(toRad(lat)))}}
+function fmt(m){return m<1000?Math.round(m)+" m":(m/1000).toFixed(1)+" km"}
+function typeLabel(t){return{test:"TEST ICI",race:"RACE",spot:"DANCE SPOT",copy:"COPY CHALLENGE",crowd:"CROWD QUEST"}[t]}
+function icon(t){return{test:"✅",race:"⚡",spot:"💃",copy:"🧠",crowd:"👥"}[t]}
+function initMap(){
+  S.map=new maplibregl.Map({
+    container:"map",
+    style:"https://tiles.openfreemap.org/styles/liberty",
+    center:[2.3522,48.8566],
+    zoom:14,
+    attributionControl:true
+  });
+  S.map.addControl(new maplibregl.NavigationControl({showCompass:false}),"top-right");
+  S.map.on("load",()=>{ if(S.pos){S.map.jumpTo({center:[S.pos.lon,S.pos.lat],zoom:16});renderMapObjects()} });
+  S.map.on("error",e=>{console.warn("Map error",e?.error||e);$("gpsSub").textContent="La carte charge… GPS toujours actif."});
+}
+function createMissions(){
+ const p=S.pos;
+ S.missions=[
+  {id:"test",type:"test",title:"Premier pas",desc:"Danse libre 5 secondes exactement là où tu es.",p:offset(p.lat,p.lon,0,0),r:90,xp:100},
+  {id:"race",type:"race",title:"Flash Race",desc:"Va au spot et publie 10 secondes le plus vite possible.",p:offset(p.lat,p.lon,120,70),r:70,xp:350},
+  {id:"spot",type:"spot",title:"Own the Spot",desc:"15 secondes de danse libre dans cette zone.",p:offset(p.lat,p.lon,230,-100),r:75,xp:220},
+  {id:"copy",type:"copy",title:"Memory 4",desc:"Bras haut → plié → tour → freeze.",p:offset(p.lat,p.lon,-280,140),r:75,xp:300},
+  {id:"crowd",type:"crowd",title:"Meet & Move",desc:"Mission collective : plusieurs personnes publient au même endroit.",p:offset(p.lat,p.lon,410,170),r:90,xp:280}
+ ];
+ renderEverything()
+}
+function markerEl(cls,emoji){const e=document.createElement("div");e.className=cls;e.textContent=emoji;return e}
+function circleGeo(center,radiusMeters){
+ const pts=[],steps=64,lat=center.lat,lon=center.lon;
+ for(let i=0;i<=steps;i++){const a=i/steps*Math.PI*2;pts.push([lon+(radiusMeters*Math.cos(a))/(111320*Math.cos(toRad(lat))),lat+(radiusMeters*Math.sin(a))/111320])}
+ return {type:"Feature",geometry:{type:"Polygon",coordinates:[pts]},properties:{}}
+}
+function clearMapObjects(){
+ S.questMarkers.forEach(m=>m.remove());S.questMarkers=[];
+ if(S.userMarker){S.userMarker.remove();S.userMarker=null}
+ S.zoneIds.forEach(id=>{try{if(S.map.getLayer(id+"-fill"))S.map.removeLayer(id+"-fill");if(S.map.getLayer(id+"-line"))S.map.removeLayer(id+"-line");if(S.map.getSource(id))S.map.removeSource(id)}catch(e){}});
+ S.zoneIds=[]
+}
+function renderMapObjects(){
+ if(!S.map||!S.map.loaded()||!S.pos||!S.missions.length)return;
+ clearMapObjects();
+ S.userMarker=new maplibregl.Marker({element:markerEl("userMarker","")}).setLngLat([S.pos.lon,S.pos.lat]).addTo(S.map);
+ S.missions.forEach((m,i)=>{
+  const el=markerEl("questMarker "+m.type,icon(m.type));el.onclick=()=>{S.selected=i;renderSelected();S.map.easeTo({center:[m.p.lon,m.p.lat],zoom:17})};
+  S.questMarkers.push(new maplibregl.Marker({element:el,anchor:"center"}).setLngLat([m.p.lon,m.p.lat]).addTo(S.map));
+  const id="zone-"+i;S.zoneIds.push(id);
+  S.map.addSource(id,{type:"geojson",data:circleGeo(m.p,m.r)});
+  S.map.addLayer({id:id+"-fill",type:"fill",source:id,paint:{"fill-color":i===0?"#59d77a":"#9567ff","fill-opacity":0.10}});
+  S.map.addLayer({id:id+"-line",type:"line",source:id,paint:{"line-color":i===0?"#59d77a":"#9567ff","line-width":2,"line-opacity":0.65}});
+ });
+}
+function renderSelected(){
+ if(!S.missions.length)return;
+ const m=S.missions[S.selected],d=S.pos?dist(S.pos,m.p):Infinity;
+ $("type").textContent=typeLabel(m.type);$("title").textContent=m.title;$("desc").textContent=m.desc;$("xpReward").textContent="+"+m.xp+" XP";$("distance").textContent=isFinite(d)?fmt(d):"GPS…";$("radius").textContent="zone "+m.r+" m";
+ const ok=isFinite(d)&&d<=m.r+Math.max(20,S.pos?.accuracy||0);$("arrive").disabled=!ok;$("arrive").textContent=ok?"Défi débloqué ✓":"Approche-toi du spot"
+}
+function renderCards(){
+ const box=$("cards");box.innerHTML="";
+ S.missions.forEach((m,i)=>{const d=S.pos?dist(S.pos,m.p):Infinity,done=S.profile.done.includes(m.id),e=document.createElement("div");e.className="card";e.innerHTML=`<div class="row"><div><span class="type">${typeLabel(m.type)}</span><h3>${m.title}</h3></div><b style="color:#ffd06a">+${m.xp}</b></div><p>${m.desc}</p><div class="meta"><span class="pill">${isFinite(d)?fmt(d):"GPS…"}</span><span class="pill">${m.r} m</span>${done?'<span class="pill">✓ FAIT</span>':""}</div><button class="primary" style="width:100%" data-i="${i}">Voir sur carte</button>`;box.appendChild(e)});
+ box.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>{S.selected=+b.dataset.i;show("mapScreen");renderSelected();const m=S.missions[S.selected];S.map?.easeTo({center:[m.p.lon,m.p.lat],zoom:17})})
+}
+function renderEverything(){renderSelected();renderCards();renderProfile();renderTop();if(S.map?.loaded())renderMapObjects()}
+function renderTop(){$("xpTop").textContent=S.profile.xp;$("lvlTop").textContent=level()}
+function renderProfile(){$("pXP").textContent=S.profile.xp;$("pLevel").textContent=level();$("pDone").textContent=S.profile.done.length;$("pSpots").textContent=S.profile.spots.length;$("history").innerHTML=S.profile.history.length?S.profile.history.map(h=>`<div class="card"><h3>${h.title}</h3><p>${new Date(h.time).toLocaleString("fr-FR")} · +${h.xp} XP</p></div>`).join(""):'<div class="card"><p>Aucune mission terminée.</p></div>'}
+function gpsOK(p){
+ S.pos={lat:p.coords.latitude,lon:p.coords.longitude,accuracy:p.coords.accuracy};$("gpsTitle").textContent="GPS actif ✓";$("gpsSub").textContent="Précision ≈ "+Math.round(S.pos.accuracy)+" m";
+ if(!S.missions.length)createMissions();else{renderEverything();if(S.userMarker)S.userMarker.setLngLat([S.pos.lon,S.pos.lat])}
+ if(S.map){S.map.resize(); if(!S._centered){S.map.easeTo({center:[S.pos.lon,S.pos.lat],zoom:16});S._centered=true}}
+}
+function getGPS(){
+ if(!navigator.geolocation){$("gpsTitle").textContent="GPS indisponible";return}
+ navigator.geolocation.getCurrentPosition(gpsOK,e=>{$("gpsTitle").textContent="GPS bloqué";$("gpsSub").textContent=e.message},{enableHighAccuracy:true,timeout:15000,maximumAge:0});
+ navigator.geolocation.watchPosition(gpsOK,()=>{}, {enableHighAccuracy:true,maximumAge:3000,timeout:15000})
+}
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("active",s.id===id));document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.screen===id));if(id==="mapScreen")setTimeout(()=>S.map?.resize(),60)}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>show(b.dataset.screen));
+$("next").onclick=()=>{if(!S.missions.length)return;S.selected=(S.selected+1)%S.missions.length;renderSelected();const m=S.missions[S.selected];S.map?.easeTo({center:[m.p.lon,m.p.lat],zoom:17})};
+$("recenter").onclick=()=>S.pos&&S.map?.easeTo({center:[S.pos.lon,S.pos.lat],zoom:16});
+$("arrive").onclick=()=>{const m=S.missions[S.selected],d=dist(S.pos,m.p);if(d>m.r+Math.max(20,S.pos.accuracy||0)){toast("Encore "+fmt(d));return}S.active=m;$("camTitle").textContent=m.title;$("camDesc").textContent=m.desc+" · +"+m.xp+" XP";show("cameraScreen");toast("Mission débloquée ✓")};
+
+async function openCam(){
+ stopStream();$("playback").style.display="none";$("live").style.display="block";
+ try{S.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"},audio:true});$("live").srcObject=S.stream;$("placeholder").style.display="none";$("rec").disabled=false}
+ catch(e){toast("Caméra bloquée : autorise-la dans le navigateur.")}
+}
+function stopStream(){if(S.stream){S.stream.getTracks().forEach(t=>t.stop());S.stream=null}}
+function startRec(){if(!S.active){toast("Choisis une mission");return}S.chunks=[];S.recorder=new MediaRecorder(S.stream);S.recorder.ondataavailable=e=>e.data.size&&S.chunks.push(e.data);S.recorder.onstop=()=>{const blob=new Blob(S.chunks,{type:S.recorder.mimeType||"video/webm"});if(S.videoURL)URL.revokeObjectURL(S.videoURL);S.videoURL=URL.createObjectURL(blob);$("playback").src=S.videoURL;$("playback").style.display="block";$("live").style.display="none";$("publish").disabled=false;$("redo").disabled=false;stopStream()};S.recorder.start();$("rec").disabled=true;$("stop").disabled=false}
+function stopRec(){if(S.recorder&&S.recorder.state!=="inactive")S.recorder.stop();$("stop").disabled=true}
+function redo(){if(S.videoURL){URL.revokeObjectURL(S.videoURL);S.videoURL=null}$("publish").disabled=true;$("redo").disabled=true;openCam()}
+function publish(){
+ if(!S.active||!S.videoURL){toast("Filme d'abord");return}
+ const m=S.active,d=dist(S.pos,m.p);if(d>m.r+Math.max(25,S.pos.accuracy||0)){toast("Tu es sorti de la zone");return}
+ const first=!S.profile.done.includes(m.id);if(first){S.profile.done.push(m.id);S.profile.spots.push(m.id);S.profile.xp+=m.xp}
+ S.profile.history.unshift({title:m.title,time:Date.now(),xp:first?m.xp:0});S.profile.history=S.profile.history.slice(0,8);save();toast(first?"Réussi ! +"+m.xp+" XP":"Republié ✓");show("profileScreen")
+}
+$("openCam").onclick=openCam;$("rec").onclick=startRec;$("stop").onclick=stopRec;$("redo").onclick=redo;$("publish").onclick=publish;
+window.addEventListener("resize",()=>S.map?.resize());window.addEventListener("orientationchange",()=>setTimeout(()=>S.map?.resize(),250));window.addEventListener("beforeunload",stopStream);
+renderTop();renderProfile();initMap();getGPS();
+</script>
+</body>
+</html>
