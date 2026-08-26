@@ -1,138 +1,483 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>MOVE Ballet Coach</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MOVE — Coach Ballet FR v12</title>
 <style>
-:root{--bg:#07111e;--panel:#0f1a2a;--panel2:#111e30;--border:#24344a;--muted:#98a7bb;--purple:#8d55ff;--purple2:#a96fff;--green:#49d37b;--yellow:#ffca52;--red:#ff5d63;}
-*{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at top,#0d1830 0,#07111e 45%,#050a12 100%);color:#fff;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
-.app{max-width:1400px;margin:auto;padding:18px}
-.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px} .brand{display:flex;align-items:center;gap:10px} .brandmark{font-size:34px} .brand h1{margin:0;color:#9d66ff;font-size:26px;line-height:1} .brand small{display:block;color:#fff;margin-top:4px}
-.topnav{display:flex;gap:12px;align-items:center;flex-wrap:wrap} .navbtn,.toggle{background:#101d2d;border:1px solid var(--border);color:#fff;padding:12px 18px;border-radius:12px;font-weight:700}
-.grid{display:grid;grid-template-columns:260px 1fr 280px;gap:14px}
-.panel{background:linear-gradient(180deg,#101c2b,#0d1724);border:1px solid var(--border);border-radius:14px;box-shadow:0 10px 35px #0004}
-.sidebar{padding:12px;height:890px;overflow:hidden} .sidehead{display:flex;justify-content:space-between;align-items:center;padding:6px 8px 10px;font-weight:800}
-.count{background:#1b2a40;border:1px solid #30425d;border-radius:999px;padding:4px 9px}
-.exercise-list{height:780px;overflow:auto;padding-right:4px} .exercise{display:grid;grid-template-columns:30px 38px 1fr 24px;gap:8px;align-items:center;padding:9px;border-radius:10px;margin:4px 0;border:1px solid transparent;cursor:pointer}
-.exercise.active{background:linear-gradient(90deg,#47267f,#6b39af);border-color:#a36cff} .num{background:#18253a;border-radius:999px;width:26px;height:26px;display:grid;place-items:center;font-size:13px}
-.thumb{width:36px;height:46px;border-radius:6px;object-fit:cover;background:#eee} .exname{font-weight:700;font-size:13px} .extime{color:#b8c3d2;font-size:11px;margin-top:2px}
-.main{padding:16px} .titlebar{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #26354b;padding-bottom:12px} .titlebar h2{margin:0;font-size:22px} .badge{background:#392360;color:#cdb8ff;border-radius:999px;padding:6px 12px;font-size:13px}
-.compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px} .viewlabel{font-weight:800;color:#dce5f1;margin-bottom:8px}
-.photo{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:10px;background:#ddd;display:block} .photo-wrap{position:relative}
-.pose-overlay{position:absolute;inset:0;pointer-events:none} .dot{position:absolute;width:9px;height:9px;border-radius:50%;background:#d6ffe1;border:2px solid var(--green)} .line{position:absolute;height:3px;background:var(--green);transform-origin:left center;border-radius:3px}
-.help{color:#bac7d5;font-size:13px;line-height:1.5;margin-top:8px} .holdtxt{text-align:center;color:var(--green);font-weight:800;margin-top:8px}
-.bravo{margin-top:14px;padding:18px;display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center} .bravo h3{color:var(--green);font-size:22px;margin:0 0 6px}
-.primary{background:linear-gradient(90deg,#7550ff,#9c61ff);color:#fff;border:0;border-radius:12px;padding:15px 24px;font-weight:800;font-size:16px} .secondary{background:transparent;color:#c49fff;border:1px solid #7652b4;border-radius:10px;padding:10px 16px;font-weight:700}
-.right{display:flex;flex-direction:column;gap:14px} .scorebox,.feedback,.voicebox{padding:18px} .scorecircle{width:150px;height:150px;border-radius:50%;margin:14px auto;background:conic-gradient(var(--green) 0 82%,#203047 82% 100%);display:grid;place-items:center;position:relative} .scorecircle:after{content:"";position:absolute;inset:12px;background:#0f1a2a;border-radius:50%} .scoreinner{z-index:2;text-align:center} .scoreinner strong{font-size:40px} .scoreinner span{display:block;color:var(--green)}
-.progress{height:7px;background:#223249;border-radius:999px;overflow:hidden} .progress>div{height:100%;width:64%;background:var(--green)} .feedback h3,.scorebox h3,.voicebox h3{margin-top:0}
-.tip{padding:12px;border:1px solid #283b54;border-radius:10px;margin:8px 0;background:#101d2d} .tip b{display:block;margin-bottom:3px} .tip.good b{color:var(--green)} .tip.warn b{color:var(--yellow)} .tip.bad b{color:var(--red)} .voicewave{height:28px;background:repeating-linear-gradient(90deg,#9b61ff 0 3px,transparent 3px 7px);mask:linear-gradient(180deg,transparent,black 20%,black 80%,transparent)}
-.course{margin-top:14px;padding:16px} .coursehead{font-weight:900;margin-bottom:12px} .steps{display:grid;grid-template-columns:repeat(8,1fr);gap:10px} .step{padding:12px 8px;border:1px solid #2a3a51;border-radius:11px;text-align:center;background:#101a28;font-size:12px} .step.active{border-color:#8b58ff;box-shadow:0 0 0 1px #8b58ff inset}
-.footer{display:flex;justify-content:space-between;gap:10px;color:#7f8da1;font-size:12px;padding:18px 8px}
-@media(max-width:1000px){.grid{grid-template-columns:1fr}.sidebar{height:auto}.exercise-list{height:320px}.right{display:grid;grid-template-columns:repeat(3,1fr)}}
-@media(max-width:700px){.app{padding:10px}.top{align-items:flex-start}.topnav{display:none}.compare{grid-template-columns:1fr}.right{grid-template-columns:1fr}.steps{grid-template-columns:repeat(2,1fr)}.sidebar{display:none}}
-</style>
-</head>
-<body>
-<div class="app">
-  <header class="top">
-    <div class="brand"><div class="brandmark">🩰</div><div><h1>MOVE</h1><small>Ballet Coach</small></div></div>
-    <div class="topnav"><button class="navbtn">⏱ Cours 5 min</button><button class="navbtn">📖 Library</button><button class="navbtn">📊 My Progress</button><button id="voiceToggle" class="toggle">🔊 Voice Coach <b>ON</b></button><button class="navbtn">⚙</button></div>
-  </header>
+:root{--bg:#06070b;--panel:#0d1118;--line:#303644;--purple:#8d4dff;--green:#62df74;--amber:#ffc44d;--red:#ff625d;--muted:#aeb5c5}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#fff;font-family:Inter,system-ui,-apple-system,Segoe UI,Arial}
+header{display:grid;grid-template-columns:230px 1fr 260px;align-items:center;gap:12px;padding:10px 16px;background:#080a0f;border-bottom:1px solid #232833;position:sticky;top:0;z-index:30}
+.brand{font-weight:900;font-size:21px}.brand b{color:#b58aff}.center{text-align:center}.center h2{margin:0;font-size:20px}.small{font-size:12px;color:var(--muted)}
+select,button{font:inherit;color:#fff;border:1px solid #373e4d;background:#151a24;border-radius:11px;padding:10px 12px}button{cursor:pointer}.primary{background:linear-gradient(135deg,#7540e8,#9a62ff);border:0}.danger{background:#9f3232}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:10px;padding:10px}.stage{position:relative;min-height:73vh;background:#0a0c11;border:1px solid #303744;border-radius:18px;overflow:hidden}
+#video,#canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}#video{z-index:1}#canvas{z-index:2;pointer-events:none}
+.overlay{position:absolute;inset:0;z-index:10;background:#05070bdc;display:grid;place-items:center}.startbox{max-width:430px;text-align:center;background:#0e121a;border:1px solid #394151;border-radius:18px;padding:24px}
+.hud{position:absolute;z-index:6;background:#080b10e8;border:1px solid #343b49;border-radius:14px;backdrop-filter:blur(8px)}
+.timer{top:12px;left:12px;padding:9px 13px;min-width:165px}.timer b{font-size:26px;display:block}.timer.active{border-color:var(--green);box-shadow:0 0 16px #62df7444}
+.score{top:12px;right:12px;padding:10px 14px;text-align:center}.score b{font-size:31px;display:block}
+.feedback{left:12px;bottom:72px;width:min(470px,67%);padding:13px}.feedback h3{margin:0 0 8px;font-size:14px}.row{display:flex;gap:8px;margin:7px 0;line-height:1.3;font-size:14px}.dot{width:19px;height:19px;flex:0 0 19px;border-radius:50%;display:grid;place-items:center;font-size:11px}.ok .dot{background:var(--green);color:#061008}.warn .dot{background:var(--amber);color:#171000}.bad .dot{background:var(--red)}
+.coach{position:absolute;z-index:6;left:12px;right:12px;bottom:12px;padding:12px 14px;background:#080b10e8;border:1px solid #343b49;border-radius:13px;font-size:15px}
+.track{position:absolute;z-index:6;left:190px;top:12px;padding:7px 10px;background:#080b10d9;border-radius:10px;font-size:12px}.track.good{color:#8df19e}.track.warn{color:#ffd172}
+.side{display:flex;flex-direction:column;gap:10px}.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px}.card h3{margin:0 0 9px}.refwrap{height:260px;background:#151922;border-radius:11px;overflow:hidden;display:grid;place-items:center}.refwrap img{width:100%;height:100%;object-fit:contain;background:#e9e9e9}.refname{text-align:center;font-weight:800;margin-top:8px}.cameraHint{text-align:center;margin-top:4px;color:#b7becd;font-size:12px}
+.tech{margin:0;padding-left:18px;line-height:1.38;font-size:13px}.tech li{margin:6px 0}
+.positions{display:flex;gap:7px;overflow:auto;padding:0 10px 12px}.pos{min-width:105px;background:#10141d;border:1px solid #323947;border-radius:12px;padding:5px;color:#fff}.pos.active{outline:2px solid var(--purple)}.pos img{width:100%;height:83px;object-fit:cover;border-radius:8px;background:#ddd}.pos small{display:block;margin-top:4px;font-size:10px}
+.controls{display:flex;gap:8px;padding:0 10px 12px}.controls button{flex:1}.progress{height:8px;border-radius:999px;background:#303644;overflow:hidden;margin-top:6px}.progress div{height:100%;width:0;background:linear-gradient(90deg,var(--purple),var(--green))}
+.notice{font-size:11px;color:#8f98aa;line-height:1.35}
+@media(max-width:900px){header{grid-template-columns:1fr auto}.center{grid-column:1/-1;grid-row:2}.layout{grid-template-columns:1fr}.stage{min-height:72vh}.side{padding:0}.refwrap{height:220px}.feedback{width:61%;bottom:82px}.track{left:12px;top:86px}.positions{padding-top:3px}}
 
-  <div class="grid">
-    <aside class="panel sidebar">
-      <div class="sidehead"><span>EXERCISES</span><span class="count">43</span></div>
-      <div id="exerciseList" class="exercise-list"></div>
-      <button class="secondary" style="width:100%;margin-top:8px">View all 43 exercises</button>
-    </aside>
+.successFlash{animation:successPulse .7s ease}
+@keyframes successPulse{0%{box-shadow:inset 0 0 0 0 #62df7400}35%{box-shadow:inset 0 0 0 7px #62df7490}100%{box-shadow:inset 0 0 0 0 #62df7400}}
+.refwrap video{width:100%;height:100%;object-fit:contain;background:#050608}
+</style></head><body>
+<header>
+ <div class="brand">🩰 MOVE <b>Ballet Coach</b><div class="small">Version française — test technique</div></div>
+ <div class="center"><h2 id="poseName">Première position</h2><div class="small"><span id="poseNum">1</span> / 12</div></div>
+ <div><div class="small" style="margin-bottom:4px">Style du professeur</div>
+  <select id="coachStyle" style="width:100%">
+   <option value="real">Professeur réaliste</option>
+   <option value="piquant">Coach piquant 😏</option>
+   <option value="fan">Fan absolu ✨</option>
+  </select>
+ </div>
+</header>
 
-    <main>
-      <section class="panel main">
-        <div class="titlebar"><h2 id="exerciseTitle">1. First Position</h2><span class="badge">Hold for 5 seconds</span></div>
-        <div class="compare">
-          <div>
-            <div class="viewlabel">REFERENCE ⓘ</div>
-            <img id="referencePhoto" class="photo" src="reference_first.png" alt="Reference dancer">
-            <div id="instruction" class="help">Feet turned out, heels together.<br>Arms rounded in front (preparatory).<br>Lengthen up through the crown.</div>
-          </div>
-          <div>
-            <div class="viewlabel">YOU (LIVE) <span style="float:right">📷 ⛶</span></div>
-            <div class="photo-wrap">
-              <video id="camera" class="photo" autoplay playsinline muted></video>
-              <div id="poseOverlay" class="pose-overlay"></div>
-            </div>
-            <div id="holdText" class="holdtxt">Hold steady...</div>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel bravo">
-        <div><h3>🏆 Bravo!</h3><div>Great! You held the position.<br><span style="color:#8e9eb1">Next exercise in <span id="countdown">2</span> sec...</span></div><br><button id="skipBtn" class="secondary">Skip to Next</button></div>
-        <button id="nextBtn" class="primary">Next Exercise →</button>
-      </section>
-    </main>
-
-    <aside class="right">
-      <section class="panel scorebox">
-        <h3>YOUR SCORE</h3>
-        <div class="scorecircle"><div class="scoreinner"><strong id="score">82%</strong><span id="scoreWord">Great!</span></div></div>
-        <div style="color:#aeb9c8;font-size:13px;margin-bottom:8px">Hold 75% or more for 5 sec</div>
-        <div class="progress"><div id="holdProgress"></div></div><div style="text-align:right;color:#aeb9c8;font-size:12px;margin-top:8px"><span id="holdSeconds">3.2</span> / 5 sec</div>
-      </section>
-      <section class="panel feedback">
-        <h3>AI FEEDBACK</h3>
-        <div class="tip good"><b>✓ Great posture!</b><span>Keep it up.</span></div>
-        <div class="tip warn"><b>⚠ Shoulders a bit raised</b><span>Relax and drop your shoulders down.</span></div>
-        <div class="tip good"><b>✓ Arms a little low</b><span>Lift your hands slightly to navel height.</span></div>
-        <div class="tip bad"><b>✕ Turn out</b><span>Try to rotate your feet more from the hips.</span></div>
-        <button class="primary" style="width:100%;margin-top:8px">💡 Show Tips</button>
-      </section>
-      <section class="panel voicebox"><h3>VOICE COACH</h3><div id="voiceText">Nice job! Relax your shoulders and turn out a bit more.</div><div class="voicewave"></div></section>
-    </aside>
-  </div>
-
-  <section class="panel course">
-    <div class="coursehead">COURSE 5 MIN - 8 EXERCISES</div>
-    <div class="steps">
-      <div class="step active">1<br><b>First Position</b><br>5 sec</div><div class="step">2<br><b>Second Position</b><br>5 sec</div><div class="step">3<br><b>Demi Plié</b><br>5 sec</div><div class="step">4<br><b>Grand Plié</b><br>5 sec</div><div class="step">5<br><b>Tendu Front</b><br>5 sec</div><div class="step">6<br><b>Passé</b><br>5 sec</div><div class="step">7<br><b>Arabesque</b><br>5 sec</div><div class="step">8<br><b>Final Stretch</b><br>30 sec</div>
+<div class="layout">
+ <main class="stage">
+  <video id="video" autoplay muted playsinline></video><canvas id="canvas"></canvas>
+  <div id="overlay" class="overlay"><div class="startbox"><h2>Prêt pour le ballet ?</h2><p>La caméra n'a pas besoin de voir absolument tout ton corps. Elle cherchera surtout les articulations utiles pour l'exercice en cours.</p><button id="start" class="primary">Démarrer caméra + analyse du corps</button></div></div>
+  <div id="timerHud" class="hud timer">
+      <span id="phaseLabel" class="small">ÉTAPE</span>
+      <b id="timer">Prêt</b>
+      <div class="progress"><div id="prog"></div></div>
     </div>
-  </section>
-
-  <footer class="footer"><span>🩰 MOVE Ballet Coach — Your personal ballet teacher, anywhere.</span><span>AI analysis is a guide. Listen to your body and train safely.</span><span>Made with ❤️ for dancers</span></footer>
+  <div class="hud score"><span class="small">PRÉCISION</span><b id="score">—</b><span id="validity" class="small">En attente</span></div>
+  <div id="tracker" class="track">Analyse corporelle : en attente</div>
+  <div class="hud feedback"><h3>Corrections en direct</h3>
+   <div class="row ok"><span class="dot">✓</span><span id="good1">En attente de la caméra.</span></div>
+   <div class="row ok"><span class="dot">✓</span><span id="good2">—</span></div>
+   <div class="row warn"><span class="dot">!</span><span id="bad1">—</span></div>
+   <div class="row bad"><span class="dot">×</span><span id="bad2">—</span></div>
+  </div>
+  <div class="coach">🔊 <span id="coachText">Je te donnerai une ou deux consignes utiles, pas un roman pendant que tu danses.</span></div>
+ </main>
+ <aside class="side">
+  <div class="card"><h3>Référence</h3><div class="refwrap"><img id="ref"></div><div id="refName" class="refname"></div><div class="cameraHint">📷 Caméra conseillée : <b id="camHint"></b></div></div>
+  <div class="card"><h3>Détails techniques</h3><ul id="details" class="tech"></ul></div>
+  <div class="card">
+      <h3>Voix du coach</h3>
+      <select id="voiceSelect" style="width:100%;margin-bottom:7px"></select>
+      <div id="voiceName" class="small">Recherche d'une voix française…</div>
+    </div>
+    <div class="card notice">Le coach ne prétend pas mesurer ce qu'une seule caméra 2D ne peut pas voir correctement. Une correction de bassin/profondeur est donnée seulement si l'angle et les repères visibles le permettent.</div>
+ </aside>
 </div>
+<div id="positions" class="positions"></div>
+<div class="controls"><button id="repeatCue">🔊 Répéter les consignes</button><button id="voiceToggle">Voix : ON</button><button id="next" class="primary">Position suivante →</button></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
 <script>
-const exercises = [{"name": "First Position", "time": "5 sec"}, {"name": "Second Position", "time": "5 sec"}, {"name": "Demi Pli\u00e9", "time": "5 sec"}, {"name": "Grand Pli\u00e9", "time": "5 sec"}, {"name": "Tendu Front", "time": "5 sec"}, {"name": "Tendu Side", "time": "5 sec"}, {"name": "Battement Tendu", "time": "5 sec"}, {"name": "Pass\u00e9", "time": "5 sec"}, {"name": "Retir\u00e9", "time": "5 sec"}, {"name": "D\u00e9gag\u00e9 Front", "time": "5 sec"}, {"name": "D\u00e9gag\u00e9 Side", "time": "5 sec"}, {"name": "Battement Jet\u00e9", "time": "5 sec"}, {"name": "Arabesque", "time": "5 sec"}, {"name": "Attitude", "time": "5 sec"}, {"name": "D\u00e9velopp\u00e9 Front", "time": "5 sec"}, {"name": "D\u00e9velopp\u00e9 Side", "time": "5 sec"}, {"name": "D\u00e9velopp\u00e9 Back", "time": "5 sec"}, {"name": "Relev\u00e9", "time": "5 sec"}, {"name": "Sous-sus", "time": "5 sec"}, {"name": "\u00c9chapp\u00e9", "time": "5 sec"}, {"name": "Assembl\u00e9", "time": "5 sec"}, {"name": "Jet\u00e9", "time": "5 sec"}, {"name": "Glissade", "time": "5 sec"}, {"name": "Sissonne", "time": "5 sec"}, {"name": "Changement", "time": "5 sec"}, {"name": "Entrechat Quatre", "time": "5 sec"}, {"name": "Port de Bras", "time": "5 sec"}, {"name": "Cambr\u00e9", "time": "5 sec"}, {"name": "Rond de Jambe", "time": "5 sec"}, {"name": "Fondu", "time": "5 sec"}, {"name": "Grand Battement Front", "time": "5 sec"}, {"name": "Grand Battement Side", "time": "5 sec"}, {"name": "Grand Battement Back", "time": "5 sec"}, {"name": "Arabesque 2", "time": "5 sec"}, {"name": "Arabesque 3", "time": "5 sec"}, {"name": "Arabesque 4", "time": "5 sec"}, {"name": "Arms First", "time": "5 sec"}, {"name": "Arms Second", "time": "5 sec"}, {"name": "Arms Third", "time": "5 sec"}, {"name": "Arms Fourth", "time": "5 sec"}, {"name": "Arms Fifth", "time": "5 sec"}, {"name": "Bras Bas", "time": "5 sec"}, {"name": "Final Stretch", "time": "30 sec"}];
-let current=0, voiceOn=true, holdStart=null, holdSec=0;
-const list=document.getElementById('exerciseList');
-exercises.forEach((e,i)=>{const d=document.createElement('div');d.className='exercise'+(i===0?' active':'');d.innerHTML=`<div class="num">${i+1}</div><img class="thumb" src="reference_first.png"><div><div class="exname">${e.name}</div><div class="extime">${e.time}</div></div><div>${i===0?'✓':''}</div>`;d.onclick=()=>selectExercise(i);list.appendChild(d)});
+const P=[{"name": "Première position", "type": "first", "camera": "Face", "img": "https://www.operaballet.nl/sites/default/files/images/EPP/PO/1%20kopie.jpg", "fallback": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Primera%20posici%C3%B3n%20de%20ballet.jpg", "intro": "Première position. Talons réunis, rotation depuis les hanches. Allonge les jambes et garde le bassin au-dessus des pieds.", "details": ["Rotation externe initiée dans les hanches, sans forcer les pieds à 180°.", "Talons réunis, poids réparti sur le trépied du pied — gros orteil, petit orteil, talon.", "Genoux allongés sans verrouiller; cuisses actives et rotées.", "Bassin neutre: ni fesses sorties, ni bassin exagérément rentré.", "Colonne longue, côtes au-dessus du bassin, épaules larges et basses."], "required": [23, 24, 25, 26, 27, 28, 29, 30, 31, 32], "motion": false, "shortcue": "Première position. Talons réunis, rotation depuis les hanches, jambes longues.", "video": null}, {"name": "Deuxième position", "type": "second", "camera": "Face", "img": "https://www.operaballet.nl/sites/default/files/images/EPP/PO/2%20kopie.jpg", "fallback": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Ballett2.Position.JPG", "intro": "Deuxième position. Ouvre les pieds sans perdre la rotation des cuisses. Grandis verticalement au lieu de t'asseoir entre les jambes.", "details": ["Écart suffisamment large pour permettre un plié vertical et stable.", "Rotation depuis les hanches; genoux et pieds orientés dans la même direction.", "Poids centré entre les deux jambes, sans rouler sur l'intérieur des pieds.", "Bassin placé sous les côtes; fessiers actifs sans crispation.", "Bras en seconde: soutenus depuis le dos, coudes vivants, épaules relâchées."], "required": [23, 24, 25, 26, 27, 28, 29, 30, 31, 32], "motion": false, "shortcue": "Deuxième position. Ouvre les pieds, reste centré et garde les jambes longues.", "video": null}, {"name": "Demi-plié en première", "type": "demiplie", "camera": "Face", "img": "https://images.rcs.ac.uk/uploads/2024/02/Picture-1-Demi-plie-in-1st-position-en-face.jpg", "fallback": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Demi%20plie.jpg", "intro": "Demi-plié. Les genoux suivent les orteils. Garde le bassin sous les côtes et pense à grandir pendant que tu descends.", "details": ["Le plié est continu: les genoux se plient dans la direction des orteils.", "Le torse reste porté verticalement; évite de basculer en avant.", "Bassin neutre: ne pousse pas les fesses en arrière et ne rentre pas excessivement le coccyx.", "Rotation maintenue depuis les hanches tout au long de la descente et de la remontée.", "Talons au sol autant que ta mobilité le permet; poids vivant vers l'avant du pied sans écraser les arches."], "required": [23, 24, 25, 26, 27, 28, 29, 30, 31, 32], "motion": true, "shortcue": "Demi-plié. Descends puis remonte. Genoux vers les orteils, bassin sous les côtes.", "video": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Pli%C3%A9%2C%20ballet%20technique%20tutorial.webm"}, {"name": "Grand plié en première", "type": "grandplie", "camera": "Face", "img": "https://onthewaytothebarre.com/wp-content/uploads/2017/01/img_6167.jpg?w=1060", "fallback": "https://thedancedomain.nz/wp-content/uploads/2019/03/firstpositionpliebad.jpg", "intro": "Grand plié. Traverse ton demi-plié sans t'arrêter, reste haut dans le buste et ne t'assieds pas au fond. Oui, descendre tout en grandissant: bienvenue au ballet.", "details": ["Passe par le demi-plié sans rupture de dynamique.", "Genoux alignés vers les orteils et rotation maintenue depuis les hanches.", "Buste vertical et bassin placé: évite les fesses en arrière ou le torse projeté vers l'avant.", "Les talons se libèrent seulement lorsque la profondeur l'exige, puis reviennent tôt à la remontée.", "Ne 't'assieds' pas au point bas: garde une sensation d'élévation et de résistance."], "required": [23, 24, 25, 26, 27, 28, 29, 30, 31, 32], "motion": true, "shortcue": "Grand plié. Descends sans t’asseoir au fond, puis remonte avec de la hauteur.", "video": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Pli%C3%A9%2C%20ballet%20technique%20tutorial.webm"}, {"name": "Battement tendu devant", "type": "tendufront", "camera": "30–45°", "img": "https://petitedanse.com.br/wp-content/uploads/2019/09/Novo-Documento-2019-08-29-10.15.04-scaled.jpg", "fallback": "https://pointemagazine.com/wp-content/uploads/2021/04/put-your-best-audition-photo-forward-how-to-stand--8.jpg", "intro": "Battement tendu devant. Brosse le sol, allonge derrière le genou et termine le cou-de-pied jusqu'aux orteils. Le bassin reste calme.", "details": ["La jambe de travail s'allonge devant sans raccourcir la jambe d'appui.", "Le pied articule contre le sol et arrive complètement pointé; les orteils restent longs.", "Rotation maintenue dans les deux jambes, pas seulement dans la jambe de travail.", "Hanches stables et organisées; évite d'emporter le bassin avec la jambe.", "Cherche une ligne continue hanche–genou–cheville–orteils."], "required": [23, 24, 25, 26, 27, 28, 29, 30, 31, 32], "motion": true, "shortcue": "Tendu devant. Brosse, allonge jusqu’aux orteils, puis referme proprement.", "video": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tendu%2C%20ballet%20technique%20tutorial.webm"}, {"name": "Battement tendu à la seconde", "type": "tenduside", "camera": "30–45°", "img": "https://i.pinimg.com/originals/05/1d/76/051d76d3cb76fb56dcca2fc7cfc8b34b.jpg", "fallback": "https://petitedanse.com.br/wp-content/uploads/2019/09/Novo-Documento-2019-08-29-10.15.04-scaled.jpg", "intro": "Tendu à la seconde. Étire la jambe exactement sur le côté, pointe jusqu'au bout des orteils et ne monte pas la hanche de travail.", "details": ["La jambe s'étire latéralement sans dériver vers l'avant.", "Genou allongé et pied complètement pointé, avec continuité jusqu'aux orteils.", "Bassin de niveau; la hanche de travail ne grimpe pas pour 'fabriquer' de l'amplitude.", "Jambe d'appui active et tournée, poids correctement placé sur le pied d'appui.", "Le haut du corps reste long et calme pendant que la jambe se déplace."], "required": [23, 24, 25, 26, 27, 28, 29, 30, 31, 32], "motion": true, "shortcue": "Tendu à la seconde. Allonge sur le côté, pointe complètement, puis referme.", "video": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tendu%2C%20ballet%20technique%20tutorial.webm"}, {"name": "Passé par retiré", "type": "passe", "camera": "30–45°", "img": "https://www.jorgendance.ca/wp-content/uploads/elementor/thumbs/Retire-Jorgen-Dance-Ballet-Vocabulary-pu301057o09q8k4d7adsgidh1s6x377v0igf888ao0.jpg", "fallback": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Retire%20or%20passe%20position%20in%20ballet.jpg", "intro": "Passé par retiré. Fais monter le pied le long de la jambe d'appui, genou ouvert et bassin stable. Le pied reste vivant et pointé.", "details": ["Le passé est le trajet; la forme visible au niveau du genou est le retiré.", "Le pied de travail monte près de la jambe d'appui, sans se jeter loin du corps.", "Genou de travail ouvert par la rotation de hanche; bassin stable et de niveau.", "Jambe d'appui longue et active; ne t'effondre pas dans la hanche porteuse.", "Cou-de-pied allongé et orteils pointés sans crisper les doigts de pied."], "required": [23, 24, 25, 26, 27, 28], "motion": true, "shortcue": "Passé par retiré. Monte le pied près du genou, ouvre la cuisse et garde la jambe d’appui longue.", "video": null}, {"name": "Retiré", "type": "retire", "camera": "30–45°", "img": "https://www.jorgendance.ca/wp-content/uploads/elementor/thumbs/Retire-Jorgen-Dance-Ballet-Vocabulary-pu301057o09q8k4d7adsgidh1s6x377v0igf888ao0.jpg", "fallback": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Retire%20or%20passe%20position%20in%20ballet.jpg", "intro": "Retiré. Place le pied près du genou, ouvre la cuisse et pousse le sol avec la jambe d'appui. Ne t'assieds pas dans ta hanche.", "details": ["Pied de travail placé près du genou de la jambe d'appui.", "Cuisse de travail tournée vers l'extérieur sans faire pivoter tout le bassin.", "Jambe d'appui verticale, allongée et énergique.", "Bassin de niveau; évite de tomber dans la hanche d'appui.", "Colonne longue et équilibre organisé autour de l'axe vertical."], "required": [23, 24, 25, 26, 27, 28], "motion": true, "shortcue": "Retiré. Pied près du genou, cuisse ouverte, jambe d’appui longue.", "video": null}, {"name": "Première arabesque", "type": "arabesque", "camera": "30–45°", "img": "https://pointemagazine.com/wp-content/uploads/2021/04/put-your-best-audition-photo-forward-how-to-stand--8.jpg", "fallback": "https://images.squarespace-cdn.com/content/v1/63e167f8d665247bbf3ea45a/0a9c4b9b-4078-48e4-9354-9b73b97b3961/Untitled%2Bdesign%2B%281%29.png", "intro": "Première arabesque. Allonge la jambe derrière depuis la hanche, pointe le pied et garde la jambe d'appui forte. Le dos s'allonge avant de se cambrer.", "details": ["Jambe derrière longue, tournée et complètement étirée jusqu'aux orteils.", "Jambe d'appui active et stable, poids organisé au-dessus du pied.", "Placement du bassin contrôlé: évite d'ouvrir ou de jeter le bassin pour gagner de la hauteur.", "Abdominaux et dos soutiennent la ligne; cherche d'abord la longueur, ensuite la hauteur.", "Le haut du dos participe à la ligne sans casser la région lombaire."], "required": [23, 24, 25, 26, 27, 28], "motion": false, "shortcue": "Arabesque. Allonge derrière. Pense longueur avant hauteur, et pointe le pied.", "video": null}, {"name": "Attitude derrière", "type": "attitude", "camera": "30–45°", "img": "https://pointemagazine.com/wp-content/uploads/2022/08/Kylie-head-forward_Web_R1-704x1024.jpg", "fallback": "https://i.pinimg.com/originals/79/98/3e/79983e7e8715e23126c02090dd7fcdfa.jpg", "intro": "Attitude derrière. Monte la cuisse derrière, garde le genou plié et le pied pointé. Le bassin reste soutenu — pas de fuite artistique des fesses.", "details": ["Cuisse de travail élevée derrière avec rotation externe.", "Genou de travail plié et soutenu; le pied reste pointé et vivant.", "Jambe d'appui verticale et active.", "Bassin contrôlé, sans translation excessive ni effondrement dans la hanche.", "Longueur du torse et soutien abdominal pour éviter de comprimer les lombaires."], "required": [23, 24, 25, 26, 27, 28], "motion": false, "shortcue": "Attitude derrière. Monte la cuisse, plie le genou et garde le pied vivant.", "video": null}, {"name": "Port de bras", "type": "portdebras", "camera": "Face", "img": "https://cdn.prod.website-files.com/65ec28ebb0006561d0848711/66c4728da3a19decd0854fad_port-de-bras3.jpg", "fallback": "https://grandsballets.com/workspace/uploads/actualite/partage/les-grands-ballets-myriam-simon-tutoriel-ballet-ports-de-bras-6-1675347098.png", "intro": "Port de bras. Laisse les bras partir du dos, garde les épaules basses et les côtes organisées. Les mains finissent le mouvement, elles ne le conduisent pas seules.", "details": ["Épaules larges et descendues, omoplates organisées sans rigidité.", "Coudes soutenus et bras arrondis; évite les articulations cassées.", "Mouvement fluide et coordonné avec le haut du dos.", "Côtes contenues au-dessus du bassin: ne cambre pas pour faire monter les bras.", "Tête et regard accompagnent le port de bras sans casser la nuque."], "required": [11, 12, 13, 14, 15, 16], "motion": true, "shortcue": "Port de bras. Les bras partent du dos, épaules basses et côtes organisées.", "video": null}, {"name": "Relevé en première", "type": "releve", "camera": "Face", "img": "https://www.movewell-fitness.com.tw/webfile/webdate/xXPiFOQxsEsCCia/b_S7twIduiHdYPciWMC9mf.jpg", "fallback": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Premi%C3%A8re%20demipointes.PNG", "intro": "Relevé en première. Monte sur les demi-pointes sans perdre la rotation. Genoux longs, chevilles dans l'axe et corps vertical.", "details": ["Élévation sur les demi-pointes avec genoux allongés et jambes actives.", "Rotation maintenue pendant la montée; les pieds ne roulent ni en dedans ni en dehors.", "Poids placé sur l'avant-pied de façon équilibrée, avec chevilles stables.", "Bassin, côtes et tête empilés sur l'axe vertical.", "Sensation de pousser le sol et de continuer à grandir au sommet du relevé."], "required": [23, 24, 25, 26, 27, 28, 29, 30, 31, 32], "motion": true, "shortcue": "Relevé. Monte sur demi-pointe, jambes longues, chevilles dans l’axe, puis redescends.", "video": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Relev%C3%A9%2C%20ballet%20technique%20tutorial.webm"}];
+const $=id=>document.getElementById(id);
+let idx=0,stream=null,started=false,busy=false,voice=true,holdStart=0,advanceLock=false,poseFrames=0;
+let lastCorrection="",lastSpokenAt=0,lastIntroIdx=-1,lastHumorAt=0;
 
-function selectExercise(i){current=i;document.querySelectorAll('.exercise').forEach((x,j)=>x.classList.toggle('active',j===i));document.getElementById('exerciseTitle').textContent=(i+1)+'. '+exercises[i].name;document.getElementById('countdown').textContent='2';holdStart=null;}
-document.getElementById('nextBtn').onclick=()=>selectExercise((current+1)%exercises.length);
-document.getElementById('skipBtn').onclick=()=>selectExercise((current+1)%exercises.length);
-document.getElementById('voiceToggle').onclick=()=>{voiceOn=!voiceOn;document.getElementById('voiceToggle').innerHTML='🔊 Voice Coach <b>'+(voiceOn?'ON':'OFF')+'</b>';if(!voiceOn&&speechSynthesis)speechSynthesis.cancel()};
+const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+const mid=(a,b)=>({x:(a.x+b.x)/2,y:(a.y+b.y)/2,z:((a.z||0)+(b.z||0))/2});
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function angle(a,b,c){const u={x:a.x-b.x,y:a.y-b.y},v={x:c.x-b.x,y:c.y-b.y};let d=(u.x*v.x+u.y*v.y)/(Math.hypot(u.x,u.y)*Math.hypot(v.x,v.y)||1);return Math.acos(clamp(d,-1,1))*180/Math.PI}
+function V(lm,i){return lm[i] && (lm[i].visibility??1)}
+function cur(){return P[idx]}
 
-function speak(t){if(!voiceOn||!('speechSynthesis' in window))return; speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-US';speechSynthesis.speak(u)}
+function imageSet(img,p){
+ img.onerror=()=>{
+   if(img.dataset.usedFallback!=="1"&&p.fallback){img.dataset.usedFallback="1";img.src=p.fallback}
+   else{img.style.display="none";img.parentElement.innerHTML="<div style='padding:20px;text-align:center;color:#bbb'>Référence indisponible.<br>Je préfère ne pas montrer une mauvaise position.</div>"}
+ };
+ img.dataset.usedFallback="0";img.style.display="block";img.src=p.img;
+}
+function renderReference(p){
+ const wrap=document.querySelector(".refwrap");
+ wrap.innerHTML="";
+ if(p.video){
+   const v=document.createElement("video");
+   v.src=p.video;v.autoplay=true;v.loop=true;v.muted=true;v.playsInline=true;v.controls=true;
+   v.onerror=()=>{wrap.innerHTML="";const im=document.createElement("img");wrap.appendChild(im);imageSet(im,p)};
+   wrap.appendChild(v);
+ }else{
+   const im=document.createElement("img");wrap.appendChild(im);imageSet(im,p);
+ }
+}
+function relevantVisible(lm,p){
+ const vals=p.required.map(i=>V(lm,i));
+ const good=vals.filter(v=>v>.32).length;
+ const avg=vals.reduce((a,b)=>a+b,0)/(vals.length||1);
+ return {ok:good>=Math.ceil(vals.length*.68)&&avg>.39,good,avg};
+}
+function optionalVisible(lm,ids){return ids.every(i=>V(lm,i)>.32)}
 
-async function startCamera(){try{const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});const v=document.getElementById('camera');v.srcObject=s;await v.play();startPose(v)}catch(e){document.getElementById('voiceText').textContent='Camera permission is needed to analyze your position.'}}
-
-function addOverlay(lm){const o=document.getElementById('poseOverlay');o.innerHTML='';const ids=[11,12,13,14,15,16,23,24,25,26,27,28];ids.forEach(id=>{const p=lm[id],d=document.createElement('div');d.className='dot';d.style.left=(p.x*100)+'%';d.style.top=(p.y*100)+'%';o.appendChild(d)})}
-
-function analyze(lm){let score=100,feedback=[];const LS=lm[11],RS=lm[12],LW=lm[15],RW=lm[16],LH=lm[23],RH=lm[24],LA=lm[27],RA=lm[28];
-if(Math.abs(LS.y-RS.y)>.045){score-=10;feedback.push('Relax and level your shoulders.')} 
-if(Math.abs(LH.y-RH.y)>.05){score-=12;feedback.push('Keep your pelvis more level.')} 
-if(Math.abs(LW.y-RW.y)>.08){score-=8;feedback.push('Match the height of your hands.')} 
-if(Math.abs(LA.x-RA.x)<.08){score-=8;feedback.push('Open your turnout a little more from the hips.')} 
-score=Math.max(0,Math.round(score));
-document.getElementById('score').textContent=score+'%';document.getElementById('scoreWord').textContent=score>=85?'Great!':score>=75?'Good':'Adjust';
-if(score>=75){if(!holdStart)holdStart=Date.now();holdSec=(Date.now()-holdStart)/1000;document.getElementById('holdSeconds').textContent=holdSec.toFixed(1);document.getElementById('holdProgress').style.width=Math.min(100,holdSec/5*100)+'%';if(holdSec>=5){speak('Bravo. Great job. Moving to the next exercise.');holdStart=Date.now();setTimeout(()=>selectExercise((current+1)%exercises.length),700)}} else {holdStart=null;document.getElementById('holdSeconds').textContent='0.0';document.getElementById('holdProgress').style.width='0%';if(feedback.length)document.getElementById('voiceText').textContent=feedback[0];}
+function footTurnout(lm){
+ if(!optionalVisible(lm,[29,30,31,32]))return null;
+ return (lm[31].x-lm[29].x)<-.005 && (lm[32].x-lm[30].x)>.005;
+}
+function pointAngle(lm,leg){
+ const knee=leg==="L"?25:26,ank=leg==="L"?27:28,toe=leg==="L"?31:32;
+ if(!optionalVisible(lm,[knee,ank,toe]))return null;
+ return angle(lm[knee],lm[ank],lm[toe]);
+}
+function torsoMetrics(lm){
+ if(!optionalVisible(lm,[11,12,23,24]))return null;
+ const s=mid(lm[11],lm[12]),h=mid(lm[23],lm[24]);
+ const torsoLen=Math.max(.12,dist(s,h));
+ return {s,h,sideShift:Math.abs(s.x-h.x)/torsoLen,shoulderLevel:Math.abs(lm[11].y-lm[12].y),hipLevel:Math.abs(lm[23].y-lm[24].y)};
+}
+function buttEstimate(lm){
+ if(!optionalVisible(lm,[11,12,23,24,27,28]))return null;
+ const sh=mid(lm[11],lm[12]),hip=mid(lm[23],lm[24]),ank=mid(lm[27],lm[28]);
+ const scale=Math.max(.25,Math.abs(sh.y-ank.y));
+ return Math.abs(hip.x-(sh.x+ank.x)/2)/scale;
 }
 
-function startPose(video){const pose=new Pose({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`});pose.setOptions({modelComplexity:0,smoothLandmarks:true,minDetectionConfidence:.5,minTrackingConfidence:.5});pose.onResults(r=>{if(r.poseLandmarks){addOverlay(r.poseLandmarks);analyze(r.poseLandmarks)}});
-let busy=false;async function loop(){if(video.readyState>=2&&!busy){busy=true;try{await pose.send({image:video})}catch(e){}busy=false}requestAnimationFrame(loop)}loop()}
-startCamera();
+function techAnalyze(lm){
+ const p=cur(),LS=lm[11],RS=lm[12],LH=lm[23],RH=lm[24],LK=lm[25],RK=lm[26],LA=lm[27],RA=lm[28];
+ const sw=optionalVisible(lm,[11,12])?Math.max(.07,dist(LS,RS)):Math.max(.10,dist(LH,RH)*1.3);
+ const lk=optionalVisible(lm,[23,25,27])?angle(LH,LK,LA):180, rk=optionalVisible(lm,[24,26,28])?angle(RH,RK,RA):180;
+ const feet=Math.abs(LA.x-RA.x)/sw;
+ const torso=torsoMetrics(lm),butt=buttEstimate(lm),turn=footTurnout(lm);
+ let score=100,hard=true,bads=[],goods=[],confidence="forte";
+ const bad=(pts,msg,must=false)=>{score-=pts;bads.push({pts,msg});if(must)hard=false};
+ const good=msg=>goods.push(msg);
+
+ if(torso){
+  if(torso.hipLevel>.06)bad(8,"Replace le bassin de niveau."); else good("Bassin bien nivelé.");
+  if(torso.sideShift>.24 && !["arabesque","attitude"].includes(p.type))bad(10,"Ramène les côtes au-dessus du bassin: reste plus vertical.");
+  if(torso.shoulderLevel>.065 && p.type!=="portdebras")bad(6,"Égalise les épaules sans les crisper.");
+ }else confidence="partielle";
+
+ if(["demiplie","grandplie"].includes(p.type) && butt!==null && butt>.12)bad(14,"Replace le bassin sous le buste: ne pousse pas les fesses en arrière.");
+
+ switch(p.type){
+  case "first":
+   if(feet>.78)bad(24,"Rapproche les talons: la première n'est pas encore fermée.",true); else good("Talons proches.");
+   if(lk<157||rk<157)bad(19,"Allonge davantage derrière les deux genoux.",true); else good("Jambes bien allongées.");
+   if(turn===false)bad(12,"Cherche la rotation depuis les hanches, pas seulement avec les pieds.");
+   break;
+  case "second":
+   if(feet<1.38)bad(24,"Élargis la deuxième: tu es encore trop près de la première.",true);
+   if(lk<157||rk<157)bad(17,"Allonge les genoux et pousse le sol.",true);
+   if(turn===false)bad(11,"Garde la rotation des cuisses vers l'extérieur.");
+   break;
+  case "demiplie":{
+   const av=(lk+rk)/2;
+   if(av>158)bad(30,"Plie réellement les genoux: je ne vois pas encore de demi-plié.",true);
+   if(av<105)bad(17,"Remonte un peu: tu es déjà plus profond qu'un demi-plié.",true);
+   if(Math.abs(lk-rk)>18)bad(11,"Descends de façon plus symétrique sur les deux jambes.");
+   if(optionalVisible(lm,[25,26,31,32])){
+     const kneeSpread=Math.abs(LK.x-RK.x),toeSpread=Math.abs(lm[31].x-lm[32].x);
+     if(toeSpread>.05&&kneeSpread<toeSpread*.58)bad(16,"Ouvre les genoux vers la direction des orteils: ils rentrent trop vers l'intérieur.");
+   }
+   if(turn===false)bad(10,"Conserve la rotation depuis les hanches pendant le plié.");
+   break}
+  case "grandplie":{
+   const av=(lk+rk)/2;
+   if(av>126)bad(32,"Va plus loin dans la flexion pour atteindre le grand plié.",true);
+   if(av<58)bad(10,"Ne t'assieds pas au fond: remonte légèrement et garde du tonus.");
+   if(Math.abs(lk-rk)>22)bad(12,"Répartis mieux la profondeur entre les deux jambes.");
+   if(optionalVisible(lm,[25,26,31,32])){
+     const ks=Math.abs(LK.x-RK.x),ts=Math.abs(lm[31].x-lm[32].x);
+     if(ts>.05&&ks<ts*.55)bad(17,"Les genoux rentrent: dirige-les davantage vers les orteils.");
+   }
+   break}
+  case "tendufront":{
+   if(lk<156||rk<156)bad(20,"Allonge les deux genoux: le tendu doit rester long.",true);
+   const depth=Math.abs((LA.z||0)-(RA.z||0));
+   if(depth<.055&&feet<.92)bad(29,"Montre plus clairement la jambe devant: je ne lis pas encore le tendu.",true);
+   let working=(Math.abs(LA.z||0)>Math.abs(RA.z||0))?"L":"R",pa=pointAngle(lm,working);
+   if(pa!==null&&pa<142)bad(16,"Allonge davantage le cou-de-pied jusqu'au bout des orteils.");
+   if(torso&&torso.hipLevel>.05)bad(9,"Stabilise les hanches pendant que la jambe glisse.");
+   break}
+  case "tenduside":{
+   if(lk<156||rk<156)bad(20,"Allonge derrière les genoux, surtout la jambe de travail.",true);
+   if(feet<1.22)bad(29,"Étends la jambe plus franchement à la seconde.",true);
+   const working=Math.abs(LA.x-mid(LH,RH).x)>Math.abs(RA.x-mid(LH,RH).x)?"L":"R",pa=pointAngle(lm,working);
+   if(pa!==null&&pa<142)bad(16,"Pointe davantage: cheville, cou-de-pied puis orteils dans la même ligne.");
+   if(torso&&torso.hipLevel>.052)bad(12,"La hanche de travail monte: garde le bassin plus horizontal.");
+   break}
+  case "passe":
+  case "retire":{
+   const dL=dist(LA,RK)/sw,dR=dist(RA,LK)/sw,near=Math.min(dL,dR),work=dL<dR?"L":"R";
+   if(near>.82)bad(31,"Monte le pied de travail près du genou de la jambe d'appui.",true); else good("Pied proche de la hauteur du genou.");
+   const support=work==="L"?rk:lk,workK=work==="L"?lk:rk;
+   if(support<155)bad(18,"Allonge la jambe d'appui et pousse le sol.",true);
+   if(workK>151)bad(17,"Ouvre et plie davantage le genou de travail.",true);
+   const pa=pointAngle(lm,work);if(pa!==null&&pa<125)bad(10,"Garde le pied de travail plus pointé et plus vivant.");
+   if(torso&&torso.hipLevel>.055)bad(13,"Ne tombe pas dans la hanche d'appui: remets le bassin de niveau.");
+   break}
+  case "arabesque":{
+   const lLift=LA.y<LK.y+.07&&LA.y<RH.y+.37,rLift=RA.y<RK.y+.07&&RA.y<LH.y+.37;
+   if(!(lLift||rLift))bad(34,"Je ne lis pas encore l'arabesque: lève clairement une jambe derrière.",true);
+   else{
+    const work=lLift?"L":"R",support=lLift?rk:lk,workK=lLift?lk:rk;
+    if(support<151)bad(17,"Allonge la jambe d'appui et pousse le sol.",true);
+    if(workK<142)bad(16,"Allonge davantage la jambe derrière, surtout derrière le genou.");
+    const pa=pointAngle(lm,work);if(pa!==null&&pa<140)bad(15,"Pointe le pied arrière jusqu'aux orteils: la ligne s'arrête à la cheville.");
+    if(torso&&torso.hipLevel>.075)bad(12,"Contrôle davantage le placement du bassin; ne gagne pas la hauteur en ouvrant toute la hanche.");
+   }
+   break}
+  case "attitude":{
+   const l=LK.y<LH.y+.44&&LA.y<LK.y+.18,r=RK.y<RH.y+.44&&RA.y<RK.y+.18;
+   if(!(l||r))bad(32,"Monte la cuisse derrière: je ne reconnais pas encore l'attitude.",true);
+   else{
+    const work=l?"L":"R",wk=l?lk:rk,sup=l?rk:lk;
+    if(wk>150)bad(19,"Plie davantage le genou de travail pour dessiner l'attitude.",true);
+    if(sup<150)bad(16,"Allonge la jambe d'appui.");
+    const pa=pointAngle(lm,work);if(pa!==null&&pa<132)bad(13,"Pointe davantage le pied de la jambe en attitude.");
+    if(torso&&torso.hipLevel>.08)bad(12,"Stabilise le bassin: la jambe monte, le bassin ne part pas avec.");
+   }
+   break}
+  case "portdebras":{
+   const LW=lm[15],RW=lm[16],LE=lm[13],RE=lm[14];
+   if(!(LW.y<LS.y-.045&&RW.y<RS.y-.045))bad(30,"Monte davantage les bras: je ne lis pas encore le port de bras haut.",true);
+   if(Math.abs(LW.y-RW.y)>.13)bad(10,"Équilibre la hauteur des deux bras.");
+   const le=angle(LS,LE,LW),re=angle(RS,RE,RW);
+   if((le+re)/2<122)bad(10,"Soutiens les coudes et allonge la courbe des bras.");
+   if(torso&&torso.sideShift>.22)bad(12,"Garde les côtes organisées au-dessus du bassin pendant la montée des bras.");
+   break}
+  case "releve":{
+   if(lk<156||rk<156)bad(21,"Allonge complètement les genoux au sommet du relevé.",true);
+   if(optionalVisible(lm,[29,30,31,32])){
+     const lUp=lm[29].y<lm[31].y-.012,rUp=lm[30].y<lm[32].y-.012;
+     if(!(lUp&&rUp))bad(31,"Monte les deux talons sur demi-pointe: le relevé n'est pas encore établi.",true); else good("Les deux talons sont élevés.");
+   }
+   if(turn===false)bad(10,"Conserve la rotation pendant la montée.");
+   if(torso&&torso.sideShift>.20)bad(10,"Replace ton axe vertical au-dessus de l'avant-pied.");
+   break}
+ }
+ bads.sort((a,b)=>b.pts-a.pts);
+ return {score:clamp(Math.round(score),0,100),valid:hard,bads:bads.map(x=>x.msg),goods,confidence};
+}
+
+let frenchVoices=[],voiceObj=null;
+function loadVoices(){
+ if(!("speechSynthesis" in window))return;
+ frenchVoices=speechSynthesis.getVoices().filter(v=>/^fr/i.test(v.lang));
+ const preferred=["Thomas","Audrey","Aurélie","Aurelie","Amélie","Amelie","Marie","Denise","Henri","Google français"];
+ frenchVoices.sort((a,b)=>{
+   let ai=preferred.findIndex(n=>a.name.includes(n)),bi=preferred.findIndex(n=>b.name.includes(n));
+   return (ai<0?99:ai)-(bi<0?99:bi);
+ });
+ const sel=$("voiceSelect");
+ if(sel){
+   sel.innerHTML=frenchVoices.length?frenchVoices.map((v,i)=>`<option value="${i}">${v.name} · ${v.lang}</option>`).join(""):'<option>Voix française système</option>';
+   sel.onchange=()=>{voiceObj=frenchVoices[Number(sel.value)]||null;$("voiceName").textContent=voiceObj?voiceObj.name+" · "+voiceObj.lang:"Voix système"};
+ }
+ voiceObj=frenchVoices[0]||null;
+ if($("voiceName"))$("voiceName").textContent=voiceObj?voiceObj.name+" · "+voiceObj.lang:"Voix française système";
+}
+if("speechSynthesis" in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
+
+const positiveLines={
+ real:["Bien.","Oui, c'est propre.","Très bien.","Là, c'est juste."],
+ piquant:["Bien. Là, on danse.","Oui. Les jambes ont enfin signé le même contrat.","Très bien. La gravité peut patienter."],
+ fan:["Magnifique.","Oui, très beau.","Super, garde ça.","Très joli."]
+};
+const bravoLines={
+ real:["Bravo.","Très bien, terminé.","Oui. C'est validé."],
+ piquant:["Bravo. Tu vois, ce n'était pas personnel.","Validé. Le ballet te pardonne.","Bravo. Même les genoux sont d'accord."],
+ fan:["Bravo ! Magnifique.","Oui ! Très beau.","Super ! C'est validé."]
+};
+function styleKey(){return $("coachStyle").value||"real"}
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function speak(text,force=false){
+ if(!voice||!("speechSynthesis" in window))return;
+ const now=Date.now();
+ if(!force && now-lastSpokenAt<3000)return;
+ if(!force && text===lastCorrection && now-lastSpokenAt<6500)return;
+ lastSpokenAt=now;lastCorrection=text;speechSynthesis.cancel();
+ const u=new SpeechSynthesisUtterance(text);
+ u.lang="fr-FR";if(voiceObj)u.voice=voiceObj;u.rate=1.03;u.pitch=.98;u.volume=1;
+ speechSynthesis.speak(u);
+}
+function successSound(){
+ try{
+   const AC=window.AudioContext||window.webkitAudioContext,ac=new AC();
+   [523.25,659.25,783.99].forEach((f,i)=>{
+     const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;o.type="sine";
+     g.gain.setValueAtTime(.001,ac.currentTime+i*.09);
+     g.gain.exponentialRampToValueAtTime(.12,ac.currentTime+i*.09+.02);
+     g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+i*.09+.27);
+     o.connect(g);g.connect(ac.destination);o.start(ac.currentTime+i*.09);o.stop(ac.currentTime+i*.09+.29);
+   });
+ }catch(e){}
+}
+function announcePose(force=false){
+ const p=cur();$("coachText").textContent=p.shortcue;
+ if(force||lastIntroIdx!==idx){lastIntroIdx=idx;speak(p.shortcue,true)}
+}
+function buildStrip(){
+ $("positions").innerHTML="";
+ P.forEach((p,i)=>{const b=document.createElement("button");b.className="pos"+(i===idx?" active":"");b.innerHTML=`<img><small>${i+1}. ${p.name}</small>`;imageSet(b.querySelector("img"),p);b.onclick=()=>selectPose(i,true);$("positions").appendChild(b)})
+}
+function selectPose(i,announce=true){
+ idx=i;holdStart=0;advanceLock=false;$("prog").style.width="0";$("timer").textContent="0.0 / 5.0 s";$("timerHud").classList.remove("active");
+ const p=cur();$("poseName").textContent=p.name;$("poseNum").textContent=i+1;$("refName").textContent=p.name;$("camHint").textContent=p.camera;$("details").innerHTML=p.details.map(x=>`<li>${x}</li>`).join("");renderReference(p);
+ document.querySelectorAll(".pos").forEach((b,j)=>b.classList.toggle("active",j===i));
+ $("score").textContent="—";$("validity").textContent="À toi";$("good1").textContent="Analyse en cours…";$("good2").textContent="—";$("bad1").textContent="—";$("bad2").textContent="—";
+ resetMotion();
+ if(announce)announcePose(true);
+}
+function nextManual(){selectPose((idx+1)%P.length,true)}
+$("next").onclick=nextManual;$("repeatCue").onclick=()=>announcePose(true);
+$("voiceToggle").onclick=()=>{voice=!voice;$("voiceToggle").textContent=voice?"Voix : ON":"Voix : OFF";if(!voice)speechSynthesis.cancel()};
+$("coachStyle").onchange=()=>{
+      const k=styleKey();
+      speak(k==="piquant"?"D'accord. Je reste précis, mais je ne vais pas caresser ton ego à chaque plié.":k==="fan"?"Parfait. Je corrige tout, et je célèbre aussi ce qui est beau.":"Prof réaliste. Court, précis, utile.",true);
+    };
+
+let motionState={phase:0,stableAt:0,keyScore:100};
+function resetMotion(){
+ motionState={phase:0,stableAt:0,keyScore:100};
+ $("prog").style.width="0";$("timerHud").classList.remove("active");
+ $("phaseLabel").textContent=cur().motion?"MOUVEMENT":"POSITION";
+ $("timer").textContent=cur().motion?"Départ":"0.0 / 2.0 s";
+}
+function setPhase(label,pct){
+ $("timer").textContent=label;$("prog").style.width=pct+"%";$("timerHud").classList.toggle("active",pct>20);
+}
+function shortCorrection(r){
+ if(!r.bads.length)return "";
+ let t=r.bads[0];
+ if(["demiplie","grandplie"].includes(cur().type)&&/plus loin|profond|Remonte un peu|Plie réellement/.test(t))return "";
+ return t;
+}
+function liveDisplay(r){
+ $("score").textContent=r.score+"%";$("validity").textContent=r.valid?"Lecture fiable":"À ajuster";
+ $("good1").textContent=r.goods[0]||"Le mouvement est lisible.";
+ $("good2").textContent=r.goods[1]||"Je suis les articulations utiles.";
+ const c=shortCorrection(r);
+ $("bad1").textContent=c||"Pas de correction prioritaire.";
+ $("bad2").textContent=r.bads.find(x=>x!==c&&!/profond|plus loin/.test(x))||"—";
+ $("coachText").textContent=c||"Bien.";
+ if(c)speak(c);
+ return c;
+}
+function celebrate(){
+ if(advanceLock)return;advanceLock=true;
+ successSound();document.querySelector(".stage").classList.add("successFlash");
+ setTimeout(()=>document.querySelector(".stage").classList.remove("successFlash"),750);
+ const nextIdx=(idx+1)%P.length,nextP=P[nextIdx],bravo=pick(bravoLines[styleKey()]);
+ $("score").textContent="100%";$("validity").textContent="Réussi ✓";$("prog").style.width="100%";$("timer").textContent="BRAVO ✓";
+ $("coachText").textContent=bravo+" Ensuite : "+nextP.name+".";
+ speak(bravo+" Ensuite : "+nextP.name+".",true);
+ setTimeout(()=>{selectPose(nextIdx,false);resetMotion();setTimeout(()=>announcePose(true),450)},1300);
+}
+function mm(lm){
+ const LH=lm[23],RH=lm[24],LK=lm[25],RK=lm[26],LA=lm[27],RA=lm[28];
+ const sw=optionalVisible(lm,[11,12])?Math.max(.07,dist(lm[11],lm[12])):Math.max(.10,dist(LH,RH)*1.3);
+ const lk=angle(LH,LK,LA),rk=angle(RH,RK,RA),avg=(lk+rk)/2,feet=Math.abs(LA.x-RA.x)/sw;
+ let heelRise=0;if(optionalVisible(lm,[29,30,31,32]))heelRise=((lm[31].y-lm[29].y)+(lm[32].y-lm[30].y))/2;
+ return{LH,RH,LK,RK,LA,RA,sw,lk,rk,avg,feet,heelRise,hip:mid(LH,RH)};
+}
+function handleStatic(lm,r){
+ liveDisplay(r);
+ if(r.valid&&r.score>=75){
+   if(!motionState.stableAt)motionState.stableAt=performance.now();
+   const t=(performance.now()-motionState.stableAt)/1000;
+   $("phaseLabel").textContent="POSITION";$("timer").textContent=Math.min(t,2).toFixed(1)+" / 2.0 s";$("prog").style.width=Math.min(100,t/2*100)+"%";$("timerHud").classList.add("active");
+   if(t>=2)celebrate();
+ }else{
+   motionState.stableAt=0;$("timer").textContent="Cherche la forme";$("prog").style.width="0";$("timerHud").classList.remove("active");
+ }
+}
+function handleMotion(lm,r){
+ const p=cur(),m=mm(lm),corr=liveDisplay(r);
+ motionState.keyScore=Math.min(motionState.keyScore,r.score);
+ $("phaseLabel").textContent="MOUVEMENT";
+
+ if(p.type==="demiplie"||p.type==="grandplie"){
+   const low=p.type==="grandplie"?132:150;
+   if(motionState.phase===0){setPhase("Départ — jambes longues",10);if(m.avg>154){motionState.phase=1;motionState.keyScore=100}}
+   else if(motionState.phase===1){setPhase("Descends",45);if(m.avg<low)motionState.phase=2}
+   else{setPhase("Remonte",82);if(m.avg>153){if(motionState.keyScore>=72)celebrate();else{resetMotion();speak(corr||"Encore une fois. Garde mieux l'alignement.",true)}}}
+   return;
+ }
+ if(p.type==="tendufront"||p.type==="tenduside"){
+   const closed=m.feet<.82,ext=p.type==="tenduside"?m.feet>1.15:(Math.abs((m.LA.z||0)-(m.RA.z||0))>.045||m.feet>.95);
+   if(motionState.phase===0){setPhase("Départ",10);if(closed&&m.avg>151){motionState.phase=1;motionState.keyScore=100}}
+   else if(motionState.phase===1){
+     setPhase("Brosse et allonge",52);
+     if(ext){
+       motionState.phase=2;
+       const work=p.type==="tenduside"?(Math.abs(m.LA.x-m.hip.x)>Math.abs(m.RA.x-m.hip.x)?"L":"R"):(Math.abs(m.LA.z||0)>Math.abs(m.RA.z||0)?"L":"R");
+       const pa=pointAngle(lm,work);
+       if(pa!==null&&pa<138){motionState.keyScore-=14;$("coachText").textContent="Va jusqu'au bout du pied : cheville, cou-de-pied, orteils.";speak("Va jusqu'au bout du pied. Pointe vraiment jusqu'aux orteils.",true)}
+     }
+   }else{setPhase("Referme proprement",84);if(closed){if(motionState.keyScore>=72)celebrate();else{resetMotion();speak("Encore une fois. Plus long, plus précis.",true)}}}
+   return;
+ }
+ if(p.type==="releve"){
+   if(motionState.phase===0){setPhase("Talons au sol",10);if(m.heelRise<.012){motionState.phase=1;motionState.keyScore=100}}
+   else if(motionState.phase===1){setPhase("Monte sur demi-pointe",55);if(m.heelRise>.02){motionState.phase=2;if(m.lk<153||m.rk<153){motionState.keyScore-=15;speak("Allonge les genoux au sommet.",true)}}}
+   else{setPhase("Redescends avec contrôle",85);if(m.heelRise<.012){if(motionState.keyScore>=72)celebrate();else resetMotion()}}
+   return;
+ }
+ if(p.type==="passe"||p.type==="retire"){
+   const d=Math.min(dist(m.LA,m.RK)/m.sw,dist(m.RA,m.LK)/m.sw);
+   if(motionState.phase===0){setPhase("Monte au retiré",25);motionState.phase=1}
+   else if(motionState.phase===1){setPhase("Cherche le genou",58);if(d<.8){motionState.phase=2;motionState.stableAt=performance.now()}}
+   else{setPhase("Retiré trouvé",88);if(performance.now()-motionState.stableAt>650){if(r.score>=72)celebrate();else resetMotion()}}
+   return;
+ }
+ if(p.type==="portdebras"){
+   const up=lm[15].y<lm[11].y-.05&&lm[16].y<lm[12].y-.05;
+   if(motionState.phase===0){setPhase("Bras bas",10);motionState.phase=1}
+   else if(motionState.phase===1){setPhase("Monte depuis le dos",55);if(up){motionState.phase=2;motionState.stableAt=performance.now()}}
+   else{setPhase("Ligne trouvée",88);if(performance.now()-motionState.stableAt>650){if(r.score>=72)celebrate();else resetMotion()}}
+   return;
+ }
+ handleStatic(lm,r);
+}
+function renderResult(r,lm){cur().motion?handleMotion(lm,r):handleStatic(lm,r)}
+
+let pose=null;
+try{
+ pose=new Pose({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`});
+ pose.setOptions({modelComplexity:1,smoothLandmarks:true,minDetectionConfidence:.48,minTrackingConfidence:.48});
+ pose.onResults(res=>{
+   const c=$("canvas"),ctx=c.getContext("2d");
+   if(c.width!==$("video").videoWidth||c.height!==$("video").videoHeight){c.width=$("video").videoWidth||1280;c.height=$("video").videoHeight||720}
+   ctx.clearRect(0,0,c.width,c.height);
+   if(!res.poseLandmarks){
+     $("tracker").textContent="Analyse corporelle : corps non détecté";$("tracker").className="track warn";$("score").textContent="—";$("validity").textContent="Je cherche les repères utiles";holdStart=0;$("prog").style.width="0";$("timer").textContent="0.0 / 5.0 s";return;
+   }
+   // Live green body skeleton — same mechanism as the working phone/core version.
+   drawConnectors(ctx,res.poseLandmarks,POSE_CONNECTIONS,{color:"#62df74",lineWidth:5});
+   drawLandmarks(ctx,res.poseLandmarks,{color:"#fff",fillColor:"#62df74",radius:4});
+   const vis=relevantVisible(res.poseLandmarks,cur());
+   if(!vis.ok){
+     $("tracker").textContent="Analyse corporelle : repères utiles incomplets";$("tracker").className="track warn";
+     $("score").textContent="—";$("validity").textContent="Je n'ai pas besoin de tout le corps";
+     const p=cur();
+     const msg=p.type==="portdebras"?"Montre-moi surtout les épaules, les coudes et les poignets.":"Montre-moi surtout le bassin, les genoux et les pieds pour cet exercice.";
+     $("coachText").textContent=msg;$("bad1").textContent=msg;$("bad2").textContent="Tu peux laisser les parties non utiles hors cadre.";
+     holdStart=0;$("prog").style.width="0";$("timer").textContent="0.0 / 5.0 s";$("timerHud").classList.remove("active");return;
+   }
+   poseFrames++;$("tracker").textContent="Analyse corporelle : CORPS LU ✓ · "+poseFrames;$("tracker").className="track good";
+   renderResult(techAnalyze(res.poseLandmarks),res.poseLandmarks);
+ });
+}catch(e){$("tracker").textContent="Le moteur de pose n'a pas chargé";$("tracker").className="track warn"}
+
+async function loop(){
+ if(!started)return;
+ if($("video").readyState>=2&&!busy&&pose){busy=true;try{await pose.send({image:$("video")})}catch(e){}busy=false}
+ requestAnimationFrame(loop);
+}
+$("start").onclick=async()=>{
+ try{
+   stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:1280},height:{ideal:720}},audio:false});
+   $("video").srcObject=stream;await $("video").play();started=true;$("overlay").style.display="none";$("tracker").textContent="Analyse corporelle : démarrage…";loop();setTimeout(()=>announcePose(true),700);
+ }catch(e){$("overlay").innerHTML="<div class='startbox'><h2>Caméra bloquée</h2><p>Autorise la caméra pour cette page HTTPS dans Chrome, puis recharge.</p></div>"}
+};
+buildStrip();selectPose(0,false);resetMotion();
 </script>
 </body></html>
