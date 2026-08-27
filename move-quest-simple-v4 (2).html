@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0e14">
+<title>DANCE WORLD QUEST</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--bg:#080b12;--panel:#101722;--line:#303b4d;--text:#f7f8fb;--muted:#aeb8c7;--v:#9567ff;--g:#58d678;--r:#ff7468;--b:#62c8ff;--y:#ffc75b}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;overflow:hidden}
+button,input{font:inherit}button{color:white;background:#171e2a;border:1px solid #394456;border-radius:12px;padding:10px 12px}button.primary{background:linear-gradient(135deg,#7646e8,#a26fff);border:0}button:disabled{opacity:.42}
+.app{height:100dvh;display:grid;grid-template-rows:58px minmax(0,1fr) 64px}
+header{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-bottom:1px solid #263141;z-index:1000;background:#080b12}
+.brand{font-weight:950;font-size:20px}.brand b{color:#c7a8ff}.brand small{display:block;color:var(--muted);font-size:9px;font-weight:500}
+.chips{display:flex;gap:5px}.chip{min-width:52px;text-align:center;background:#121923;border:1px solid #303a4b;border-radius:10px;padding:5px}.chip span{display:block;font-size:7px;color:#9da7b6}.chip b{font-size:13px}
+main{position:relative;min-height:0}.screen{position:absolute;inset:0;display:none;overflow:auto;background:var(--bg)}.screen.active{display:block}#mapScreen{overflow:hidden}
+#map{position:absolute;inset:0}
+.topHud{position:absolute;z-index:700;top:8px;left:8px;right:8px;display:flex;gap:6px;pointer-events:none}.topHud>*{pointer-events:auto}
+.gps{flex:1;background:#090d14ee;border:1px solid #394456;border-radius:13px;padding:8px 10px}.gps b{display:block;font-size:12px}.gps small{font-size:9px;color:#b9c2cf}
+.mapBtn{min-width:44px;background:#090d14ee}
+.sheet{position:absolute;z-index:700;left:8px;right:8px;bottom:8px;background:#0b1018f4;border:1px solid #3a4558;border-radius:17px;padding:10px}
+.row{display:flex;justify-content:space-between;gap:8px}.type{display:inline-block;padding:4px 8px;border-radius:999px;background:#211832;color:#d7c3ff;font-size:8px;font-weight:900}
+.sheet h2{margin:5px 0 3px;font-size:17px}.sheet p{margin:0;font-size:10px;color:#bdc6d3;line-height:1.4}.meta{display:flex;gap:5px;flex-wrap:wrap;margin:7px 0}.pill{background:#151c28;border:1px solid #303a4c;border-radius:999px;padding:5px 7px;font-size:9px;color:#c5ceda}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:6px}.full{grid-column:1/-1}
+.pad{padding:11px}.cards{display:grid;gap:8px;margin-top:8px}.card{background:#0f1621;border:1px solid #303a4b;border-radius:14px;padding:10px}.card h3{margin:4px 0;font-size:14px}.card p{margin:0;font-size:10px;color:#b8c2cf}.hero{background:linear-gradient(145deg,#1a1430,#101720);border:1px solid #39304f;border-radius:16px;padding:12px}.hero h1{margin:0 0 4px;font-size:20px}.hero p{margin:0;font-size:11px;color:#c0c8d4;line-height:1.45}
+.cameraCard{background:#0f1621;border:1px solid #303a4b;border-radius:16px;overflow:hidden}.camStage{height:50vh;min-height:300px;position:relative;background:#05070b;display:grid;place-items:center}.camStage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}#live{transform:scaleX(-1)}#playback{display:none}.placeholder{text-align:center;padding:20px}.placeholder div{font-size:44px}.placeholder p{font-size:11px;color:#b8c2cf}
+.music{margin:9px;background:#101722;border:1px solid #303a4b;border-radius:14px;padding:10px}.music h3{margin:0 0 6px;font-size:13px}.musicRow{display:grid;grid-template-columns:1fr auto;gap:6px}.music input{width:100%;color:#ccd3df;font-size:10px}
+.controls,.share{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 9px 9px}
+.profileGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}.pbox{background:#0f1621;border:1px solid #303a4b;border-radius:14px;padding:10px}.pbox span{display:block;font-size:8px;color:#aeb7c5}.pbox b{font-size:22px}
+nav{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #293242;padding:6px 6px max(6px,env(safe-area-inset-bottom));z-index:1000;background:#080b12}nav button{background:transparent;border:0;border-radius:10px;color:#8f99a8;font-size:8px;padding:4px}nav button span{display:block;font-size:18px}nav button.active{background:#171323;color:#d7c4ff}
+.questIcon{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;border:3px solid white;font-size:16px;box-shadow:0 6px 18px #0008}.questIcon.dance{background:var(--v)}.questIcon.group{background:var(--y);color:#111}.questIcon.speed{background:var(--r)}.questIcon.special{background:#ffd54a;color:#111;box-shadow:0 0 0 5px #ffd54a33,0 6px 18px #0008}.questIcon.family{background:#58d678;color:#07120a}.questIcon.object{background:#62c8ff;color:#071018}.questIcon.duo{background:#ff9f68;color:#16100b}.questIcon.battle{background:#ff5f7c;color:white}.questIcon.mood{background:#69e0c1;color:#07120f}.freeMission{border-color:#365d45;background:#0d1d15}.creativeMission{border-color:#51406e;background:#151020}.participantBox{display:none;margin:9px;background:#171223;border:1px solid #4d3c68;border-radius:14px;padding:10px}.participantRow{display:flex;align-items:center;justify-content:space-between;gap:10px}.participantCount{display:flex;align-items:center;gap:8px}.participantCount b{min-width:28px;text-align:center;font-size:20px}
+.meIcon{width:22px;height:22px;border-radius:50%;background:var(--b);border:4px solid white;box-shadow:0 0 0 10px rgba(98,200,255,.16)}
+.timer{font-weight:900;color:#ffcf6a}.toast{position:fixed;z-index:2000;left:50%;transform:translateX(-50%);bottom:70px;background:#101722;border:1px solid #3a4658;border-radius:999px;padding:9px 12px;font-size:10px;display:none;max-width:90%;text-align:center}.toast.show{display:block}
+.leaflet-control-attribution{font-size:8px!important}.leaflet-control-zoom{margin-top:58px!important}
+@media(min-width:800px){.app{max-width:700px;margin:auto}.sheet{left:auto;width:390px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand">DANCE <b>WORLD QUEST</b><small>explore · danse · relève les défis · v7</small></div>
+  <div class="chips"><div class="chip"><span>LEVEL</span><b id="levelTop">1</b></div><div class="chip"><span>XP</span><b id="xpTop">0</b></div></div>
+</header>
+
+<main>
+<section id="mapScreen" class="screen active">
+  <div id="map"></div>
+  <div class="topHud">
+    <div class="gps"><b id="gpsTitle">Recherche GPS…</b><small id="gpsSub">Autorise ta position</small></div>
+    <button id="country" class="mapBtn">🇮🇱</button><button id="recenter" class="mapBtn">◎</button>
+  </div>
+  <div class="sheet">
+    <div class="row"><div><span id="type" class="type">MISSION</span><h2 id="title">En attente</h2><p id="desc">Trouve une mission sur la carte.</p></div><b id="reward" style="color:#ffd06a">+0 XP</b></div>
+    <div class="meta"><span id="distance" class="pill">—</span><span id="area" class="pill">—</span><span id="speedTimer" class="pill timer" style="display:none">00:00</span></div>
+    <div class="actions">
+      <button id="next">Mission suivante</button>
+      <button id="action" class="primary" disabled>Approche-toi</button>
+      <button id="startRace" class="full" style="display:none">⚡ Démarrer la course</button>
+    </div>
+  </div>
+</section>
+
+<section id="missionsScreen" class="screen"><div class="pad">
+  <div class="hero"><h1>Missions autour de toi</h1><p>Missions près de toi, défis créatifs et missions famille jouables n’importe où.</p></div>
+  <div id="missionList" class="cards"></div>
+</div></section>
+
+<section id="cameraScreen" class="screen"><div class="pad">
+  <div class="hero"><h1 id="camTitle">Aucune mission</h1><p id="camDesc">Choisis d’abord une mission sur la carte.</p></div>
+  <div class="cameraCard" style="margin-top:8px">
+    <div class="camStage"><video id="live" autoplay muted playsinline></video><video id="playback" controls playsinline></video><div id="placeholder" class="placeholder"><div>🎥</div><h2>Caméra DANCE WORLD QUEST</h2><p>Filme ta danse au spot.</p></div></div>
+    <div class="music"><h3>🎵 Musique</h3><div class="musicRow"><input id="musicFile" type="file" accept="audio/*"><button id="musicToggle">▶︎</button></div><audio id="music" preload="metadata"></audio></div>
+    <div id="participantBox" class="participantBox">
+      <div class="participantRow">
+        <div><b>👥 Participants</b><div style="font-size:9px;color:#aeb8c7;margin-top:3px">Cette mission exige au moins 2 personnes.</div></div>
+        <div class="participantCount"><button id="playersMinus">−</button><b id="playersCount">1</b><button id="playersPlus">+</button></div>
+      </div>
+    </div>
+    <div class="controls"><button id="openCam">Ouvrir caméra</button><button id="rec" disabled>● Filmer</button><button id="stop" disabled>■ Stop</button><button id="redo" disabled>↺ Refaire</button><button id="validate" class="primary full" disabled>Valider la mission</button></div>
+    <div class="share"><button id="instagram" disabled>Instagram</button><button id="facebook" disabled>Facebook</button></div>
+  </div>
+</div></section>
+
+<section id="profileScreen" class="screen"><div class="pad">
+  <div class="hero"><h1>Profil DANCE WORLD QUEST</h1><p>Simple : joue, gagne des XP, monte de niveau.</p></div>
+  <div class="profileGrid"><div class="pbox"><span>XP</span><b id="pXP">0</b></div><div class="pbox"><span>LEVEL</span><b id="pLevel">1</b></div><div class="pbox"><span>MISSIONS</span><b id="pDone">0</b></div><div class="pbox"><span>COURSES</span><b id="pRaces">0</b></div></div>
+</div></section>
+</main>
+
+<nav><button class="active" data-screen="mapScreen"><span>🗺️</span>CARTE</button><button data-screen="missionsScreen"><span>⚡</span>MISSIONS</button><button data-screen="cameraScreen"><span>🎥</span>CAMÉRA</button><button data-screen="profileScreen"><span>👤</span>PROFIL</button></nav>
+</div>
+<div id="toast" class="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const S={map:null,pos:null,missions:[],selected:0,active:null,me:null,markers:[],zones:[],stream:null,recorder:null,chunks:[],videoBlob:null,videoURL:null,musicURL:null,audioCtx:null,mixDest:null,raceStart:null,raceTimer:null,players:1,profile:loadProfile()};window.S=S;
+function loadProfile(){try{return JSON.parse(localStorage.getItem("moveQuestSimple3"))||{xp:0,done:[],races:0}}catch(e){return{xp:0,done:[],races:0}}}
+function save(){localStorage.setItem("moveQuestSimple3",JSON.stringify(S.profile));renderTop()}
+function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove("show"),2400)}
+function level(){return Math.floor(S.profile.xp/500)+1}
+const rad=x=>x*Math.PI/180;
+function dist(a,b){const R=6371000,dla=rad(b.lat-a.lat),dlo=rad(b.lon-a.lon),la1=rad(a.lat),la2=rad(b.lat);const h=Math.sin(dla/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dlo/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
+function offset(lat,lon,n,e){return{lat:lat+n/111320,lon:lon+e/(111320*Math.cos(rad(lat)))}}
+function fmt(m){return m<1000?Math.round(m)+" m":(m/1000).toFixed(1)+" km"}
+function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function rng32(a){return function(){let t=a+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+function weighted(r,arr){let total=arr.reduce((s,x)=>s+x.w,0),n=r()*total;for(const x of arr){n-=x.w;if(n<=0)return x}return arr[arr.length-1]}
+function weightedType(r){return weighted(r,TYPES)}
+function missionFromType(t,r){
+ if(t.type==="family"){
+   const f=FAMILY_MISSIONS[Math.floor(r()*FAMILY_MISSIONS.length)];
+   return {...t,title:f.title,desc:f.desc};
+ }
+ if(t.type==="mood"){
+   const mood=MOODS[Math.floor(r()*MOODS.length)];
+   return {...t,title:"Mood Challenge · "+mood.name,desc:"Danse 15 secondes en incarnant : "+mood.name+". "+mood.cue};
+ }
+ return t;
+}
+const HUBS=[
+{name:"Tel Aviv–Jaffa",lat:32.0853,lon:34.7818,w:19,s:14000},{name:"Jerusalem",lat:31.7683,lon:35.2137,w:17,s:15000},{name:"Haifa",lat:32.7940,lon:34.9896,w:8,s:12000},{name:"Rishon LeZion",lat:31.9730,lon:34.7925,w:6,s:9000},{name:"Petah Tikva",lat:32.0840,lon:34.8878,w:6,s:8500},{name:"Ashdod",lat:31.8014,lon:34.6435,w:6,s:9500},{name:"Netanya",lat:32.3215,lon:34.8532,w:5,s:9000},{name:"Beersheba",lat:31.2529,lon:34.7915,w:5,s:11000},{name:"Holon",lat:32.0158,lon:34.7790,w:4,s:7000},{name:"Ramat Gan",lat:32.0684,lon:34.8248,w:4,s:6000},{name:"Rehovot",lat:31.8928,lon:34.8113,w:4,s:7500},{name:"Ashkelon",lat:31.6688,lon:34.5743,w:4,s:9000},{name:"Kfar Saba",lat:32.1782,lon:34.9076,w:3,s:7500},{name:"Herzliya",lat:32.1624,lon:34.8447,w:3,s:7000},{name:"Hadera",lat:32.4340,lon:34.9196,w:3,s:8000},{name:"Modiin",lat:31.8969,lon:35.0104,w:3,s:8500},{name:"Nazareth",lat:32.6996,lon:35.3035,w:3,s:8000},{name:"Acre",lat:32.9279,lon:35.0839,w:2,s:7000},{name:"Nahariya",lat:33.0085,lon:35.0981,w:2,s:7000},{name:"Tiberias",lat:32.7940,lon:35.5312,w:2,s:7500},{name:"Afula",lat:32.6076,lon:35.2894,w:2,s:8000},{name:"Karmiel",lat:32.9199,lon:35.2901,w:2,s:7500},{name:"Kiryat Shmona",lat:33.2073,lon:35.5708,w:1.4,s:7000},{name:"Sderot",lat:31.5250,lon:34.5969,w:1.5,s:6500},{name:"Netivot",lat:31.4230,lon:34.5890,w:1.5,s:6500},{name:"Dimona",lat:31.0708,lon:35.0331,w:1.2,s:7000},{name:"Arad",lat:31.2589,lon:35.2128,w:1.1,s:7000},{name:"Mitzpe Ramon",lat:30.6102,lon:34.8019,w:.6,s:5500},{name:"Eilat",lat:29.5577,lon:34.9519,w:2.4,s:9500}];
+const TYPES=[
+{type:"dance",title:"Dance Spot",desc:"Va au spot et filme 15 secondes de danse.",r:80,xp:200,w:24},
+{type:"group",title:"Meet & Move",desc:"Mission collective : retrouve d’autres joueurs au même spot.",r:95,xp:300,w:12},
+{type:"speed",title:"Flash Race",desc:"Démarre la course puis atteins ce point le plus vite possible.",r:90,xp:350,w:14},
+{type:"family",title:"Family Move",desc:"Mission famille : un petit défi simple à faire à plusieurs.",r:95,xp:260,w:12},
+{type:"object",title:"Dance With an Object",desc:"Trouve un objet sur place — banc, mur, arbre, chaise… — et intègre-le vraiment dans ta danse.",r:90,xp:280,w:12},
+{type:"duo",title:"2 Persons Dance",desc:"Vous devez être au moins 2. Créez ensemble une mini-danse de 15 secondes.",r:95,xp:330,w:9,minPlayers:2},
+{type:"battle",title:"Dance Battle",desc:"À 2 ou plus : chacun a son moment, puis terminez ensemble face caméra.",r:100,xp:420,w:7,minPlayers:2},
+{type:"mood",title:"Mood Challenge",desc:"L’app choisit une émotion ou une contrainte à interpréter en dansant.",r:90,xp:300,w:8},
+{type:"special",title:"Golden Spot",desc:"Mission spéciale rare : réalise une danse de 30 secondes au spot.",r:100,xp:600,w:2}
+];
+const FAMILY_MISSIONS=[
+{title:"Family Freeze",desc:"Dansez ensemble 10 secondes puis faites tous un freeze en même temps."},
+{title:"Follow the Leader",desc:"Une personne invente 3 mouvements et les autres les copient."},
+{title:"Family Circle",desc:"Faites un petit cercle et dansez ensemble pendant 15 secondes."},
+{title:"Mini Dance Battle",desc:"Chacun fait son meilleur mouvement, puis tout le monde finit ensemble."}
+];
+const FAMILY_ANYWHERE=[
+{id:"family-free-freeze",type:"familyfree",title:"Family Freeze",desc:"Dansez ensemble puis faites tous un freeze au même moment.",xp:160,area:"N’importe où",free:true},
+{id:"family-free-leader",type:"familyfree",title:"Follow the Leader",desc:"Une personne invente 3 mouvements et les autres les copient.",xp:180,area:"N’importe où",free:true},
+{id:"family-free-circle",type:"familyfree",title:"Family Circle",desc:"Faites un cercle et dansez ensemble pendant 15 secondes.",xp:180,area:"N’importe où",free:true},
+{id:"family-free-battle",type:"familyfree",title:"Mini Dance Battle",desc:"Chacun montre son meilleur mouvement, puis tout le monde finit ensemble.",xp:200,area:"N’importe où",free:true,minPlayers:2}
+];
+const MOODS=[
+{name:"JOIE",cue:"Tout doit sembler léger et contagieux."},
+{name:"COLÈRE",cue:"Mouvements nets, puissants, sans te faire mal."},
+{name:"RALENTI",cue:"Bouge comme si le temps était presque arrêté."},
+{name:"ROBOT",cue:"Transforme ton corps en machine."},
+{name:"ÉLÉGANT",cue:"Cherche la précision et les lignes."},
+{name:"ABSURDE",cue:"Plus c’est étrange, mieux c’est."},
+{name:"MYSTÈRE",cue:"Fais croire qu’il y a une histoire cachée."}
+];
+function label(t){return{dance:"DANSE",group:"COLLECTIF",speed:"VITESSE",family:"FAMILLE",familyfree:"FAMILLE LIBRE",object:"OBJET",duo:"DUO",battle:"BATTLE",mood:"MOOD",special:"SPÉCIALE"}[t]}
+function emoji(t){return{dance:"💃",group:"👥",speed:"⚡",family:"👨‍👩‍👧‍👦",familyfree:"🏠",object:"🪑",duo:"🕺🕺",battle:"🔥",mood:"🎭",special:"🌟"}[t]}
+function initMap(){
+ S.map=L.map("map",{zoomControl:true,preferCanvas:true}).setView([31.8,34.9],8);
+ const osm=L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap contributors",crossOrigin:true});
+ const fallback=L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{maxZoom:20,subdomains:"abcd",attribution:"© OpenStreetMap © CARTO"});
+ let switched=false;osm.on("tileerror",()=>{if(!switched){switched=true;S.map.removeLayer(osm);fallback.addTo(S.map)}});osm.addTo(S.map)
+}
+function makeMissions(){
+ const day=new Date().toISOString().slice(0,10),r=rng32(hash("move-"+day)),out=[];
+ for(let i=0;i<70;i++){
+   const h=weighted(r,HUBS),angle=r()*Math.PI*2,radius=Math.sqrt(r())*h.s*(r()<.85?1:2);
+   const t=missionFromType(weightedType(r),r);
+   out.push({id:`${day}-${i}`,type:t.type,title:t.title,desc:t.desc,p:offset(h.lat,h.lon,Math.cos(angle)*radius,Math.sin(angle)*radius),r:t.r,xp:t.xp,minPlayers:t.minPlayers||1,area:h.name});
+ }
+ if(S.pos){
+   const key=S.pos.lat.toFixed(3)+":"+S.pos.lon.toFixed(3);
+   const lr=rng32(hash(day+key));
+   const localPlan=[
+     {min:35,max:70,type:"dance"},
+     {min:80,max:160,type:"object"},
+     {min:140,max:260,type:"family"},
+     {min:220,max:360,type:"mood"},
+     {min:300,max:480,type:"duo"},
+     {min:420,max:620,type:"speed"},
+     {min:520,max:760,type:"battle"},
+     {min:650,max:900,type:"group"},
+     {min:800,max:1100,type:null},
+     {min:950,max:1350,type:"special"}
+   ];
+   localPlan.forEach((plan,i)=>{
+     const angle=lr()*Math.PI*2,radius=plan.min+lr()*(plan.max-plan.min);
+     let base=plan.type?TYPES.find(x=>x.type===plan.type):weightedType(lr);
+     const t=missionFromType(base,lr);
+     out.push({id:`${day}-local-${key}-${i}`,type:t.type,title:t.title,desc:t.desc,p:offset(S.pos.lat,S.pos.lon,Math.cos(angle)*radius,Math.sin(angle)*radius),r:t.r,xp:t.xp,minPlayers:t.minPlayers||1,area:"Près de toi"});
+   });
+ }
+ S.missions=out;S.selected=nearest();renderAll()
+}
+function nearest(){if(!S.pos)return 0;let bi=0,bd=Infinity;S.missions.forEach((m,i)=>{const d=dist(S.pos,m.p);if(d<bd){bd=d;bi=i}});return bi}
+function icon(m){return L.divIcon({className:"",html:`<div class="questIcon ${m.type}">${emoji(m.type)}</div>`,iconSize:[38,38],iconAnchor:[19,19]})}
+function meIcon(){return L.divIcon({className:"",html:'<div class="meIcon"></div>',iconSize:[22,22],iconAnchor:[11,11]})}
+
+function renderMissionList(){
+ const box=$("missionList");if(!box)return;box.innerHTML="";
+
+ const freeHead=document.createElement("div");freeHead.className="card freeMission";
+ freeHead.innerHTML='<span class="type">SANS LIEU PRÉCIS</span><h3>🏠 Missions famille — joue n’importe où</h3><p>Chez toi, au parc, à la plage… aucun GPS nécessaire.</p>';
+ box.appendChild(freeHead);
+ FAMILY_ANYWHERE.forEach((m,i)=>{
+   const e=document.createElement("div");e.className="card freeMission";
+   e.innerHTML=`<div class="row"><div><span class="type">FAMILLE LIBRE</span><h3>🏠 ${m.title}</h3></div><b style="color:#ffd06a">+${m.xp}</b></div><p>${m.desc}</p><div class="meta"><span class="pill">📍 N’importe où</span></div><button class="primary" style="width:100%" data-free="${i}">Jouer maintenant</button>`;
+   box.appendChild(e)
+ });
+ box.querySelectorAll("[data-free]").forEach(b=>b.onclick=()=>startFreeMission(FAMILY_ANYWHERE[+b.dataset.free]));
+
+ const mapHead=document.createElement("div");mapHead.className="card creativeMission";
+ mapHead.innerHTML='<span class="type">SUR LA CARTE</span><h3>🌍 Missions autour de toi</h3><p>Danse, objet, duo, battle, mood, vitesse, famille et missions spéciales.</p>';
+ box.appendChild(mapHead);
+
+ if(!S.missions.length){box.innerHTML+='<div class="card"><p>Recherche des missions proches…</p></div>';return}
+ const sorted=[...S.missions].map((m,i)=>({m,i,d:S.pos?dist(S.pos,m.p):Infinity})).sort((a,b)=>a.d-b.d).slice(0,35);
+ sorted.forEach(({m,i,d})=>{
+   const e=document.createElement("div");e.className="card";
+   const people=m.minPlayers>1?`<span class="pill">👥 ${m.minPlayers}+ personnes</span>`:"";
+   e.innerHTML=`<div class="row"><div><span class="type">${label(m.type)}</span><h3>${emoji(m.type)} ${m.title}</h3></div><b style="color:#ffd06a">+${m.xp}</b></div>
+   <p>${m.desc}</p>
+   <div class="meta"><span class="pill">${isFinite(d)?fmt(d):"GPS…"}</span><span class="pill">${m.area}</span><span class="pill">${m.r} m</span>${people}</div>
+   <button class="primary" style="width:100%" data-mission="${i}">Voir sur carte</button>`;
+   box.appendChild(e)
+ });
+ box.querySelectorAll("[data-mission]").forEach(b=>b.onclick=()=>{S.selected=+b.dataset.mission;show("mapScreen");renderSelected();const m=S.missions[S.selected];S.map.flyTo([m.p.lat,m.p.lon],16)})
+}
+function setPlayers(n){S.players=Math.max(1,Math.min(9,n));$("playersCount").textContent=S.players}
+function prepareMissionCamera(m){
+ S.active=m;setPlayers(1);
+ const need=(m.minPlayers||1)>1;
+ $("participantBox").style.display=need?"block":"none";
+ $("camTitle").textContent=m.title;
+ $("camDesc").textContent=m.free?m.desc+" · Aucun GPS nécessaire.":m.desc;
+ show("cameraScreen");
+}
+function startFreeMission(m){prepareMissionCamera({...m,p:null,r:0});toast("Mission libre lancée 🏠")}
+
+function renderAll(){
+ S.markers.forEach(x=>S.map.removeLayer(x));S.zones.forEach(x=>S.map.removeLayer(x));S.markers=[];S.zones=[];
+ if(S.me)S.map.removeLayer(S.me);if(S.pos)S.me=L.marker([S.pos.lat,S.pos.lon],{icon:meIcon(),interactive:false}).addTo(S.map);
+ S.missions.forEach((m,i)=>{S.zones.push(L.circle([m.p.lat,m.p.lon],{radius:m.r,color:i===S.selected?"#58d678":"#9567ff",weight:2,fillOpacity:.06}).addTo(S.map));S.markers.push(L.marker([m.p.lat,m.p.lon],{icon:icon(m)}).addTo(S.map).on("click",()=>{S.selected=i;renderSelected();S.map.flyTo([m.p.lat,m.p.lon],16)}))});renderSelected();renderTop();renderMissionList()
+}
+function renderSelected(){
+ if(!S.missions.length)return;const m=S.missions[S.selected],d=S.pos?dist(S.pos,m.p):Infinity,ok=S.pos&&d<=m.r+Math.max(20,S.pos.accuracy||0);
+ $("type").textContent=label(m.type);$("title").textContent=m.title;$("desc").textContent=m.desc;$("reward").textContent="+"+m.xp+" XP";$("distance").textContent=isFinite(d)?fmt(d):"GPS…";$("area").textContent=m.area;
+ $("startRace").style.display=m.type==="speed"&&!S.raceStart?"block":"none";
+ $("speedTimer").style.display=m.type==="speed"&&S.raceStart?"inline-block":"none";
+ $("action").disabled=!ok;$("action").textContent=ok?(m.type==="speed"?"Arrivée ✓":"Défi débloqué ✓"):"Approche-toi"
+}
+function renderTop(){$("xpTop").textContent=S.profile.xp;$("levelTop").textContent=level();$("pXP").textContent=S.profile.xp;$("pLevel").textContent=level();$("pDone").textContent=S.profile.done.length;$("pRaces").textContent=S.profile.races||0}
+function gpsOK(p){
+ const first=!S.pos;S.pos={lat:p.coords.latitude,lon:p.coords.longitude,accuracy:p.coords.accuracy};$("gpsTitle").textContent="GPS actif ✓";$("gpsSub").textContent="Précision ≈ "+Math.round(S.pos.accuracy)+" m";
+ if(first||!S.missions.length){makeMissions();S.map.setView([S.pos.lat,S.pos.lon],15)}else{if(S.me)S.me.setLatLng([S.pos.lat,S.pos.lon]);renderSelected();renderMissionList()}
+}
+function getGPS(){if(!navigator.geolocation){$("gpsTitle").textContent="GPS indisponible";makeMissions();return}navigator.geolocation.getCurrentPosition(gpsOK,e=>{$("gpsTitle").textContent="GPS bloqué";$("gpsSub").textContent=e.message;makeMissions()},{enableHighAccuracy:true,timeout:15000,maximumAge:0});navigator.geolocation.watchPosition(gpsOK,()=>{}, {enableHighAccuracy:true,maximumAge:2500,timeout:15000})}
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("active",s.id===id));document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.screen===id));if(id==="mapScreen")setTimeout(()=>S.map.invalidateSize(),80)}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>show(b.dataset.screen));
+$("country").onclick=()=>S.map.fitBounds([[29.45,34.2],[33.35,35.9]],{padding:[15,15]});$("recenter").onclick=()=>S.pos&&S.map.setView([S.pos.lat,S.pos.lon],15);
+$("next").onclick=()=>{if(!S.missions.length)return;S.raceStart=null;clearInterval(S.raceTimer);S.selected=(S.selected+1)%S.missions.length;renderSelected();const m=S.missions[S.selected];S.map.flyTo([m.p.lat,m.p.lon],16)};
+$("startRace").onclick=()=>{const m=S.missions[S.selected];if(m.type!=="speed")return;S.raceStart=Date.now();$("startRace").style.display="none";$("speedTimer").style.display="inline-block";clearInterval(S.raceTimer);S.raceTimer=setInterval(()=>{$("speedTimer").textContent=formatTime(Date.now()-S.raceStart)},250);toast("Course lancée ⚡")};
+function formatTime(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60);return String(m).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
+$("action").onclick=()=>{
+ const m=S.missions[S.selected],d=dist(S.pos,m.p);if(d>m.r+Math.max(20,S.pos.accuracy||0)){toast("Encore "+fmt(d));return}
+ if(m.type==="speed"){
+   if(!S.raceStart){toast("Démarre d'abord la course");return}
+   clearInterval(S.raceTimer);const t=Date.now()-S.raceStart;S.profile.races=(S.profile.races||0)+1;S.profile.xp+=m.xp;S.profile.done.push(m.id);save();toast("Arrivée en "+formatTime(t)+" · +"+m.xp+" XP");S.raceStart=null;renderSelected();return
+ }
+ prepareMissionCamera(m);toast(m.type==="special"?"Mission spéciale débloquée 🌟":m.minPlayers>1?"Mission à plusieurs débloquée 👥":m.type==="family"?"Mission famille débloquée 👨‍👩‍👧‍👦":"Mission débloquée ✓")
+};
+$("playersMinus").onclick=()=>setPlayers(S.players-1);
+$("playersPlus").onclick=()=>setPlayers(S.players+1);
+$("musicFile").onchange=e=>{const f=e.target.files?.[0];if(!f)return;if(S.musicURL)URL.revokeObjectURL(S.musicURL);S.musicURL=URL.createObjectURL(f);$("music").src=S.musicURL;$("music").load();toast("Musique chargée ✓")};
+$("musicToggle").onclick=async()=>{const a=$("music");if(!a.src){toast("Choisis une musique");return}if(a.paused){try{await a.play();$("musicToggle").textContent="⏸"}catch(e){toast("Lecture impossible")}}else{a.pause();$("musicToggle").textContent="▶︎"}};
+async function openCam(){stopStream();$("playback").style.display="none";$("live").style.display="block";try{S.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"},audio:true});$("live").srcObject=S.stream;$("placeholder").style.display="none";$("rec").disabled=false}catch(e){toast("Autorise caméra et micro")}}
+function stopStream(){if(S.stream){S.stream.getTracks().forEach(t=>t.stop());S.stream=null}}
+async function buildStream(){
+ const vt=S.stream?.getVideoTracks()[0];if(!vt)return null;
+ try{S.audioCtx=S.audioCtx||new (window.AudioContext||window.webkitAudioContext)();await S.audioCtx.resume();S.mixDest=S.audioCtx.createMediaStreamDestination();const mt=S.stream.getAudioTracks()[0];if(mt)S.audioCtx.createMediaStreamSource(new MediaStream([mt])).connect(S.mixDest);const a=$("music");if(a.src){if(!a._src)a._src=S.audioCtx.createMediaElementSource(a);a._src.connect(S.mixDest);a._src.connect(S.audioCtx.destination)}return new MediaStream([vt,...S.mixDest.stream.getAudioTracks()])}catch(e){return S.stream}
+}
+async function startRec(){if(!S.active){toast("Choisis une mission");return}S.chunks=[];const rs=await buildStream();if(!rs)return;if($("music").src&&$("music").paused){try{$("music").currentTime=0;await $("music").play()}catch(e){}}try{S.recorder=new MediaRecorder(rs);S.recorder.ondataavailable=e=>e.data.size&&S.chunks.push(e.data);S.recorder.onstop=()=>{S.videoBlob=new Blob(S.chunks,{type:S.recorder.mimeType||"video/webm"});if(S.videoURL)URL.revokeObjectURL(S.videoURL);S.videoURL=URL.createObjectURL(S.videoBlob);$("playback").src=S.videoURL;$("playback").style.display="block";$("live").style.display="none";$("validate").disabled=false;$("redo").disabled=false;$("instagram").disabled=false;$("facebook").disabled=false;stopStream();$("music").pause()};S.recorder.start();$("rec").disabled=true;$("stop").disabled=false}catch(e){toast("Enregistrement non supporté")}}
+function stopRec(){if(S.recorder&&S.recorder.state!=="inactive")S.recorder.stop();$("stop").disabled=true}
+function redo(){if(S.videoURL)URL.revokeObjectURL(S.videoURL);S.videoBlob=null;S.videoURL=null;$("validate").disabled=true;$("redo").disabled=true;$("instagram").disabled=true;$("facebook").disabled=true;openCam()}
+$("validate").onclick=()=>{
+ if(!S.active||!S.videoBlob)return;
+ const m=S.active;
+ if((m.minPlayers||1)>S.players){toast("Il faut au moins "+m.minPlayers+" participants pour valider");return}
+ if(!m.free){
+   if(!S.pos){toast("GPS nécessaire pour cette mission");return}
+   const d=dist(S.pos,m.p);
+   if(d>m.r+Math.max(25,S.pos.accuracy||0)){toast("Tu es sorti de la zone");return}
+ }
+ if(!S.profile.done.includes(m.id)){S.profile.done.push(m.id);S.profile.xp+=m.xp}
+ save();toast("Mission réussie · +"+m.xp+" XP")
+};
+async function share(target){if(!S.videoBlob){toast("Filme d'abord");return}const ext=(S.videoBlob.type||"").includes("mp4")?"mp4":"webm",file=new File([S.videoBlob],`dance-world-quest.${ext}`,{type:S.videoBlob.type||"video/webm"});try{if(navigator.canShare&&navigator.canShare({files:[file]})&&navigator.share){await navigator.share({files:[file],title:"DANCE WORLD QUEST",text:"DANCE WORLD QUEST 🌍💃"});toast("Choisis "+target+" dans le partage")}else toast("Partage vidéo indisponible sur ce navigateur")}catch(e){if(e.name!=="AbortError")toast("Partage indisponible")}}
+$("openCam").onclick=openCam;$("rec").onclick=startRec;$("stop").onclick=stopRec;$("redo").onclick=redo;$("instagram").onclick=()=>share("Instagram");$("facebook").onclick=()=>share("Facebook");
+window.addEventListener("resize",()=>setTimeout(()=>S.map.invalidateSize(),60));window.addEventListener("orientationchange",()=>setTimeout(()=>S.map.invalidateSize(),250));window.addEventListener("beforeunload",stopStream);
+initMap();renderTop();getGPS();
+</script>
+</body>
+</html>
