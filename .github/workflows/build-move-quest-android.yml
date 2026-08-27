@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - "move-quest-simple-v4.html"
-      - "MoveQuest-Android-NativeShare-v0.2.zip"
+      - "MoveQuest-Android-NativeShare-v0.3.zip"
       - ".github/workflows/build-move-quest-android.yml"
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,8 +26,15 @@ jobs:
         with:
           gradle-version: "9.1.0"
 
-      - name: Prepare Android project
-        shell: bash
-        run: |
-          set -e
-          rm -rf MoveQuest-Android
+      - name: Unpack Android app
+        run: unzip -q MoveQuest-Android-NativeShare-v0.3.zip -d build
+
+      - name: Build APK
+        working-directory: build/MoveQuest-Android-v0.3
+        run: gradle :app:assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: MoveQuest-Android-APK
+          path: build/MoveQuest-Android-v0.3/app/build/outputs/apk/debug/app-debug.apk
