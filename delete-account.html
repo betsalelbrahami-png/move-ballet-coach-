@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Supprimer mon compte — Dance World Quest</title>
+<style>body{font-family:system-ui,-apple-system,sans-serif;background:#0b1018;color:#eef2f7;margin:0;padding:24px}.wrap{max-width:640px;margin:auto}.card{background:#131b27;border:1px solid #344054;border-radius:16px;padding:18px;margin:14px 0}input,button{box-sizing:border-box;width:100%;padding:12px;border-radius:10px;border:1px solid #445166;background:#0b111a;color:#fff;margin-top:8px}button{background:#b42318;border:0;font-weight:700;cursor:pointer}.muted{color:#aeb8c7;font-size:14px;line-height:1.5}.ok{color:#72df94}.err{color:#ff8b8b}a{color:#8ab4ff}</style>
+</head>
+<body><div class="wrap">
+<h1>Suppression de compte Dance World Quest</h1>
+<p class="muted">Cette page permet de supprimer ton compte Dance World Quest et les données associées sans ouvrir l’application.</p>
+<div class="card">
+<h2>1. Connecte-toi</h2>
+<input id="email" type="email" autocomplete="email" placeholder="Email">
+<input id="password" type="password" autocomplete="current-password" placeholder="Mot de passe">
+<button id="login" style="background:#315efb">Se connecter</button>
+<div id="state" class="muted">Non connecté.</div>
+</div>
+<div class="card">
+<h2>2. Supprime définitivement le compte</h2>
+<p class="muted">La suppression efface le compte d’authentification, le profil, les vidéos de mission stockées, les votes et les données de progression serveur associées. Cette action est irréversible.</p>
+<button id="delete" disabled>Supprimer définitivement mon compte</button>
+<div id="result" class="muted"></div>
+</div>
+<p class="muted">Pour des raisons de sécurité, tu dois te reconnecter avant la suppression. Si tu n’as plus accès à ton compte, utilise le canal de contact indiqué dans la politique de confidentialité de Dance World Quest.</p>
+<p class="muted"><a href="privacy.html">Politique de confidentialité</a></p>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SB_URL='https://lbmgmfpvxggxoboxfsib.supabase.co';
+const SB_KEY='sb_publishable_muyBjmwQ7Z8u3rk-UjXfDw_DANAEmCe';
+const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+const $=id=>document.getElementById(id);
+$('login').onclick=async()=>{const email=$('email').value.trim(),password=$('password').value;$('state').textContent='Connexion…';const {data,error}=await sb.auth.signInWithPassword({email,password});if(error){$('state').className='err';$('state').textContent='Connexion impossible.';return}$('state').className='ok';$('state').textContent='Connecté.';$('delete').disabled=!data.session};
+$('delete').onclick=async()=>{if(!confirm('Supprimer définitivement ton compte Dance World Quest et tes données ?'))return;$('delete').disabled=true;$('result').className='muted';$('result').textContent='Suppression en cours…';const {data,error}=await sb.functions.invoke('delete-account',{body:{confirm:true}});if(error||!data||!data.ok){$('result').className='err';$('result').textContent='Suppression impossible pour le moment. Reconnecte-toi et réessaie.';$('delete').disabled=false;return}$('result').className='ok';$('result').textContent='Compte supprimé. Tu peux fermer cette page.';await sb.auth.signOut()};
+</script></body></html>

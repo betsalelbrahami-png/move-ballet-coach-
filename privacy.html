@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Politique de confidentialité — Dance World Quest</title>
+<style>
+body{font-family:system-ui,-apple-system,sans-serif;background:#0b1018;color:#eef2f7;margin:0;padding:24px;line-height:1.55}.wrap{max-width:760px;margin:auto}.card{background:#131b27;border:1px solid #344054;border-radius:16px;padding:18px;margin:14px 0}h1,h2{line-height:1.2}a{color:#8ab4ff}label{display:block;font-weight:700;margin-top:10px}input,textarea,button{box-sizing:border-box;width:100%;padding:12px;border-radius:10px;border:1px solid #445166;background:#0b111a;color:#fff;margin-top:6px}textarea{min-height:150px;resize:vertical}button{background:#315efb;border:0;font-weight:800;cursor:pointer}.muted{color:#aeb8c7;font-size:14px}.ok{color:#72df94}.err{color:#ff8b8b}.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+</style>
+</head>
+<body><main class="wrap">
+<h1>Politique de confidentialité — Dance World Quest</h1>
+<p class="muted">Dernière mise à jour : 28 août 2026.</p>
+<div class="card"><p><b>Dance World Quest</b> est un jeu mobile de missions de danse géolocalisées avec une Communauté destinée aux utilisateurs éligibles. L’application utilise les données nécessaires au fonctionnement du jeu et ne contient actuellement ni publicité ni SDK publicitaire.</p></div>
+
+<h2>Données traitées</h2>
+<div class="card">
+<p><b>Compte :</b> adresse e-mail, identifiant de compte, pseudo, pays et ville.</p>
+<p><b>Progression :</b> XP, résultats de missions, votes et données nécessaires aux classements.</p>
+<p><b>Vidéos :</b> une vidéo de mission est envoyée au serveur uniquement lorsque l’utilisateur choisit de la valider dans la Communauté. Elle est stockée dans un espace privé et rendue accessible aux utilisateurs authentifiés éligibles, sous réserve des règles de blocage et de modération.</p>
+<p><b>Localisation :</b> la position précise est utilisée pendant le jeu pour afficher les missions proches et vérifier l’arrivée dans une zone. Lors d’une validation, les coordonnées nécessaires au contrôle peuvent être transmises au serveur, puis supprimées du dossier de soumission après traitement. Elles ne sont pas affichées dans la Communauté. Aucune localisation en arrière-plan n’est demandée.</p>
+<p><b>Contrôle d’âge :</b> la date de naissance saisie sert uniquement, sur l’appareil, à déterminer l’éligibilité. La date elle-même n’est ni envoyée ni conservée ; le serveur garde seulement la confirmation d’éligibilité et la version des règles acceptées.</p>
+<p><b>Caméra :</b> elle sert à filmer les missions. Dance World Quest ne demande pas l’accès au microphone pour la caméra.</p>
+</div>
+
+<h2>Pourquoi ces données sont utilisées</h2>
+<div class="card"><p>Pour fournir les missions, vérifier certaines conditions objectives, publier et noter les vidéos, calculer l’XP, afficher les classements, gérer Battles et Weekly Jams, prévenir la fraude, assurer la sécurité et modérer la Communauté.</p></div>
+
+<h2>Prestataires et partage</h2>
+<div class="card"><p><b>Supabase</b> fournit l’authentification, la base de données, les fonctions serveur et le stockage vidéo. <b>OpenStreetMap/Leaflet</b> servent à afficher la carte. Les boutons Instagram, Facebook, YouTube ou autres applications sont facultatifs : une vidéo n’est transmise à une application externe que lorsque l’utilisateur déclenche volontairement ce partage.</p></div>
+
+<h2>Sécurité, modération et visibilité</h2>
+<div class="card"><p>Les vidéos sont stockées dans un espace privé. Les règles serveur empêchent notamment le vote sur sa propre soumission et protègent les fonctions sensibles d’XP. Les coordonnées GPS exactes ne sont pas exposées aux autres joueurs. Les utilisateurs peuvent signaler une vidéo, signaler un joueur et bloquer un joueur.</p></div>
+
+<h2>Conservation et suppression</h2>
+<div class="card"><p>Le compte, le profil, la progression serveur, les votes et les vidéos sont conservés tant que le compte existe ou aussi longtemps que nécessaire au fonctionnement et à la sécurité du service. L’utilisateur peut supprimer définitivement son compte depuis l’application ou via la <a href="delete-account.html">page de suppression de compte</a>. La suppression efface le compte et les vidéos associées ainsi que les données rattachées qui ne doivent pas être conservées pour une obligation légale.</p></div>
+
+<h2>Âge</h2>
+<div class="card"><p>La Communauté n’est pas destinée aux moins de 13 ans. Selon le pays, des règles supplémentaires peuvent s’appliquer aux mineurs. Toute personne publiant une vidéo dans laquelle apparaît un mineur doit disposer des autorisations appropriées.</p></div>
+
+<h2>Contact confidentialité</h2>
+<div class="card" id="contact">
+<p>Pour une question concernant les données personnelles ou l’exercice de vos droits, utilisez ce formulaire. La demande est enregistrée de façon privée et n’est pas visible par les autres joueurs.</p>
+<form id="privacyForm">
+<label for="email">E-mail de réponse</label><input id="email" type="email" maxlength="254" required autocomplete="email">
+<label for="subject">Sujet</label><input id="subject" maxlength="120" value="Question confidentialité" required>
+<label for="message">Message</label><textarea id="message" minlength="10" maxlength="4000" required></textarea>
+<div class="hp" aria-hidden="true"><label>Website<input id="website" tabindex="-1" autocomplete="off"></label></div>
+<button id="send" type="submit">Envoyer la demande</button>
+<p id="result" class="muted"></p>
+</form>
+</div>
+<p class="muted">Éditeur du service : Dance World Quest. L’identité publique du développeur est celle indiquée sur la fiche officielle Google Play de l’application.</p>
+</main>
+<script>
+const FN='https://lbmgmfpvxggxoboxfsib.supabase.co/functions/v1/privacy-request';
+const ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxibWdtZnB2eGdneG9ib3hmc2liIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NDY1MDEsImV4cCI6MjEwMzQyMjUwMX0._NLbGx3CahAcTseVom6vl9NDOjooibhiUotOv2xgxDM';
+const f=document.getElementById('privacyForm'),r=document.getElementById('result'),b=document.getElementById('send');
+f.addEventListener('submit',async e=>{e.preventDefault();b.disabled=true;r.className='muted';r.textContent='Envoi…';try{const res=await fetch(FN,{method:'POST',headers:{'content-type':'application/json','apikey':ANON,'authorization':'Bearer '+ANON},body:JSON.stringify({email:document.getElementById('email').value,subject:document.getElementById('subject').value,message:document.getElementById('message').value,website:document.getElementById('website').value})});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.error||'request_failed');r.className='ok';r.textContent='Demande envoyée.';f.reset();document.getElementById('subject').value='Question confidentialité';}catch(err){r.className='err';r.textContent=String(err&&err.message)==='too_many_requests'?'Une demande a déjà été envoyée récemment. Réessaie dans quelques minutes.':'Envoi impossible pour le moment. Réessaie plus tard.';}finally{b.disabled=false}});
+</script>
+</body></html>
