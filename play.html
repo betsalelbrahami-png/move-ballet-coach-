@@ -1,0 +1,1058 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0e14">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob: https:; script-src 'nonce-dwq' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https://lbmgmfpvxggxoboxfsib.supabase.co wss://lbmgmfpvxggxoboxfsib.supabase.co https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com https://overpass-api.de; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self'">
+<title>DANCE WORLD QUEST</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--bg:#080b12;--panel:#101722;--line:#303b4d;--text:#f7f8fb;--muted:#aeb8c7;--v:#9567ff;--g:#58d678;--r:#ff7468;--b:#62c8ff;--y:#ffc75b}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;overflow:hidden}
+button,input{font:inherit}button{color:white;background:#171e2a;border:1px solid #394456;border-radius:12px;padding:10px 12px}button.primary{background:linear-gradient(135deg,#7646e8,#a26fff);border:0}button:disabled{opacity:.42}
+.app{height:100dvh;display:grid;grid-template-rows:58px minmax(0,1fr) 64px}
+header{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-bottom:1px solid #263141;z-index:1000;background:#080b12}
+.brand{font-weight:950;font-size:20px}.brand b{color:#c7a8ff}.brand small{display:block;color:var(--muted);font-size:9px;font-weight:500}
+.chips{display:flex;gap:5px}.chip{min-width:52px;text-align:center;background:#121923;border:1px solid #303a4b;border-radius:10px;padding:5px}.chip span{display:block;font-size:7px;color:#9da7b6}.chip b{font-size:13px}
+main{position:relative;min-height:0}.screen{position:absolute;inset:0;display:none;overflow:auto;background:var(--bg)}.screen.active{display:block}#mapScreen{overflow:hidden}
+#map{position:absolute;inset:0}
+.topHud{position:absolute;z-index:700;top:8px;left:8px;right:8px;display:flex;gap:6px;pointer-events:none}.topHud>*{pointer-events:auto}
+.gps{flex:1;background:#090d14ee;border:1px solid #394456;border-radius:13px;padding:8px 10px}.gps b{display:block;font-size:12px}.gps small{font-size:9px;color:#b9c2cf}
+.mapBtn{min-width:44px;background:#090d14ee}
+.sheet{position:absolute;z-index:700;left:8px;right:8px;bottom:8px;background:#0b1018f4;border:1px solid #3a4558;border-radius:17px;padding:10px}
+.row{display:flex;justify-content:space-between;gap:8px}.type{display:inline-block;padding:4px 8px;border-radius:999px;background:#211832;color:#d7c3ff;font-size:8px;font-weight:900}
+.sheet h2{margin:5px 0 3px;font-size:17px}.sheet p{margin:0;font-size:10px;color:#bdc6d3;line-height:1.4}.meta{display:flex;gap:5px;flex-wrap:wrap;margin:7px 0}.pill{background:#151c28;border:1px solid #303a4c;border-radius:999px;padding:5px 7px;font-size:9px;color:#c5ceda}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:6px}.full{grid-column:1/-1}
+.pad{padding:11px}.cards{display:grid;gap:8px;margin-top:8px}.card{background:#0f1621;border:1px solid #303a4b;border-radius:14px;padding:10px}.card h3{margin:4px 0;font-size:14px}.card p{margin:0;font-size:10px;color:#b8c2cf}.hero{background:linear-gradient(145deg,#1a1430,#101720);border:1px solid #39304f;border-radius:16px;padding:12px}.hero h1{margin:0 0 4px;font-size:20px}.hero p{margin:0;font-size:11px;color:#c0c8d4;line-height:1.45}
+.cameraCard{background:#0f1621;border:1px solid #303a4b;border-radius:16px;overflow:hidden}.camStage{height:50vh;min-height:300px;position:relative;background:#05070b;display:grid;place-items:center}.camStage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}#live.frontCam{transform:scaleX(-1)}#live.backCam{transform:none}#playback{display:none}.countdownOverlay{position:absolute;inset:0;z-index:12;display:none;place-items:center;background:#0007;font-size:112px;font-weight:1000;color:white;text-shadow:0 5px 30px #000}.countdownOverlay.show{display:grid}.placeholder{text-align:center;padding:20px}.placeholder div{font-size:44px}.placeholder p{font-size:11px;color:#b8c2cf}
+.music{margin:9px;background:#101722;border:1px solid #303a4b;border-radius:14px;padding:10px}.music h3{margin:0 0 6px;font-size:13px}.musicRow{display:grid;grid-template-columns:1fr auto;gap:6px}.music input{width:100%;color:#ccd3df;font-size:10px}
+.controls,.share{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 9px 9px}
+.profileGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}.pbox{background:#0f1621;border:1px solid #303a4b;border-radius:14px;padding:10px}.pbox span{display:block;font-size:8px;color:#aeb7c5}.pbox b{font-size:22px}
+nav{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid #293242;padding:6px 6px max(6px,env(safe-area-inset-bottom));z-index:1000;background:#080b12}nav button{background:transparent;border:0;border-radius:10px;color:#8f99a8;font-size:8px;padding:4px}nav button span{display:block;font-size:18px}nav button.active{background:#171323;color:#d7c4ff}
+.questIcon{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;border:3px solid white;font-size:16px;box-shadow:0 6px 18px #0008}.questIcon.dance{background:var(--v)}.questIcon.group{background:var(--y);color:#111}.questIcon.speed{background:var(--r)}.questIcon.special{background:#ffd54a;color:#111;box-shadow:0 0 0 5px #ffd54a33,0 6px 18px #0008}.questIcon.family{background:#58d678;color:#07120a}.questIcon.object{background:#62c8ff;color:#071018}.questIcon.duo{background:#ff9f68;color:#16100b}.questIcon.battle{background:#ff5f7c;color:white}.questIcon.mood{background:#69e0c1;color:#07120f}.freeMission{border-color:#365d45;background:#0d1d15}.creativeMission{border-color:#51406e;background:#151020}.participantBox{display:none;margin:9px;background:#171223;border:1px solid #4d3c68;border-radius:14px;padding:10px}.participantRow{display:flex;align-items:center;justify-content:space-between;gap:10px}.participantCount{display:flex;align-items:center;gap:8px}.participantCount b{min-width:28px;text-align:center;font-size:20px}.recordClock{position:absolute;z-index:5;top:10px;right:10px;background:#070a0ecc;border:1px solid #596477;border-radius:999px;padding:7px 10px;font-size:13px;font-weight:900;display:none;box-shadow:0 4px 18px #0008}.recordClock.live{display:block}.recordClock .dot{color:#ff625f;margin-right:5px}.nearAlert{position:fixed;z-index:2500;left:10px;right:10px;top:70px;background:#132017f5;border:1px solid #4b7758;border-radius:15px;padding:11px;display:none;box-shadow:0 8px 28px #0008}.nearAlert.show{display:block}.nearAlert b{display:block;font-size:13px}.nearAlert small{display:block;color:#b9c8bd;margin-top:3px}
+.meIcon{width:22px;height:22px;border-radius:50%;background:var(--b);border:4px solid white;box-shadow:0 0 0 10px rgba(98,200,255,.16)}
+.timer{font-weight:900;color:#ffcf6a}.toast{position:fixed;z-index:2000;left:50%;transform:translateX(-50%);bottom:70px;background:#101722;border:1px solid #3a4658;border-radius:999px;padding:9px 12px;font-size:10px;display:none;max-width:90%;text-align:center}.toast.show{display:block}
+.leaflet-control-attribution{font-size:8px!important}.leaflet-control-zoom{margin-top:58px!important}
+
+.personCheck{display:none;margin:9px;background:#101722;border:1px solid #303a4b;border-radius:14px;padding:10px}
+.personCheck.show{display:block}.personCheck b{display:block;font-size:12px}.personCheck small{display:block;margin-top:4px;color:#aeb8c7}.personCheck.ok{border-color:#39794a;background:#0d1d13}.personCheck.bad{border-color:#7a3a3a;background:#211010}
+.communityGrid{display:grid;gap:9px;margin-top:9px}.communityCard{background:#0f1621;border:1px solid #303a4b;border-radius:16px;overflow:hidden}.communityHead{padding:10px 10px 7px}.communityMedia{height:250px;background:linear-gradient(145deg,#201536,#111925);display:grid;place-items:center;position:relative}.communityMedia video{width:100%;height:100%;object-fit:cover}.communityMedia .demo{font-size:46px}.communityBody{padding:10px}.voteRow{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.voteRow button{flex:1;min-width:72px}.resultBar{height:8px;background:#1a2230;border-radius:999px;overflow:hidden;margin-top:8px}.resultBar i{display:block;height:100%;background:#9b6cff;width:0}.communityBadge{display:inline-block;padding:4px 7px;border-radius:999px;background:#1b2636;color:#d2d9e4;font-size:8px;font-weight:900}.pending{color:#ffd06a}.good{color:#67df84}.mutedLine{font-size:9px;color:#aeb8c7;margin-top:5px}.xpPop{position:fixed;z-index:3000;left:50%;top:42%;transform:translate(-50%,-50%) scale(.8);background:#111927;border:1px solid #5a6b84;border-radius:18px;padding:14px 20px;font-size:22px;font-weight:950;opacity:0;pointer-events:none;transition:.18s}.xpPop.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.share{grid-template-columns:repeat(2,1fr)}
+.authGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}.authGrid input{width:100%;background:#0b111a;color:#fff;border:1px solid #344054;border-radius:10px;padding:10px}.authGrid .wide{grid-column:1/-1}.authState{font-size:10px;color:#b8c2cf;margin-top:7px}.onlineDot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#657080;margin-right:6px}.onlineDot.on{background:#58d678}.leaderList{display:grid;gap:6px;margin-top:8px}.leaderRow{display:grid;grid-template-columns:40px 1fr auto;gap:7px;align-items:center;padding:8px;border:1px solid #2e394a;border-radius:11px;background:#0b111a}.leaderRow small{color:#9ea9b8}.syncBar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}.syncBar button{padding:7px 10px}.communityEmpty{text-align:center;padding:18px;color:#aeb8c7}.jamCard{border-color:#66512a;background:#1b160c}.consentLine{display:flex;gap:9px;align-items:flex-start;margin-top:9px;padding:10px;border:1px solid #344054;border-radius:10px;background:#0b111a;font-size:11px;color:#d5dbe5}.consentLine input{margin-top:2px;min-width:18px;min-height:18px}.disclosureModal{position:fixed;inset:0;z-index:9999;background:#000c;display:none;align-items:center;justify-content:center;padding:18px}.disclosureModal.show{display:flex}.disclosureBox{width:min(460px,100%);background:#111923;border:1px solid #394557;border-radius:18px;padding:18px;box-shadow:0 20px 60px #0009}.disclosureBox h2{margin:0 0 8px}.disclosureBox p{color:#d4dbe6;line-height:1.45}.disclosureActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+
+#langSelect{background:#121923;color:#fff;border:1px solid #303a4b;border-radius:10px;padding:7px 5px;font-weight:800;max-width:72px}
+.duoMeet{margin-top:7px;padding:8px;border:1px solid #5c4a2d;background:#1c160d;border-radius:12px;display:none}.duoMeet.show{display:block}.duoMeet .row{align-items:center}.duoMeet small{color:#d6c7ac}.duoMeet button{padding:7px 9px}.duoPing{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 4px;border-radius:999px;background:#ffb347;color:#15100a;font-size:10px;font-weight:950;margin-left:3px}.jamAdminCard{border-color:#5a4678;background:#151020}.jamAdminList{display:grid;gap:7px;margin-top:10px}.jamAdminRow{border:1px solid #3a3150;border-radius:11px;padding:9px;background:#0d0a13}.jamAdminRow .row{gap:8px}.jamAdminRow button{padding:7px 9px}.jamAdminHint{color:#c7bad9;font-size:11px;line-height:1.45}.jamConfirm{display:flex;align-items:flex-start;gap:8px;margin-top:8px;font-size:11px;color:#ddd}.jamConfirm input{min-width:18px;min-height:18px;margin-top:1px}
+html[dir="rtl"] body{text-align:right}html[dir="rtl"] .row{flex-direction:row-reverse}html[dir="rtl"] .leaderRow{grid-template-columns:auto 1fr 40px}
+@media(min-width:800px){.app{max-width:700px;margin:auto}.sheet{left:auto;width:390px}}
+
+/* v1.3.4 — dance-first experience */
+.quickLaunch{position:absolute;z-index:710;top:72px;left:50%;transform:translateX(-50%);width:min(92%,430px);pointer-events:none}.quickLaunch>*{pointer-events:auto}.danceNowBtn{width:100%;border:0;border-radius:22px;padding:16px 18px;background:linear-gradient(135deg,#ff3ca6,#8e58ff 52%,#35c7ff);box-shadow:0 12px 35px #7f4cff66;font-size:20px;font-weight:950;letter-spacing:.3px}.danceNowBtn small{display:block;font-size:10px;font-weight:750;opacity:.9;margin-top:3px}.streakLine{display:flex;justify-content:center;gap:8px;margin-top:6px;font-size:9px;color:#fff;text-shadow:0 2px 7px #000;background:#080b12aa;border:1px solid #ffffff22;border-radius:999px;padding:5px 9px;width:max-content;max-width:100%;margin-inline:auto}.dailyCard{background:linear-gradient(145deg,#26183b,#111b2a);border-color:#7b55b2;overflow:hidden;position:relative}.dailyCard:before{content:"";position:absolute;inset:-30% auto auto -20%;width:170px;height:170px;background:#ff3ca633;filter:blur(25px);border-radius:50%}.dailyCard .dailyTitle{font-size:20px;margin:5px 0}.dailyCard .dailyMeta{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.dailyCard button{font-size:16px;font-weight:950;padding:13px}.xpTrack{height:5px;background:#232c3b;border-radius:999px;overflow:hidden;margin-top:3px}.xpTrack i{display:block;height:100%;width:0;background:linear-gradient(90deg,#62c8ff,#9567ff,#ff4eb4);transition:width .35s}.megaRecord{font-size:20px!important;font-weight:950!important;padding:17px!important;border-radius:18px!important;background:linear-gradient(135deg,#ff356d,#ff4eb4,#875cff)!important;box-shadow:0 10px 26px #ff3a7e3d}.cameraCard.ready .megaRecord{animation:pulseRec 1.5s infinite}@keyframes pulseRec{50%{transform:scale(1.025);box-shadow:0 12px 32px #ff3a7e66}}#openCam{display:none!important}#stop{display:none}.cameraCard.recording #stop{display:block}.cameraCard.recording #rec{display:none}.cameraCard.recorded #rec{display:none}.cameraCard.recorded #validate,.cameraCard.recorded #redo{display:block}.cameraCard:not(.recorded) #validate,.cameraCard:not(.recorded) #redo{display:none}.feedTools{display:grid;gap:7px;margin:9px 0}.feedTabs{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.feedTabs button{padding:9px 6px;font-size:10px}.feedTabs button.active{background:#6f4bd9;border-color:#a98bff;font-weight:900}.userSearch{display:grid;grid-template-columns:1fr auto;gap:6px}.userSearch input{width:100%;background:#0b111a;color:#fff;border:1px solid #344054;border-radius:11px;padding:10px}.userLink{background:none!important;border:0!important;padding:0!important;color:#d9c9ff!important;font-weight:900!important;text-align:start}.reactionBar{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:9px}.reactionBar button{padding:8px 4px;font-size:13px}.reactionBar button.mine{background:#302044;border-color:#b17cff}.reactionBar small{display:block;font-size:8px;margin-top:2px;color:#c4ccd7}.hypeLine{display:flex;align-items:center;gap:7px;margin-top:7px}.hypeLine b{color:#ff80c5}.feedWhy{font-size:8px;color:#9da8b8;margin-top:4px}.userProfileModal .disclosureBox{max-height:86vh;overflow:auto}.userProfileHero{display:grid;grid-template-columns:56px 1fr auto;gap:9px;align-items:center}.avatarBubble{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#62c8ff,#9567ff,#ff4eb4);font-size:24px;font-weight:950}.miniVideoGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:10px}.miniVideo{border:1px solid #303a4b;border-radius:11px;overflow:hidden;background:#0b111a;min-height:110px;display:grid;place-items:center}.confettiBurst{position:fixed;z-index:3500;inset:0;pointer-events:none;overflow:hidden}.confettiBurst i{position:absolute;top:45%;left:50%;width:8px;height:12px;border-radius:2px;background:var(--c);animation:confettiFly .9s ease-out forwards}@keyframes confettiFly{to{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}.unlockToast{position:fixed;z-index:3400;left:50%;top:26%;transform:translate(-50%,-50%);background:linear-gradient(145deg,#22183a,#111925);border:1px solid #8566bd;border-radius:18px;padding:15px 18px;text-align:center;display:none;box-shadow:0 18px 50px #0008}.unlockToast.show{display:block;animation:popIn .25s ease}@keyframes popIn{from{transform:translate(-50%,-50%) scale(.8);opacity:0}}.missionLive{color:#ff7bbf;font-weight:900}.missionSocial{font-size:8px;color:#9da8b8;margin-top:5px}.cameraHint{padding:8px 10px;text-align:center;font-size:10px;color:#c8d0dc}.profileGrid.six{grid-template-columns:repeat(3,1fr)}
+.beatPills{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:7px 0}.beatPills button{padding:8px 4px;font-size:9px}.beatPills button.active{background:#4e3478;border-color:#a67cff;font-weight:900}.musicOwn{font-size:8px;color:#9da8b8;margin-top:5px}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand">DANCE <b>WORLD QUEST</b><small id="brandTag">explore · danse · relève les défis · v1.3.4</small></div>
+  <div style="display:flex;align-items:center;gap:6px"><select id="langSelect" aria-label="Langue"><option value="fr">FR</option><option value="en">EN</option><option value="he">עברית</option></select><div class="chips"><div class="chip"><span>LEVEL</span><b id="levelTop">1</b><div class="xpTrack"><i id="xpProgress"></i></div></div><div class="chip"><span>XP</span><b id="xpTop">0</b></div><div class="chip"><span>HYPE</span><b id="hypeTop">0</b></div></div></div>
+</header>
+
+<main>
+<section id="mapScreen" class="screen active">
+  <div id="map"></div>
+  <div class="topHud">
+    <div class="gps"><b id="gpsTitle">Recherche GPS…</b><small id="gpsSub">Autorise ta position</small></div>
+    <button id="country" class="mapBtn">🌍</button><button id="recenter" class="mapBtn">◎</button>
+  </div>
+  <div class="quickLaunch"><button id="danceNow" class="danceNowBtn">🔥 DANCE NOW<small>20 secondes · n’importe où · 1 bouton</small></button><div class="streakLine"><span id="dailyStreakMini">🔥 0</span><span id="dailyStatusMini">Daily Dance disponible</span></div></div>
+  <div class="sheet">
+    <div class="row"><div><span id="type" class="type">MISSION</span><h2 id="title">En attente</h2><p id="desc">Trouve une mission sur la carte.</p></div><b id="reward" style="color:#ffd06a">+0 XP</b></div>
+    <div class="meta"><span id="distance" class="pill">—</span><span id="area" class="pill">—</span><span id="speedTimer" class="pill timer" style="display:none">00:00</span></div>
+    <div class="actions">
+      <button id="next">Mission suivante</button>
+      <button id="action" class="primary" disabled>Approche-toi</button>
+      <button id="startRace" class="full" style="display:none">⚡ Démarrer la course</button>
+    </div>
+    <div id="duoMeet" class="duoMeet"><div class="row"><div><b id="duoMeetTitle">🕺 Mission à deux</b><small id="duoMeetText" style="display:block;margin-top:3px">Personne n’est encore en route.</small></div><button id="duoMeetAction">Je suis en route</button></div></div>
+  </div>
+</section>
+
+<section id="missionsScreen" class="screen"><div class="pad">
+  <div class="hero"><h1>Missions autour de toi</h1><p>Missions près de toi : presque chaque mission filmée demande un mouvement ou un défi précis.</p></div>
+  <div id="dailyDanceCard" class="card dailyCard" style="margin-top:8px"></div>
+  <div id="missionList" class="cards"></div>
+</div></section>
+
+<section id="cameraScreen" class="screen"><div class="pad">
+  <div class="hero"><h1 id="camTitle">Aucune mission</h1><p id="camDesc">Choisis d’abord une mission sur la carte.</p></div>
+  <div class="cameraCard" style="margin-top:8px">
+    <div class="camStage"><div id="countdownOverlay" class="countdownOverlay">5</div><div id="recordClock" class="recordClock"><span class="dot">●</span><span id="recordTime">00:00 / 00:15</span></div><video id="live" class="frontCam" autoplay muted playsinline></video><video id="playback" controls playsinline></video><div id="placeholder" class="placeholder"><div>🎥</div><h2>Caméra DANCE WORLD QUEST</h2><p>Filme ta danse au spot.</p></div></div>
+    <div class="music"><h3>🎵 Choisis ton beat</h3><div class="beatPills"><button data-beat="pulse" class="active">⚡ Pulse</button><button data-beat="groove">🪩 Groove</button><button data-beat="house">🏠 House</button><button data-beat="off">◯ Sans beat</button></div><div class="musicOwn">Ou utilise ta propre musique :</div><div class="musicRow"><input id="musicFile" type="file" accept="audio/*"><button id="musicToggle">▶︎</button></div><audio id="music" preload="metadata"></audio></div>
+    <div id="personCheck" class="personCheck"><b id="personCheckTitle">👥 Vérification des personnes</b><small id="personCheckText">La détection démarre avec l’enregistrement.</small></div>
+    <div id="cameraHint" class="cameraHint">La caméra s’ouvre automatiquement. Quand tu es prêt : un seul bouton.</div><div class="controls"><button id="openCam">Ouvrir caméra</button><button id="flipCam" disabled>↔ Caméra</button><button id="rec" class="megaRecord full" disabled>● DANSER</button><button id="stop" class="full" disabled>■ Stop</button><button id="redo" disabled>↺ Refaire</button><button id="validate" class="primary" disabled>Publier</button></div>
+    <div class="mutedLine" style="margin:8px 4px 0">Partage externe optionnel — la mission fonctionne sans Instagram/Facebook.</div><div class="share"><button id="instagram" disabled>Instagram</button><button id="facebook" disabled>Facebook</button><button id="youtube" disabled>YouTube</button><button id="shareAny" disabled>Partager…</button></div>
+  </div>
+</div></section>
+
+
+<section id="communityScreen" class="screen"><div class="pad">
+  <div class="hero"><div class="row"><div><h1>Communauté</h1><p>Découvre d’abord les danseurs que tu suis, puis les vidéos proches et celles qui donnent envie de bouger.</p></div><span id="communitySyncBadge" class="communityBadge">HORS LIGNE</span></div></div>
+  <div class="feedTools"><div class="feedTabs"><button id="feedFollowing" class="active">👥 Suivis</button><button id="feedForYou">✨ Pour toi</button><button id="feedNew">🆕 Nouveau</button></div><div class="userSearch"><input id="communitySearch" placeholder="Trouver un danseur…"><button id="communitySearchBtn">🔎</button></div><div id="userSearchResults"></div></div>
+  <div class="card"><div class="row"><div><span class="communityBadge">VIBE</span><h3 style="margin:5px 0">Réagis, encourage, fais monter le HYPE</h3></div><b style="color:#ff80c5">❤️ 🙌 🔥 ✨</b></div><p>Plus une vidéo reçoit de réactions positives, plus elle gagne en HYPE et peut être montrée à davantage de danseurs. Pas de note sur 5.</p></div>
+  <div class="card" style="margin-top:8px"><details><summary><b>Règles & conditions de la Communauté</b></summary><p>Dance World Quest et sa Communauté sont réservés aux joueurs de 13 ans ou plus. Publie uniquement des vidéos pour lesquelles toutes les personnes filmées sont d’accord ; si un mineur apparaît, assure-toi d’avoir l’autorisation de son parent ou responsable légal. Sont interdits : contenu sexuel ou exploitant des mineurs, haine, harcèlement, humiliation, violence graphique, activités illégales, défis dangereux et atteintes à la vie privée. Les utilisateurs peuvent signaler une vidéo ou un joueur et bloquer un joueur. Dance World Quest peut masquer ou supprimer du contenu et suspendre les comptes qui enfreignent ces règles.</p><p class="mutedLine">Ces règles sont distinctes de la politique de confidentialité et doivent être acceptées avant le premier envoi de vidéo.</p></details></div>
+  <div id="communityFeed" class="communityGrid"></div>
+</div></section>
+
+<section id="profileScreen" class="screen"><div class="pad">
+  <div class="hero"><h1>Profil DANCE WORLD QUEST</h1><p>Crée ton compte pour publier tes vidéos, voter et apparaître dans les classements.</p></div>
+  <div id="authCard" class="card" style="margin-top:10px">
+    <div class="row"><div><span class="communityBadge">COMPTE JOUEUR</span><h3 style="margin:5px 0">Connexion Community</h3></div><b id="authBadge" class="pending">NON CONNECTÉ</b></div>
+    <div id="authLoggedOut">
+      <div class="authGrid"><input id="authUsername" class="wide" maxlength="30" placeholder="Pseudo"><input id="authCountry" maxlength="2" placeholder="Pays (IL, FR…)"><input id="authCity" placeholder="Ville"><input id="authEmail" class="wide" type="email" autocomplete="email" placeholder="Email"><input id="authPassword" class="wide" type="password" autocomplete="current-password" minlength="6" placeholder="Mot de passe (6+ caractères)"><button id="authLogin">Se connecter</button><button id="authSignup" class="primary">Créer le compte</button></div><div class="consentLine" style="display:block"><label for="authBirthdate"><b>Date de naissance</b></label><input id="authBirthdate" type="date" autocomplete="bday" style="width:100%;margin-top:6px;background:#0b111a;color:#fff;border:1px solid #344054;border-radius:8px;padding:9px"><div class="mutedLine" style="margin-top:5px">Utilisée uniquement pour vérifier l’accès ; la date n’est pas envoyée ni conservée sur le serveur.</div></div><label class="consentLine"><input id="authTermsCheck" type="checkbox"><span>J’accepte les règles de la Communauté et les conditions de publication des vidéos.</span></label>
+      <p class="mutedLine">Le compte est nécessaire pour envoyer une mission à la Communauté et recevoir l’XP communautaire.</p>
+    </div>
+    <div id="authLoggedIn" style="display:none"><div class="row"><div><b id="authName">—</b><div id="authMeta" class="mutedLine">—</div></div><button id="authLogout">Déconnexion</button></div><div id="eligibilityGate" class="card" style="display:none;margin-top:9px"><b>Accès à la Community</b><p>Renseigne ta date de naissance et accepte les règles actuelles. La date de naissance sert uniquement au contrôle d’accès et n’est pas stockée sur le serveur.</p><div class="consentLine" style="display:block"><label for="eligibilityBirthdate"><b>Date de naissance</b></label><input id="eligibilityBirthdate" type="date" autocomplete="bday" style="width:100%;margin-top:6px;background:#0b111a;color:#fff;border:1px solid #344054;border-radius:8px;padding:9px"></div><label class="consentLine"><input id="eligibilityCheck" type="checkbox"><span>J’accepte les règles de la Communauté.</span></label><button id="eligibilityAccept" class="primary" style="width:100%;margin-top:8px">Continuer</button></div><div class="authGrid"><input id="profileUsername" maxlength="30" placeholder="Pseudo"><input id="profileCountry" maxlength="2" placeholder="Pays"><input id="profileCity" class="wide" placeholder="Ville"><button id="profileSave" class="primary wide">Enregistrer le profil</button><button id="deleteAccount" class="wide">Supprimer mon compte et mes données</button></div></div>
+    <div id="authState" class="authState"><span class="onlineDot"></span>Serveur Community prêt</div>
+    <details style="margin-top:10px"><summary><b>Conditions Community</b></summary><p>La Communauté est réservée aux 13 ans et plus. En publiant une vidéo, tu confirmes avoir l’accord des personnes filmées et respecter les règles de la Communauté. Contenus sexuels, exploitation de mineurs, haine, harcèlement, violence graphique, illégal, dangereux ou portant atteinte à la vie privée : interdits. Les contenus et utilisateurs peuvent être signalés ou bloqués.</p></details>
+    <details style="margin-top:10px"><summary><b>Confidentialité</b></summary><p>Dance World Quest utilise la localisation pendant le jeu pour afficher et vérifier les missions. Lors d’une validation, la position précise peut être transmise au serveur pour le contrôle puis supprimée après traitement. La caméra sert à enregistrer les vidéos de mission ; une vidéo n’est envoyée au serveur que lorsque tu choisis de la valider. La Communauté stocke le compte, le pseudo, le pays, la ville, l’XP, les votes et les vidéos nécessaires au jeu via Supabase. La date de naissance saisie pour le contrôle d’âge n’est pas envoyée ni conservée. Tu peux supprimer ton compte et les données associées depuis ce profil. Le partage vers Instagram/Facebook/YouTube est facultatif.</p></details>
+  </div>
+  <div id="jamAdminCard" class="card jamAdminCard" style="display:none;margin-top:10px">
+    <div class="row"><div><span class="communityBadge">JAM ADMIN</span><h3 id="jamAdminTitle" style="margin:5px 0">Programmation des Jams</h3></div><b id="jamAdminBadge" class="pending">—</b></div>
+    <div id="jamAdminRequestBox" style="display:none"><p id="jamAdminRequestText" class="jamAdminHint">Cet accès est réservé au créateur de Dance World Quest.</p><button id="requestJamAdmin" class="primary" style="width:100%">Demander l’accès Admin</button></div>
+    <div id="jamAdminPanel" style="display:none">
+      <p id="jamAdminIntro" class="jamAdminHint">Crée autant de Jams que tu veux. Chaque Jam devient visible exactement 7 heures avant son rassemblement.</p>
+      <div class="authGrid">
+        <input id="jamCountry" maxlength="2" value="IL" placeholder="Pays">
+        <input id="jamCity" placeholder="Ville / zone">
+        <input id="jamVenue" class="wide" placeholder="Lieu public / parc / place">
+        <input id="jamDate" type="date">
+        <input id="jamTime" type="time" value="20:00">
+        <input id="jamLat" inputmode="decimal" placeholder="Latitude">
+        <input id="jamLon" inputmode="decimal" placeholder="Longitude">
+        <button id="jamUseGPS">Ma position</button><button id="jamPickMap">Choisir sur la carte</button>
+      </div>
+      <label class="jamConfirm"><input id="jamPublicConfirm" type="checkbox"><span id="jamPublicConfirmText">Je confirme que le lieu est public et dispose de suffisamment d’espace pour un rassemblement.</span></label>
+      <div class="actions" style="margin-top:8px"><button id="jamCancelEdit" style="display:none">Annuler modification</button><button id="jamPublish" class="primary full">Publier ce Jam</button></div>
+      <div id="jamAdminList" class="jamAdminList"></div>
+    </div>
+  </div>
+  <div class="profileGrid six"><div class="pbox"><span>XP</span><b id="pXP">0</b></div><div class="pbox"><span>LEVEL</span><b id="pLevel">1</b></div><div class="pbox"><span>HYPE</span><b id="pHype">0</b></div><div class="pbox"><span>🔥 STREAK</span><b id="pStreak">0</b></div><div class="pbox"><span>MISSIONS</span><b id="pDone">0</b></div><div class="pbox"><span>COURSES</span><b id="pRaces">0</b></div></div>
+  <div class="card" style="margin-top:10px"><div class="row"><div><span class="communityBadge">CLASSEMENTS</span><h3 style="margin:5px 0">National & mondial</h3></div><b id="rankSync" class="pending">CONNEXION…</b></div><div class="profileGrid"><div class="pbox"><span>NATIONAL</span><b id="rankNational">#—</b></div><div class="pbox"><span>MONDIAL</span><b id="rankWorld">#—</b></div></div><p id="rankNote" class="mutedLine">Connecte-toi pour rejoindre le classement partagé.</p><div class="syncBar"><small id="leaderTitle">Top mondial</small><button id="refreshRanks">Actualiser</button></div><div id="leaderList" class="leaderList"></div></div>
+</div></section>
+</main>
+
+<nav><button class="active" data-screen="mapScreen"><span>🗺️</span>CARTE</button><button data-screen="missionsScreen"><span>⚡</span>MISSIONS</button><button data-screen="cameraScreen"><span>🎥</span>CAMÉRA</button><button data-screen="communityScreen"><span>👥</span>COMMUNAUTÉ</button><button data-screen="profileScreen"><span>👤</span>PROFIL</button></nav>
+</div>
+<div id="permissionDisclosure" class="disclosureModal"><div class="disclosureBox"><h2 id="disclosureTitle">Autorisation</h2><p id="disclosureText"></p><div class="disclosureActions"><button id="disclosureCancel">Pas maintenant</button><button id="disclosureContinue" class="primary">Continuer</button></div></div></div><div id="userProfileModal" class="disclosureModal userProfileModal"><div class="disclosureBox"><div id="userProfileContent"></div><button id="userProfileClose" style="width:100%;margin-top:10px">Fermer</button></div></div><div id="toast" class="toast"></div><div id="xpPop" class="xpPop">+0 XP</div><div id="unlockToast" class="unlockToast"></div><div id="confettiBurst" class="confettiBurst"></div><div id="nearAlert" class="nearAlert"><b id="nearAlertTitle">Mission proche !</b><small id="nearAlertText"></small></div>
+
+<script nonce="dwq" src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script nonce="dwq" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script nonce="dwq">
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const escAttr=esc;
+const SB_URL="https://lbmgmfpvxggxoboxfsib.supabase.co";
+const SB_KEY="sb_publishable_muyBjmwQ7Z8u3rk-UjXfDw_DANAEmCe";
+const SB=(window.supabase&&window.supabase.createClient)?window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}}):null;
+const S={map:null,pos:null,missions:[],selected:0,active:null,me:null,markers:[],zones:[],stream:null,recorder:null,chunks:[],videoBlob:null,videoURL:null,musicURL:null,audioCtx:null,mixDest:null,raceStart:null,raceTimer:null,recordStarted:null,recordTimer:null,recordedMs:0,lastNearbyId:null,lastNearbyAt:0,personModel:null,personSamples:[],personTimer:null,personLoading:null,cameraFacing:"user",countdownTimer:null,countdownActive:false,profile:loadProfile(),community:loadCommunity(),voteState:loadVoteState(),moderation:loadModeration(),session:null,remoteProfile:null,remotePosts:[],myRemoteVotes:new Set(),signedVideoUrls:new Map(),communityOnline:false,communityBusy:false,lang:localStorage.getItem("dwqLang")||((navigator.language||"").toLowerCase().startsWith("he")?"he":(navigator.language||"").toLowerCase().startsWith("en")?"en":"fr"),duoMeetups:new Map(),duoRefreshTimer:null,publicJams:[],adminJams:[],jamAdmin:false,jamAdminRequested:false,jamPickMode:false,jamEditId:null,jamRefreshTimer:null,following:new Set(),followers:new Set(),reactionRows:[],myReactions:new Map(),profileMap:new Map(),feedMode:"following",dailyStreak:0,lastXpSeen:0,beatChoice:"pulse",beatTimer:null,beatNodes:[]};window.S=S;
+function loadProfile(){try{const p=JSON.parse(localStorage.getItem("moveQuestSimple3"))||{};return {...p,xp:Number(p.xp)||0,done:Array.isArray(p.done)?p.done:[],races:Number(p.races)||0,slotGeneration:(p.slotGeneration&&typeof p.slotGeneration==="object")?p.slotGeneration:{}}}catch(e){return{xp:0,done:[],races:0,slotGeneration:{}}}}
+function save(){localStorage.setItem("moveQuestSimple3",JSON.stringify(S.profile));renderTop()}
+function loadCommunity(){try{return JSON.parse(localStorage.getItem("dwqCommunity10"))||[]}catch(e){return[]}}
+function saveCommunity(){localStorage.setItem("dwqCommunity10",JSON.stringify(S.community));renderCommunity()}
+function loadVoteState(){try{return JSON.parse(localStorage.getItem("dwqVoteState10"))||{day:"",count:0,voted:[]}}catch(e){return{day:"",count:0,voted:[]}}}
+function saveVoteState(){localStorage.setItem("dwqVoteState10",JSON.stringify(S.voteState))}
+function loadModeration(){try{return JSON.parse(localStorage.getItem("dwqModeration10"))||{blocked:[],reported:[]}}catch(e){return{blocked:[],reported:[]}}}
+function saveModeration(){localStorage.setItem("dwqModeration10",JSON.stringify(S.moderation))}
+const COMMUNITY_TERMS_VERSION="2026-08-28";
+function eligibleOnline(){const p=S.remoteProfile||{};return !!(p.age_13_confirmed_at&&p.community_terms_accepted_at&&p.community_terms_version===COMMUNITY_TERMS_VERSION)}
+function birthdateEligible(value){if(!/^\d{4}-\d{2}-\d{2}$/.test(String(value||"")))return false;const d=new Date(value+"T00:00:00");if(!Number.isFinite(d.getTime()))return false;const now=new Date(),cutoff=new Date(now.getFullYear()-13,now.getMonth(),now.getDate());return d<=cutoff&&d.getFullYear()>=1900}
+async function acceptEligibilityOnline(silent=false){if(!SB||!loggedIn())return false;if(!silent){const dob=$("eligibilityBirthdate"),terms=$("eligibilityCheck");if(!dob||!birthdateEligible(dob.value)){toast("La Community n’est pas disponible pour ce compte");return false}if(!terms||!terms.checked){toast("Accepte les règles de la Communauté pour continuer");return false}}const {data,error}=await SB.rpc("accept_community_terms",{p_age_13:true,p_version:COMMUNITY_TERMS_VERSION});if(error||data!==true){toast("Accès Community impossible pour le moment");return false}localStorage.setItem("dwqCommunityConsent:"+COMMUNITY_TERMS_VERSION,"yes");await syncRemoteProfile();renderAuth();return true}
+async function ensureCommunityConsent(){if(!loggedIn())return false;if(eligibleOnline())return true;show("profileScreen");toast("Complète le contrôle d’âge et accepte les règles de la Communauté");return false}
+function reportPost(id){if(loggedIn())return reportPostOnline(id);if(!S.moderation.reported.includes(id))S.moderation.reported.push(id);saveModeration();toast("Vidéo signalée et masquée");renderCommunity()}
+function blockOwner(owner){if(loggedIn())return blockOwnerOnline(owner);if(!S.moderation.blocked.includes(owner))S.moderation.blocked.push(owner);saveModeration();toast("Utilisateur masqué");renderCommunity()}
+
+function userId(){if(S.session&&S.session.user)return S.session.user.id;let id=localStorage.getItem("dwqUserId");if(!id){id="u-"+Math.random().toString(36).slice(2,10);localStorage.setItem("dwqUserId",id)}return id}
+function loggedIn(){return !!(S.session&&S.session.user)}
+
+const I18N={
+ fr:{brand:"explore · danse · relève les défis · v1.3.4",gpsSearch:"Recherche GPS…",gpsAllow:"Autorise ta position",waiting:"En attente",findMap:"Trouve une mission sur la carte.",next:"Mission suivante",approach:"Approche-toi",race:"⚡ Démarrer la course",missionsNear:"Missions autour de toi",missionsNearSub:"Missions près de toi : presque chaque mission filmée demande un mouvement ou un défi précis.",noMission:"Aucune mission",chooseMission:"Choisis d’abord une mission sur la carte.",camera:"Caméra DANCE WORLD QUEST",filmSpot:"Filme ta danse au spot.",music:"🎵 Choisis ta musique",peopleCheck:"👥 Vérification des personnes",peopleStart:"La détection démarre avec l’enregistrement.",openCamera:"Ouvrir caméra",flip:"↔ Caméra",film:"● Filmer",stop:"■ Stop",redo:"↺ Refaire",validate:"Valider la mission",shareNote:"Partage externe optionnel — la mission fonctionne sans Instagram/Facebook.",share:"Partager…",community:"Communauté",communitySub:"Les vidéos des missions vivent ici. Suis tes danseurs préférés, réagis et fais monter leur HYPE.",profile:"Profil DANCE WORLD QUEST",profileSub:"Crée ton compte pour publier tes vidéos, voter et apparaître dans les classements.",login:"Se connecter",signup:"Créer le compte",logout:"Déconnexion",saveProfile:"Enregistrer le profil",deleteAccount:"Supprimer mon compte et mes données",refresh:"Actualiser",mapNav:"CARTE",missionsNav:"MISSIONS",cameraNav:"CAMÉRA",communityNav:"COMMUNAUTÉ",profileNav:"PROFIL",permission:"Autorisation",later:"Pas maintenant",continue:"Continuer",nearby:"Mission proche !",duoTitle:"🕺 Mission à deux",duoNone:"Personne n’est encore en route.",duoGo:"Je suis en route",duoOne:"1 joueur est en route · rejoins-le !",duoJoin:"Rejoindre",duoMatched:"Partenaire trouvé ✓ Rendez-vous au spot.",duoCancel:"Annuler",duoYou:"Tu es en route · le spot le signale pendant 20 min.",duoNeedLogin:"Connecte-toi pour signaler que tu es en route.",flashArea:"FLASH proche",nearYou:"Près de toi",worldTop:"Top mondial",nationalTop:"Top national",online:"EN LIGNE",offline:"HORS LIGNE",weeklyDesc:"Grand rendez-vous hebdomadaire dans un espace public ouvert : venez le plus nombreux possible et filmez une mission collective à envoyer dans la Communauté."},
+ en:{brand:"explore · dance · take the challenge · v1.3.4",gpsSearch:"Finding GPS…",gpsAllow:"Allow location access",waiting:"Waiting",findMap:"Find a mission on the map.",next:"Next mission",approach:"Get closer",race:"⚡ Start the race",missionsNear:"Missions around you",missionsNearSub:"Nearby missions: almost every filmed mission asks for a specific move or challenge.",noMission:"No mission",chooseMission:"Choose a mission on the map first.",camera:"DANCE WORLD QUEST Camera",filmSpot:"Film your dance at the spot.",music:"🎵 Choose your music",peopleCheck:"👥 People check",peopleStart:"Detection starts when recording begins.",openCamera:"Open camera",flip:"↔ Camera",film:"● Record",stop:"■ Stop",redo:"↺ Retake",validate:"Validate mission",shareNote:"External sharing is optional — missions work without Instagram/Facebook.",share:"Share…",community:"Community",communitySub:"Mission videos live here. Follow dancers you like, react and help raise their HYPE.",profile:"DANCE WORLD QUEST Profile",profileSub:"Create your account to publish videos, vote and appear in rankings.",login:"Sign in",signup:"Create account",logout:"Sign out",saveProfile:"Save profile",deleteAccount:"Delete my account and data",refresh:"Refresh",mapNav:"MAP",missionsNav:"MISSIONS",cameraNav:"CAMERA",communityNav:"COMMUNITY",profileNav:"PROFILE",permission:"Permission",later:"Not now",continue:"Continue",nearby:"Nearby mission!",duoTitle:"🕺 Two-person mission",duoNone:"Nobody is on the way yet.",duoGo:"I'm on my way",duoOne:"1 player is on the way · join them!",duoJoin:"Join",duoMatched:"Partner found ✓ Meet at the spot.",duoCancel:"Cancel",duoYou:"You're on the way · the spot shows it for 20 min.",duoNeedLogin:"Sign in to show that you're on the way.",flashArea:"Nearby FLASH",nearYou:"Near you",worldTop:"Global top",nationalTop:"National top",online:"ONLINE",offline:"OFFLINE",weeklyDesc:"Weekly meetup in a spacious public place: come together, complete the group mission and upload the video to the Community."},
+ he:{brand:"לגלות · לרקוד · להשלים אתגר · v1.3.4",gpsSearch:"מחפש GPS…",gpsAllow:"יש לאשר גישה למיקום",waiting:"ממתין",findMap:"מצא משימה על המפה.",next:"המשימה הבאה",approach:"התקרב",race:"⚡ התחל מרוץ",missionsNear:"משימות סביבך",missionsNearSub:"כמעט כל משימה מצולמת מבקשת תנועה או אתגר מסוים.",noMission:"אין משימה",chooseMission:"בחר קודם משימה על המפה.",camera:"מצלמת DANCE WORLD QUEST",filmSpot:"צלם את הריקוד בנקודה.",music:"🎵 בחר מוזיקה",peopleCheck:"👥 בדיקת משתתפים",peopleStart:"הזיהוי מתחיל עם ההקלטה.",openCamera:"פתח מצלמה",flip:"↔ החלף מצלמה",film:"● צלם",stop:"■ עצור",redo:"↺ צלם שוב",validate:"אשר משימה",shareNote:"שיתוף חיצוני אופציונלי — המשחק עובד גם בלי Instagram/Facebook.",share:"שיתוף…",community:"קהילה",communitySub:"כאן עולים סרטוני המשימות. עקוב אחרי רקדנים שאתה אוהב, פרגן והעלה להם את ה-HYPE.",profile:"פרופיל DANCE WORLD QUEST",profileSub:"צור חשבון כדי לפרסם סרטונים, להצביע ולהופיע בדירוג.",login:"התחבר",signup:"צור חשבון",logout:"התנתק",saveProfile:"שמור פרופיל",deleteAccount:"מחק את החשבון והנתונים",refresh:"רענן",mapNav:"מפה",missionsNav:"משימות",cameraNav:"מצלמה",communityNav:"קהילה",profileNav:"פרופיל",permission:"הרשאה",later:"לא עכשיו",continue:"המשך",nearby:"משימה קרובה!",duoTitle:"🕺 משימה לשניים",duoNone:"עדיין אף אחד לא בדרך.",duoGo:"אני בדרך",duoOne:"שחקן אחד בדרך · הצטרף!",duoJoin:"הצטרף",duoMatched:"נמצא פרטנר ✓ נפגשים בנקודה.",duoCancel:"בטל",duoYou:"אתה בדרך · הנקודה מסומנת ל־20 דקות.",duoNeedLogin:"התחבר כדי לסמן שאתה בדרך.",flashArea:"FLASH קרוב",nearYou:"קרוב אליך",worldTop:"דירוג עולמי",nationalTop:"דירוג ארצי",online:"מחובר",offline:"לא מחובר",weeklyDesc:"מפגש שבועי במקום ציבורי מרווח: מגיעים יחד, מבצעים משימה קבוצתית ומעלים את הסרטון לקהילה."}
+};
+function t(k){return (I18N[S.lang]&&I18N[S.lang][k])||I18N.fr[k]||k}
+const LITERAL_I18N={
+"Verdict de la communauté":{en:"Community verdict",he:"הכרעת הקהילה"},"5 votes minimum":{en:"5 votes minimum",he:"מינימום 5 הצבעות"},
+"Les missions simples peuvent donner leur XP dès que le GPS, la durée et la vidéo sont validés. Les techniques, Battles, vitesse et défis créatifs attendent le verdict des autres joueurs.":{en:"Simple missions can award XP once GPS, duration and video are validated. Techniques, Battles, speed and creative challenges wait for other players’ verdict.",he:"משימות פשוטות יכולות לתת XP לאחר אימות GPS, משך וסרטון. טכניקה, באטלים, מהירות ואתגרים יצירתיים מחכים להכרעת שחקנים אחרים."},
+"Règles & conditions de la Communauté":{en:"Community rules & terms",he:"כללי ותנאי הקהילה"},"RÈGLE":{en:"RULE",he:"כלל"},"EN LIGNE":{en:"ONLINE",he:"מחובר"},"HORS LIGNE":{en:"OFFLINE",he:"לא מחובר"},
+"COMPTE JOUEUR":{en:"PLAYER ACCOUNT",he:"חשבון שחקן"},"Connexion Community":{en:"Community sign-in",he:"חיבור לקהילה"},"NON CONNECTÉ":{en:"NOT SIGNED IN",he:"לא מחובר"},"CONNECTÉ":{en:"SIGNED IN",he:"מחובר"},"ACCÈS À CONFIRMER":{en:"ACCESS TO CONFIRM",he:"יש לאשר גישה"},
+"Date de naissance":{en:"Date of birth",he:"תאריך לידה"},"Utilisée uniquement pour vérifier l’accès ; la date n’est pas envoyée ni conservée sur le serveur.":{en:"Used only to check access; the date is not sent to or stored on the server.",he:"משמש רק לבדיקת גישה; התאריך אינו נשלח ואינו נשמר בשרת."},
+"J’accepte les règles de la Communauté et les conditions de publication des vidéos.":{en:"I accept the Community rules and video publishing terms.",he:"אני מאשר את כללי הקהילה ואת תנאי פרסום הסרטונים."},
+"Le compte est nécessaire pour envoyer une mission à la Communauté et recevoir l’XP communautaire.":{en:"An account is required to send a mission to the Community and receive Community XP.",he:"נדרש חשבון כדי לשלוח משימה לקהילה ולקבל XP קהילתי."},
+"Accès à la Community":{en:"Community access",he:"גישה לקהילה"},"J’accepte les règles de la Communauté.":{en:"I accept the Community rules.",he:"אני מאשר את כללי הקהילה."},
+"Conditions Community":{en:"Community terms",he:"תנאי הקהילה"},"Confidentialité":{en:"Privacy",he:"פרטיות"},"CLASSEMENTS":{en:"RANKINGS",he:"דירוגים"},"National & mondial":{en:"National & global",he:"ארצי ועולמי"},
+"NATIONAL":{en:"NATIONAL",he:"ארצי"},"MONDIAL":{en:"GLOBAL",he:"עולמי"},"CONNEXION…":{en:"CONNECTING…",he:"מתחבר…"},"Connecte-toi pour rejoindre le classement partagé.":{en:"Sign in to join the shared ranking.",he:"התחבר כדי להצטרף לדירוג המשותף."},"Top mondial":{en:"Global top",he:"דירוג עולמי"},
+"SANS LIEU PRÉCIS":{en:"ANYWHERE",he:"בכל מקום"},"Missions famille — joue n’importe où":{en:"Family missions — play anywhere",he:"משימות משפחה — משחקים בכל מקום"},"Chez toi, au parc, à la plage… aucun GPS nécessaire.":{en:"At home, in a park, at the beach… no GPS required.",he:"בבית, בפארק, בחוף… אין צורך ב-GPS."},
+"SUR LA CARTE":{en:"ON THE MAP",he:"על המפה"},"🌍 Missions autour de toi":{en:"🌍 Missions around you",he:"🌍 משימות סביבך"},"Principalement des missions précises : Moonwalk, Backpack/Floss, Running Man, Shuffle, Charleston, objets, moods, vitesse et Battles. Les simples “danse 10 s” sont rares.":{en:"Mostly specific missions: Moonwalk, Backpack/Floss, Running Man, Shuffle, Charleston, objects, moods, speed and Battles. Simple “dance 10 s” missions are rare.",he:"בעיקר משימות מדויקות: Moonwalk, Floss, Running Man, Shuffle, Charleston, חפצים, מצבי רוח, מהירות ובאטלים. משימות פשוטות של ״רקוד 10 שניות״ נדירות."},
+"Mission test solo":{en:"Solo test mission",he:"משימת בדיקה לבד"},"Tester maintenant":{en:"Test now",he:"בדוק עכשיו"},"N’importe où":{en:"Anywhere",he:"בכל מקום"},"1 personne":{en:"1 person",he:"אדם אחד"},"personnes":{en:"people",he:"אנשים"},
+"Recherche des missions proches…":{en:"Finding nearby missions…",he:"מחפש משימות קרובות…"},"Serveur Community prêt":{en:"Community server ready",he:"שרת הקהילה מוכן"},"Actualiser":{en:"Refresh",he:"רענן"}
+};
+Object.assign(LITERAL_I18N,{
+"GPS actif ✓":{en:"GPS active ✓",he:"GPS פעיל ✓"},"Localisation non activée":{en:"Location not enabled",he:"המיקום לא הופעל"},"Tu peux continuer sans GPS et l’activer plus tard.":{en:"You can continue without GPS and enable it later.",he:"אפשר להמשיך בלי GPS ולהפעיל אותו מאוחר יותר."},"GPS indisponible":{en:"GPS unavailable",he:"GPS לא זמין"},"GPS bloqué":{en:"GPS blocked",he:"GPS חסום"},
+"Course lancée ⚡":{en:"Race started ⚡",he:"המרוץ התחיל ⚡"},"Démarre d'abord la course":{en:"Start the race first",he:"התחל קודם את המרוץ"},"Mission spéciale débloquée 🌟":{en:"Special mission unlocked 🌟",he:"משימה מיוחדת נפתחה 🌟"},"Mission à plusieurs débloquée 👥":{en:"Group mission unlocked 👥",he:"משימה קבוצתית נפתחה 👥"},"Mission famille débloquée 👨‍👩‍👧‍👦":{en:"Family mission unlocked 👨‍👩‍👧‍👦",he:"משימת משפחה נפתחה 👨‍👩‍👧‍👦"},"Mission débloquée ✓":{en:"Mission unlocked ✓",he:"המשימה נפתחה ✓"},
+"Chargement de la vérification personnes…":{en:"Loading people detection…",he:"טוען זיהוי משתתפים…"},"Nombre de personnes OK ✓":{en:"People count OK ✓",he:"מספר המשתתפים תקין ✓"},"Restez tous bien visibles dans l’image.":{en:"Keep everyone clearly visible in the frame.",he:"ודאו שכולם נראים היטב בפריים."},"Détection indisponible. Vérifie ta connexion et réessaie.":{en:"Detection unavailable. Check your connection and try again.",he:"הזיהוי לא זמין. בדוק את החיבור ונסה שוב."},
+"Musique chargée ✓":{en:"Music loaded ✓",he:"המוזיקה נטענה ✓"},"Choisis une musique":{en:"Choose music",he:"בחר מוזיקה"},"Lecture impossible":{en:"Playback unavailable",he:"לא ניתן לנגן"},"Caméra non activée":{en:"Camera not enabled",he:"המצלמה לא הופעלה"},"Caméra prête ✓":{en:"Camera ready ✓",he:"המצלמה מוכנה ✓"},"Enregistrement non supporté":{en:"Recording not supported",he:"ההקלטה אינה נתמכת"},"Compte à rebours annulé":{en:"Countdown cancelled",he:"הספירה לאחור בוטלה"},
+"Choisis une mission":{en:"Choose a mission",he:"בחר משימה"},"Vidéo signalée et masquée":{en:"Video reported and hidden",he:"הסרטון דווח והוסתר"},"Utilisateur masqué":{en:"User hidden",he:"המשתמש הוסתר"},"Connecte-toi pour publier et voter":{en:"Sign in to publish and vote",he:"התחבר כדי לפרסם ולהצביע"},"Community synchronisée":{en:"Community synced",he:"הקהילה מסונכרנת"},"Profil enregistré ✓":{en:"Profile saved ✓",he:"הפרופיל נשמר ✓"},"Création du compte…":{en:"Creating account…",he:"יוצר חשבון…"},"Envoi de la vidéo…":{en:"Uploading video…",he:"מעלה סרטון…"},"Vote enregistré ✓":{en:"Vote recorded ✓",he:"ההצבעה נשמרה ✓"},"Vidéo signalée et masquée":{en:"Video reported and hidden",he:"הסרטון דווח והוסתר"},
+"La Community n’est pas disponible pour ce compte":{en:"The Community is not available for this account",he:"הקהילה אינה זמינה לחשבון הזה"},"Accepte les règles de la Communauté pour continuer":{en:"Accept the Community rules to continue",he:"אשר את כללי הקהילה כדי להמשיך"},"Accès Community impossible pour le moment":{en:"Community access is unavailable right now",he:"הגישה לקהילה אינה זמינה כרגע"},"Complète le contrôle d’âge et accepte les règles de la Communauté":{en:"Complete the age check and accept the Community rules",he:"השלם את בדיקת הגיל ואשר את כללי הקהילה"},
+"Renseigne ta date de naissance et accepte les règles actuelles. La date de naissance sert uniquement au contrôle d’accès et n’est pas stockée sur le serveur.":{en:"Enter your date of birth and accept the current rules. Your birth date is used only for the access check and is not stored on the server.",he:"הזן תאריך לידה ואשר את הכללים הנוכחיים. תאריך הלידה משמש רק לבדיקת גישה ואינו נשמר בשרת."},
+"La Communauté est réservée aux 13 ans et plus. En publiant une vidéo, tu confirmes avoir l’accord des personnes filmées et respecter les règles de la Communauté. Contenus sexuels, exploitation de mineurs, haine, harcèlement, violence graphique, illégal, dangereux ou portant atteinte à la vie privée : interdits. Les contenus et utilisateurs peuvent être signalés ou bloqués.":{en:"The Community is for ages 13+. By publishing a video, you confirm that everyone filmed agrees and that you follow the Community rules. Sexual content, child exploitation, hate, harassment, graphic violence, illegal or dangerous content, and privacy violations are prohibited. Content and users can be reported or blocked.",he:"הקהילה מיועדת לגיל 13 ומעלה. בפרסום סרטון אתה מאשר שכל המצולמים מסכימים ושאתה עומד בכללים. תוכן מיני, ניצול קטינים, שנאה, הטרדה, אלימות גרפית, תוכן לא חוקי או מסוכן ופגיעה בפרטיות אסורים. ניתן לדווח או לחסום תוכן ומשתמשים."},
+"Dance World Quest utilise la localisation pendant le jeu pour afficher et vérifier les missions. Lors d’une validation, la position précise peut être transmise au serveur pour le contrôle puis supprimée après traitement. La caméra sert à enregistrer les vidéos de mission ; une vidéo n’est envoyée au serveur que lorsque tu choisis de la valider. La Communauté stocke le compte, le pseudo, le pays, la ville, l’XP, les votes et les vidéos nécessaires au jeu via Supabase. La date de naissance saisie pour le contrôle d’âge n’est pas envoyée ni conservée. Tu peux supprimer ton compte et les données associées depuis ce profil. Le partage vers Instagram/Facebook/YouTube est facultatif.":{en:"Dance World Quest uses location during play to show and verify missions. During validation, precise location may be sent to the server for verification and then removed after processing. The camera records mission videos; a video is sent only when you choose to validate it. The Community stores account, username, country, city, XP, votes and required videos via Supabase. The birth date used for age checking is not sent or stored. You can delete your account and related data from this profile. Sharing to Instagram/Facebook/YouTube is optional.",he:"Dance World Quest משתמש במיקום בזמן המשחק כדי להציג ולאמת משימות. בעת אישור משימה ייתכן שהמיקום המדויק יישלח לשרת לצורך בדיקה ואז יימחק לאחר העיבוד. המצלמה משמשת לצילום סרטוני משימות; סרטון נשלח רק כאשר בוחרים לאשר אותו. הקהילה שומרת באמצעות Supabase חשבון, כינוי, מדינה, עיר, XP, הצבעות וסרטונים הדרושים למשחק. תאריך הלידה לבדיקת גיל אינו נשלח או נשמר. ניתן למחוק את החשבון והנתונים מהפרופיל. שיתוף ל-Instagram/Facebook/YouTube הוא אופציונלי."}
+});
+Object.assign(LITERAL_I18N,{
+"Découvre d’abord les danseurs que tu suis, puis les vidéos proches et celles qui donnent envie de bouger.":{en:"See dancers you follow first, then nearby videos and the ones that make people want to move.",he:"קודם רואים רקדנים שאתה עוקב אחריהם, אחר כך סרטונים קרובים וכאלה שעושים חשק לזוז."},
+"Réagis, encourage, fais monter le HYPE":{en:"React, encourage, raise the HYPE",he:"פרגן, הגב והעלה את ה-HYPE"},
+"Plus une vidéo reçoit de réactions positives, plus elle gagne en HYPE et peut être montrée à davantage de danseurs. Pas de note sur 5.":{en:"The more positive reactions a video gets, the more HYPE it earns and the more dancers may see it. No 1–5 rating.",he:"ככל שסרטון מקבל יותר תגובות חיוביות, ה-HYPE שלו עולה והוא יכול להיחשף ליותר רקדנים. אין ציון מ-1 עד 5."},
+"Dance World Quest et sa Communauté sont réservés aux joueurs de 13 ans ou plus. Publie uniquement des vidéos pour lesquelles toutes les personnes filmées sont d’accord ; si un mineur apparaît, assure-toi d’avoir l’autorisation de son parent ou responsable légal. Sont interdits : contenu sexuel ou exploitant des mineurs, haine, harcèlement, humiliation, violence graphique, activités illégales, défis dangereux et atteintes à la vie privée. Les utilisateurs peuvent signaler une vidéo ou un joueur et bloquer un joueur. Dance World Quest peut masquer ou supprimer du contenu et suspendre les comptes qui enfreignent ces règles.":{en:"Dance World Quest and its Community are for players aged 13+. Only publish videos with the consent of everyone filmed; if a minor appears, make sure a parent or legal guardian has authorized it. Sexual content, child exploitation, hate, harassment, humiliation, graphic violence, illegal activity, dangerous challenges and privacy violations are prohibited. Users can report videos or players and block players. Dance World Quest may hide or remove content and suspend accounts that break these rules.",he:"Dance World Quest והקהילה מיועדים לגיל 13 ומעלה. פרסם רק סרטונים שכל המצולמים הסכימו להם; אם מופיע קטין יש לוודא אישור הורה או אפוטרופוס. תוכן מיני, ניצול קטינים, שנאה, הטרדה, השפלה, אלימות גרפית, פעילות לא חוקית, אתגרים מסוכנים ופגיעה בפרטיות אסורים. ניתן לדווח על סרטון או שחקן ולחסום שחקנים. Dance World Quest רשאית להסתיר או להסיר תוכן ולהשעות חשבונות שמפרים את הכללים."},
+"Ces règles sont distinctes de la politique de confidentialité et doivent être acceptées avant le premier envoi de vidéo.":{en:"These rules are separate from the Privacy Policy and must be accepted before the first video upload.",he:"כללים אלה נפרדים ממדיניות הפרטיות ויש לאשר אותם לפני העלאת הסרטון הראשון."},
+"Crée ton compte pour publier tes vidéos, voter et apparaître dans les classements.":{en:"Create an account to publish videos, follow dancers, react and appear in rankings.",he:"צור חשבון כדי לפרסם סרטונים, לעקוב אחרי רקדנים, להגיב ולהופיע בדירוגים."},
+"Serveur Community prêt":{en:"Community server ready",he:"שרת הקהילה מוכן"},
+"Programmation des Jams":{en:"Jam scheduling",he:"תזמון Jams"},
+"Cet accès est réservé au créateur de Dance World Quest.":{en:"This access is reserved for the Dance World Quest creator.",he:"הגישה הזו שמורה ליוצר Dance World Quest."},
+"Demander l’accès Admin":{en:"Request Admin access",he:"בקש גישת Admin"},
+"Crée autant de Jams que tu veux. Chaque Jam devient visible exactement 7 heures avant son rassemblement.":{en:"Create as many Jams as you want. Each Jam becomes visible exactly 7 hours before it starts.",he:"אפשר ליצור כמה Jams שרוצים. כל Jam הופך לגלוי בדיוק 7 שעות לפני תחילתו."},
+"Ma position":{en:"My location",he:"המיקום שלי"},"Choisir sur la carte":{en:"Choose on map",he:"בחר במפה"},
+"Je confirme que le lieu est public et dispose de suffisamment d’espace pour un rassemblement.":{en:"I confirm this is a public place with enough space for a gathering.",he:"אני מאשר שזה מקום ציבורי עם מספיק מרחב להתכנסות."},
+"Annuler modification":{en:"Cancel edit",he:"בטל עריכה"},"Publier ce Jam":{en:"Publish this Jam",he:"פרסם Jam"},
+"Fermer":{en:"Close",he:"סגור"},
+"🎵 Choisis ton beat":{en:"🎵 Choose your beat",he:"🎵 בחר ביט"},"Ou utilise ta propre musique :":{en:"Or use your own music:",he:"או השתמש במוזיקה שלך:"},"◯ Sans beat":{en:"◯ No beat",he:"◯ בלי ביט"}
+});
+function dynamicTranslation(clean){
+ if(S.lang==="fr")return null;
+ let m;
+ if((m=clean.match(/^Précision ≈ (.+) m$/)))return S.lang==="he"?`דיוק ≈ ${m[1]} מ׳`:`Accuracy ≈ ${m[1]} m`;
+ if((m=clean.match(/^À environ (.+) · (\+\d+ XP)$/)))return S.lang==="he"?`במרחק כ-${m[1]} · ${m[2]}`:`About ${m[1]} away · ${m[2]}`;
+ if((m=clean.match(/^Encore (.+)$/)))return S.lang==="he"?`עוד ${m[1]}`:`Still ${m[1]} away`;
+ if((m=clean.match(/^Arrivée en (.+) · filme la preuve pour demander le verdict$/)))return S.lang==="he"?`הגעת תוך ${m[1]} · צלם הוכחה כדי לבקש הכרעה`:`Arrived in ${m[1]} · film the proof to request a verdict`;
+ if((m=clean.match(/^👥 (\d+) \/ (\d+) personnes détectées$/)))return S.lang==="he"?`👥 זוהו ${m[1]} / ${m[2]} אנשים`:`👥 ${m[1]} / ${m[2]} people detected`;
+ if((m=clean.match(/^(\d+) secondes ✓$/)))return S.lang==="he"?`${m[1]} שניות ✓`:`${m[1]} seconds ✓`;
+ if((m=clean.match(/^Vidéo trop courte · (.+)$/)))return S.lang==="he"?`הסרטון קצר מדי · ${m[1]}`:`Video too short · ${m[1]}`;
+ if((m=clean.match(/^Caméra indisponible · (.+)$/)))return S.lang==="he"?`המצלמה לא זמינה · ${m[1]}`:`Camera unavailable · ${m[1]}`;
+ if((m=clean.match(/^Vérifie l’autorisation Localisation · (.+)$/)))return S.lang==="he"?`בדוק הרשאת מיקום · ${m[1]}`:`Check location permission · ${m[1]}`;
+ if((m=clean.match(/^Le Grand Weekly Jam commence (.+)$/)))return S.lang==="he"?`ה-Grand Weekly Jam מתחיל ${m[1]}`:`Grand Weekly Jam starts ${m[1]}`;
+ if((m=clean.match(/^Mission à (.+) · (\+\d+ XP)$/)))return S.lang==="he"?`משימה במרחק ${m[1]} · ${m[2]}`:`Mission at ${m[1]} · ${m[2]}`;
+ return null
+}
+function literalTarget(txt){
+ const clean=String(txt||"").trim();if(!clean)return null;const all=Object.entries(LITERAL_I18N);
+ for(const [fr,v] of all){if(clean===fr||clean===v.en||clean===v.he)return S.lang==="fr"?fr:(v[S.lang]||fr)}
+ return dynamicTranslation(clean)
+}
+function localizeDOM(root=document.body){
+ const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){const target=literalTarget(n.nodeValue);if(target){const a=n.nodeValue.match(/^\s*/)?.[0]||"",b=n.nodeValue.match(/\s*$/)?.[0]||"",next=a+target+b;if(n.nodeValue!==next)n.nodeValue=next}}
+ document.querySelectorAll("input[placeholder]").forEach(e=>{const map={"Pseudo":{en:"Username",he:"כינוי"},"Pays (IL, FR…)":{en:"Country (IL, FR…)",he:"מדינה (IL, FR…)"},"Pays":{en:"Country",he:"מדינה"},"Ville":{en:"City",he:"עיר"},"Email":{en:"Email",he:"אימייל"},"Mot de passe (6+ caractères)":{en:"Password (6+ characters)",he:"סיסמה (6+ תווים)"}};for(const [fr,v] of Object.entries(map)){if(e.placeholder===fr||e.placeholder===v.en||e.placeholder===v.he){e.placeholder=S.lang==="fr"?fr:v[S.lang];break}}})
+}
+function applyLanguage(){
+ document.documentElement.lang=S.lang;document.documentElement.dir=S.lang==="he"?"rtl":"ltr";localStorage.setItem("dwqLang",S.lang);if($("langSelect"))$("langSelect").value=S.lang;
+ const set=(id,k)=>{const e=$(id);if(e)e.textContent=t(k)};[["brandTag","brand"],["gpsTitle","gpsSearch"],["gpsSub","gpsAllow"],["next","next"],["startRace","race"],["personCheckTitle","peopleCheck"],["personCheckText","peopleStart"],["openCam","openCamera"],["flipCam","flip"],["rec","film"],["stop","stop"],["redo","redo"],["validate","validate"],["shareAny","share"],["disclosureTitle","permission"],["disclosureCancel","later"],["disclosureContinue","continue"],["nearAlertTitle","nearby"],["duoMeetTitle","duoTitle"],["authLogin","login"],["authSignup","signup"],["authLogout","logout"],["profileSave","saveProfile"],["deleteAccount","deleteAccount"],["refreshRanks","refresh"]].forEach(x=>set(...x));
+ const q=(sel,k)=>{const e=document.querySelector(sel);if(e)e.textContent=t(k)};q("#missionsScreen .hero h1","missionsNear");q("#missionsScreen .hero p","missionsNearSub");q("#cameraScreen .placeholder h2","camera");q("#cameraScreen .placeholder p","filmSpot");q(".music h3","music");q("#cameraScreen .mutedLine","shareNote");q("#communityScreen .hero h1","community");q("#communityScreen .hero p","communitySub");q("#profileScreen .hero h1","profile");q("#profileScreen .hero p","profileSub");
+ const nav=document.querySelectorAll("nav button"),keys=["mapNav","missionsNav","cameraNav","communityNav","profileNav"];nav.forEach((b,i)=>{const em=b.querySelector("span")?.outerHTML||"";b.innerHTML=em+t(keys[i])});
+ renderAll();renderCommunity();renderAuth();renderDuoSelected();renderJamAdmin();localizeDOM()
+}
+
+function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove("show"),2400)}
+function level(){return Math.floor(S.profile.xp/500)+1}
+function sfx(kind){
+ try{
+   const C=window.AudioContext||window.webkitAudioContext;S._sfxCtx=S._sfxCtx||new C();const c=S._sfxCtx;c.resume();
+   const now=c.currentTime;const notes=kind==="level"?[523,659,784,1047]:kind==="vote"?[360,520]:kind==="xp"?[520,720,900]:[440];
+   notes.forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.type=kind==="level"?"sine":"triangle";o.frequency.value=f;g.gain.setValueAtTime(.0001,now+i*.07);g.gain.exponentialRampToValueAtTime(.12,now+i*.07+.015);g.gain.exponentialRampToValueAtTime(.0001,now+i*.07+.12);o.connect(g);g.connect(c.destination);o.start(now+i*.07);o.stop(now+i*.07+.14)});
+   if(navigator.vibrate)navigator.vibrate(kind==="level"?[80,50,120]:kind==="xp"?[60,30,60]:35)
+ }catch(e){}
+}
+function showXP(n,kind="xp"){$("xpPop").textContent="+"+n+" XP";$("xpPop").classList.add("show");sfx(kind);clearTimeout($("xpPop")._t);$("xpPop")._t=setTimeout(()=>$("xpPop").classList.remove("show"),1200)}
+function awardXP(n){const before=level();S.profile.xp+=n;save();showXP(n,level()>before?"level":"xp")}
+
+const rad=x=>x*Math.PI/180;
+function dist(a,b){const R=6371000,dla=rad(b.lat-a.lat),dlo=rad(b.lon-a.lon),la1=rad(a.lat),la2=rad(b.lat);const h=Math.sin(dla/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dlo/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
+function offset(lat,lon,n,e){return{lat:lat+n/111320,lon:lon+e/(111320*Math.cos(rad(lat)))}}
+function fmt(m){return m<1000?Math.round(m)+" m":(m/1000).toFixed(1)+" km"}
+function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function rng32(a){return function(){let t=a+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+function weighted(r,arr){let total=arr.reduce((s,x)=>s+x.w,0),n=r()*total;for(const x of arr){n-=x.w;if(n<=0)return x}return arr[arr.length-1]}
+function weightedType(r){return weighted(r,TYPES)}
+function missionFromType(t,r){
+ if(t.type==="family"){const f=FAMILY_MISSIONS[Math.floor(r()*FAMILY_MISSIONS.length)];return {...t,familyId:f.id,title:f.title.fr,desc:f.desc.fr,duration:f.duration||t.duration||15}}
+ if(t.type==="trick"||t.type==="speed"||t.type==="special"){
+   const k=TRICK_MISSIONS[Math.floor(r()*TRICK_MISSIONS.length)];
+   return {...t,trickId:k.id,title:k.fr,desc:k.how.fr,duration:t.type==="special"?Math.max(15,k.duration||15):Math.max(t.duration||12,k.duration||12),communityVerdict:true}
+ }
+ if(t.type==="mood"){const mood=MOODS[Math.floor(r()*MOODS.length)];return {...t,moodId:mood.id,title:mood.name.fr,desc:mood.cue.fr,communityVerdict:true}}
+ return t
+}
+const TYPE_TEXT={
+ dance:{fr:["Dance Spot","Mission simple rare : va au spot et filme 10 secondes de danse."],en:["Dance Spot","Simple mission: reach the spot and record 10 seconds of dancing."],he:["נקודת ריקוד","משימה פשוטה: הגיע לנקודה וצלם 10 שניות של ריקוד."]},
+ group:{fr:["Meet & Move","Mission collective : retrouvez-vous au même spot et filmez la mission ensemble."],en:["Meet & Move","Group mission: meet at the same spot and film the mission together."],he:["Meet & Move","משימה קבוצתית: נפגשים באותה נקודה ומצלמים יחד."]},
+ family:{fr:["Family Move","Mission famille : un défi à faire à plusieurs et à faire noter par la communauté."],en:["Family Move","Family mission: complete the challenge together and let the Community score it."],he:["Family Move","משימה משפחתית: מבצעים יחד והקהילה נותנת ציון."]},
+ object:{fr:["Dance With an Object","Trouve un objet sur place — banc, mur, arbre, chaise… — et intègre-le vraiment dans ta danse."],en:["Dance With an Object","Use an object at the spot — bench, wall, tree, chair… — as a real part of your dance."],he:["ריקוד עם חפץ","מצא חפץ במקום — ספסל, קיר, עץ, כיסא… — ושלב אותו באמת בריקוד."]},
+ duo:{fr:["2 Persons Dance","À deux : retrouvez-vous au spot, créez une mini-danse de 15 secondes et filmez une seule vidéo. Les deux comptes reçoivent l’XP après validation."],en:["2 Persons Dance","As a pair: meet at the spot, create a 15-second mini-dance and upload one video. Both accounts get XP after validation."],he:["ריקוד לשניים","נפגשים בנקודה, יוצרים ריקוד קצר של 15 שניות ומעלים סרטון אחד. שני החשבונות יקבלו XP לאחר אישור."]},
+ battle:{fr:["Dance Battle","À 2 ou plus : chacun a son moment, puis terminez ensemble face caméra. La communauté donne le verdict."],en:["Dance Battle","2+ players: each gets a moment, then finish together facing the camera. The Community decides."],he:["Dance Battle","2 שחקנים ומעלה: לכל אחד קטע משלו, ואז מסיימים יחד מול המצלמה. הקהילה מחליטה."]},
+ mood:{fr:["Mood Challenge","L’app choisit une émotion ou une contrainte à interpréter en dansant."],en:["Mood Challenge","Dance a clearly recognizable emotion or movement constraint."],he:["אתגר מצב רוח","רקוד רגש או מגבלה תנועתית בצורה ברורה."]},
+ special:{fr:["Golden Spot","Mission spéciale rare."],en:["Golden Spot","Rare special mission."],he:["Golden Spot","משימה מיוחדת ונדירה."]},
+ speed:{fr:["Flash Race","Atteins le point le plus vite possible puis réalise le mouvement demandé."],en:["Flash Race","Reach the point as fast as possible, then perform the requested move."],he:["מרוץ FLASH","הגע לנקודה מהר ככל האפשר ואז בצע את התנועה המבוקשת."]}
+};
+function typeText(type,idx){const d=TYPE_TEXT[type];if(!d)return"";const a=d[S.lang]||d.fr;return a[idx]||""}
+function missionTitle(m){
+ const k=m&&m.trickId?trickById(m.trickId):null,name=k?trickName(k):null;
+ let v=m&&m.title||"";
+ if(k){if(m.type==="speed")v=(S.lang==="he"?"מרוץ FLASH · ":S.lang==="en"?"Flash Race · ":"Flash Race · ")+name;else if(m.type==="special")v=(S.lang==="he"?"זהב · ":S.lang==="en"?"Golden · ":"Golden · ")+name;else v=name+" Challenge"}
+ if(m&&m.weekly)v=(S.lang==="he"?"Weekly Jam גדול · ":S.lang==="en"?"Grand Weekly Jam · ":"Grand Weekly Jam · ")+(m.cityName||m.area||"");
+ const fam=m&&m.familyId?familyById(m.familyId):null,md=m&&m.moodId?moodById(m.moodId):null;
+ if(fam)v=familyText(fam,"title");else if(md)v=(S.lang==="he"?"אתגר מצב רוח · ":S.lang==="en"?"Mood Challenge · ":"Mood Challenge · ")+moodText(md,"name");else if(m&&m.test)v=S.lang==="he"?"משימת בדיקה לבד":S.lang==="en"?"Solo test mission":"Mission test solo";else if(!k&&m&&TYPE_TEXT[m.type])v=typeText(m.type,0)||v;
+ if(m&&m.flash)v="🔥 FLASH · "+v;
+ return v
+}
+function missionDesc(m){
+ const k=m&&m.trickId?trickById(m.trickId):null;
+ if(k){
+  const how=trickHow(k);
+  if(m.type==="speed")return (S.lang==="he"?"הגע לנקודה מהר ככל האפשר ואז בצע בדיוק: ":S.lang==="en"?"Reach the spot as fast as possible, then perform precisely: ":"Atteins le spot le plus vite possible, puis réalise précisément : ")+how;
+  if(m.type==="special")return (S.lang==="he"?"משימה נדירה. בצע את התנועה בבירור: ":S.lang==="en"?"Rare mission. Perform the move clearly: ":"Mission rare. Réalise clairement le mouvement : ")+how;
+  return (S.lang==="he"?"איך עושים: ":S.lang==="en"?"How: ":"Comment faire : ")+how;
+ }
+ const fam=m&&m.familyId?familyById(m.familyId):null,md=m&&m.moodId?moodById(m.moodId):null;
+ if(fam)return familyText(fam,"desc");if(md)return moodText(md,"cue");if(m&&m.test)return S.lang==="he"?"משימת בדיקה: צלם את עצמך לבד בכל מקום כדי לבדוק צילום ושיתוף.":S.lang==="en"?"Test mission: film yourself anywhere to test recording and sharing.":"Mission de vérification : filme-toi seul n’importe où pour tester l’enregistrement et le partage vidéo.";
+ if(m&&m.weekly)return t("weeklyDesc");
+ if(m&&TYPE_TEXT[m.type])return typeText(m.type,1)||m.desc||"";
+ return m&&m.desc||""
+}
+const HUBS=[
+{name:"Tel Aviv North",lat:32.113,lon:34.795,w:6,s:4200},{name:"Tel Aviv Center",lat:32.077,lon:34.781,w:7,s:4200},{name:"Jaffa–South Tel Aviv",lat:32.049,lon:34.758,w:6,s:4200},
+{name:"Bat Yam",lat:32.016,lon:34.750,w:5,s:3600},{name:"Holon",lat:32.010,lon:34.779,w:5,s:4200},{name:"Ramat Gan",lat:32.070,lon:34.824,w:5,s:4200},{name:"Givatayim",lat:32.072,lon:34.811,w:3,s:3200},{name:"Bnei Brak",lat:32.084,lon:34.835,w:3,s:3200},
+{name:"Rishon LeZion",lat:31.971,lon:34.792,w:5,s:5200},{name:"Petah Tikva",lat:32.087,lon:34.887,w:5,s:4800},{name:"Herzliya",lat:32.166,lon:34.843,w:4,s:4300},{name:"Raanana",lat:32.184,lon:34.871,w:4,s:4000},{name:"Kfar Saba",lat:32.177,lon:34.907,w:4,s:4000},
+{name:"Lod",lat:31.951,lon:34.895,w:3,s:4000},{name:"Ramla",lat:31.929,lon:34.866,w:3,s:4000},{name:"Rehovot",lat:31.894,lon:34.811,w:4,s:4300},{name:"Modiin",lat:31.898,lon:35.010,w:4,s:5000},
+{name:"Jerusalem Center",lat:31.779,lon:35.217,w:7,s:5000},{name:"Jerusalem North",lat:31.816,lon:35.218,w:5,s:5000},{name:"Jerusalem South",lat:31.742,lon:35.216,w:5,s:5200},{name:"Jerusalem West",lat:31.786,lon:35.178,w:5,s:5000},
+{name:"Netanya",lat:32.321,lon:34.853,w:5,s:5200},{name:"Hadera",lat:32.434,lon:34.919,w:4,s:5200},
+{name:"Haifa Carmel",lat:32.786,lon:34.987,w:5,s:5200},{name:"Haifa Bay",lat:32.816,lon:35.000,w:4,s:5200},{name:"Krayot",lat:32.838,lon:35.079,w:4,s:5000},
+{name:"Nazareth",lat:32.700,lon:35.303,w:4,s:4300},{name:"Nof HaGalil",lat:32.706,lon:35.324,w:3,s:3800},{name:"Afula",lat:32.607,lon:35.289,w:3,s:4300},{name:"Acre",lat:32.928,lon:35.083,w:3,s:4200},{name:"Nahariya",lat:33.008,lon:35.098,w:3,s:4000},{name:"Karmiel",lat:32.920,lon:35.290,w:3,s:4300},{name:"Tiberias",lat:32.794,lon:35.531,w:3,s:4300},{name:"Safed",lat:32.965,lon:35.498,w:2,s:3800},{name:"Kiryat Shmona",lat:33.207,lon:35.571,w:2,s:3800},
+{name:"Ashdod",lat:31.801,lon:34.643,w:5,s:5500},{name:"Ashkelon",lat:31.669,lon:34.574,w:4,s:5000},{name:"Sderot",lat:31.525,lon:34.597,w:2,s:3500},{name:"Netivot",lat:31.423,lon:34.589,w:2,s:3500},{name:"Ofakim",lat:31.314,lon:34.620,w:2,s:3500},
+{name:"Beersheba",lat:31.253,lon:34.791,w:5,s:6000},{name:"Rahat",lat:31.392,lon:34.754,w:2,s:4200},{name:"Dimona",lat:31.071,lon:35.033,w:2,s:4000},{name:"Arad",lat:31.259,lon:35.213,w:2,s:4000},{name:"Mitzpe Ramon",lat:30.610,lon:34.802,w:1,s:3200},{name:"Eilat",lat:29.558,lon:34.952,w:3,s:5200}
+];
+// Coverage hubs across the West Bank / Cisjordanie. Local GPS missions also work between these hubs.
+HUBS.push(
+{name:"Jenin",lat:32.461,lon:35.300,w:3,s:4500},{name:"Tulkarm",lat:32.311,lon:35.028,w:3,s:4200},{name:"Qalqilya",lat:32.190,lon:34.970,w:2,s:3500},
+{name:"Nablus",lat:32.221,lon:35.254,w:4,s:4800},{name:"Ariel–Salfit",lat:32.106,lon:35.178,w:3,s:4300},{name:"Ramallah",lat:31.904,lon:35.204,w:4,s:4800},
+{name:"Binyamin",lat:31.970,lon:35.260,w:3,s:5000},{name:"Maale Adumim",lat:31.777,lon:35.298,w:3,s:4000},{name:"Jericho",lat:31.866,lon:35.450,w:2,s:4200},
+{name:"Bethlehem",lat:31.705,lon:35.202,w:4,s:4300},{name:"Gush Etzion",lat:31.654,lon:35.151,w:3,s:4500},{name:"Hebron",lat:31.532,lon:35.099,w:4,s:5000},
+{name:"Jordan Valley North",lat:32.145,lon:35.500,w:1,s:5200},{name:"Dead Sea West",lat:31.455,lon:35.390,w:1,s:4200}
+);
+const REMOTE_HUB_NAMES=["Mitzpe Ramon","Arad","Dimona","Kiryat Shmona","Sderot","Netivot","Ofakim","Eilat"];
+const TYPES=[
+{type:"dance",title:"Dance Spot",desc:"Mission simple rare : va au spot et filme 10 secondes de danse.",r:80,xp:180,w:3,duration:10,autoXp:true},
+{type:"trick",title:"Technique Challenge",desc:"Reproduis la technique demandée. La communauté décide si elle est réussie.",r:85,xp:450,w:24,duration:15,communityVerdict:true},
+{type:"group",title:"Meet & Move",desc:"Mission collective : retrouvez-vous au même spot et filmez la mission ensemble.",r:95,xp:380,w:4,duration:20,minPlayers:2,communityVerdict:true},
+{type:"speed",title:"Flash Race",desc:"Atteins ce point le plus vite possible puis réalise le mouvement demandé. C’est la catégorie qui rapporte le plus.",r:90,xp:1000,w:12,duration:12,communityVerdict:true},
+{type:"family",title:"Family Move",desc:"Mission famille : un défi à faire à plusieurs et à faire noter par la communauté.",r:95,xp:300,w:2,duration:15,minPlayers:2,communityVerdict:true},
+{type:"object",title:"Dance With an Object",desc:"Trouve un objet sur place — banc, mur, arbre, chaise… — et intègre-le vraiment dans ta danse.",r:90,xp:340,w:10,duration:15,communityVerdict:true},
+{type:"duo",title:"2 Persons Dance",desc:"Vous devez être au moins 2. Créez ensemble une mini-danse de 15 secondes.",r:95,xp:400,w:3,minPlayers:2,duration:15,communityVerdict:true},
+{type:"battle",title:"Dance Battle",desc:"À 2 ou plus : chacun a son moment, puis terminez ensemble face caméra. La communauté donne le verdict.",r:100,xp:500,w:25,minPlayers:2,duration:20,communityVerdict:true},
+{type:"mood",title:"Mood Challenge",desc:"L’app choisit une émotion ou une contrainte à interpréter en dansant.",r:90,xp:360,w:10,duration:15,communityVerdict:true},
+{type:"special",title:"Golden Spot",desc:"Mission spéciale rare : réalise une danse de 30 secondes au spot. Verdict communautaire.",r:100,xp:650,w:7,duration:30,communityVerdict:true}
+]
+const TRICK_MISSIONS=[
+{id:"moonwalk",fr:"Moonwalk",en:"Moonwalk",he:"מונווק",how:{fr:"Garde un pied sur la pointe, fais glisser l’autre vers l’arrière puis alterne.",en:"Keep one foot on the ball, slide the other backward, then switch.",he:"השאר רגל אחת על כרית כף הרגל, החלק את השנייה לאחור ואז החלף."},duration:12},
+{id:"floss",fr:"Backpack / Floss",en:"Backpack / Floss",he:"פלוס / Backpack",how:{fr:"Balance les bras tendus d’un côté à l’autre devant puis derrière les hanches.",en:"Swing straight arms side to side, in front of and behind the hips.",he:"העבר זרועות ישרות מצד לצד, לפני ומאחורי האגן."},duration:12},
+{id:"runningman",fr:"Running Man",en:"Running Man",he:"Running Man",how:{fr:"Monte un genou pendant que l’autre pied glisse en arrière, puis alterne.",en:"Lift one knee while the other foot slides back, then alternate.",he:"הרם ברך אחת בזמן שהרגל השנייה מחליקה לאחור, ואז החלף."},duration:12},
+{id:"shuffle",fr:"Shuffle",en:"Shuffle",he:"שאפל",how:{fr:"Enchaîne Running Man et pas latéraux rapides en gardant un rythme régulier.",en:"Combine Running Man with quick side steps while keeping a steady rhythm.",he:"שלב Running Man עם צעדי צד מהירים בקצב קבוע."},duration:15},
+{id:"charleston",fr:"Charleston",en:"Charleston",he:"צ׳רלסטון",how:{fr:"Fais pivoter genoux et pointes avec un rythme step-kick bien marqué.",en:"Pivot knees and toes with a clear step-kick rhythm.",he:"סובב ברכיים ואצבעות הרגליים בקצב ברור של צעד־בעיטה."},duration:15},
+{id:"bodywave",fr:"Body Wave",en:"Body Wave",he:"גל גוף",how:{fr:"Fais passer une vague poitrine → ventre → bassin, puis inverse.",en:"Send a wave chest → belly → hips, then reverse it.",he:"העבר גל מהחזה לבטן ולאגן, ואז חזור בכיוון ההפוך."},duration:12},
+{id:"armwave",fr:"Arm Wave",en:"Arm Wave",he:"גל ידיים",how:{fr:"Fais voyager la vague d’une main à l’autre via coudes et épaules.",en:"Travel the wave from one hand to the other through elbows and shoulders.",he:"העבר גל מיד אחת לשנייה דרך המרפקים והכתפיים."},duration:12},
+{id:"robot",fr:"Robot",en:"Robot",he:"רובוט",how:{fr:"Utilise des arrêts secs, des angles nets et des isolations mécaniques.",en:"Use sharp stops, clear angles and mechanical isolations.",he:"השתמש בעצירות חדות, זוויות ברורות ובידודים מכניים."},duration:12},
+{id:"tutting",fr:"Tutting",en:"Tutting",he:"טאטינג",how:{fr:"Construis des angles à 90° propres avec bras, poignets et mains.",en:"Build clean 90° angles with arms, wrists and hands.",he:"צור זוויות נקיות של 90° עם הזרועות, שורש כף היד והידיים."},duration:15},
+{id:"heeltoe",fr:"Heel-Toe",en:"Heel-Toe",he:"Heel-Toe",how:{fr:"Alterne talon et pointe pour faire pivoter les pieds de façon fluide.",en:"Alternate heel and toe pivots to move the feet smoothly.",he:"החלף בין עקב לאצבעות כדי לסובב את כפות הרגליים בצורה זורמת."},duration:12},
+{id:"sideglide",fr:"Side Glide",en:"Side Glide",he:"גלייד הצידה",how:{fr:"Transfère le poids sur un pied pendant que l’autre glisse latéralement.",en:"Shift weight onto one foot while the other slides sideways.",he:"העבר משקל לרגל אחת בזמן שהשנייה מחליקה הצידה."},duration:12},
+{id:"pasbourree",fr:"Pas de Bourrée",en:"Pas de Bourrée",he:"פה דה בורה",how:{fr:"Enchaîne trois appuis rapides arrière-côté-devant avec rythme et contrôle.",en:"Use three quick weight changes back-side-front with rhythm and control.",he:"בצע שלושה חילופי משקל מהירים אחורה־צד־קדימה בשליטה."},duration:12},
+{id:"grapevine",fr:"Grapevine",en:"Grapevine",he:"Grapevine",how:{fr:"Pas côté, croise derrière, pas côté, rassemble — puis change de sens.",en:"Step side, cross behind, step side, close — then reverse.",he:"צעד לצד, הצלב מאחור, צעד לצד וסגור — ואז החלף כיוון."},duration:12},
+{id:"kickballchange",fr:"Kick-Ball-Change",en:"Kick-Ball-Change",he:"Kick-Ball-Change",how:{fr:"Petit kick, pose vite l’avant du pied, puis change immédiatement d’appui.",en:"Small kick, quickly place the ball of the foot, then change weight.",he:"בעיטה קטנה, הנח מהר את כרית כף הרגל ואז החלף משקל."},duration:12},
+{id:"pivot",fr:"Pivot Turn",en:"Pivot Turn",he:"סיבוב פיבוט",how:{fr:"Avance, pivote sur les appuis avec contrôle, puis termine face caméra.",en:"Step forward, pivot with control, and finish facing the camera.",he:"צעד קדימה, הסתובב בשליטה וסיים מול המצלמה."},duration:12},
+{id:"toprock",fr:"Toprock",en:"Toprock",he:"טופרוק",how:{fr:"Croise et ouvre les appuis avec rebond, rythme et changements de direction.",en:"Cross and open the steps with bounce, rhythm and direction changes.",he:"הצלב ופתח צעדים עם קפיציות, קצב ושינויי כיוון."},duration:15},
+{id:"popping",fr:"Popping Hit",en:"Popping Hit",he:"פופינג Hit",how:{fr:"Contracte brièvement les muscles sur le beat pour créer des hits nets.",en:"Briefly contract muscles on the beat to create clean hits.",he:"כווץ לרגע את השרירים על הביט כדי ליצור מכות חדות."},duration:12},
+{id:"chest",fr:"Chest Isolation",en:"Chest Isolation",he:"בידוד חזה",how:{fr:"Déplace la poitrine avant-arrière-côtés sans entraîner tout le corps.",en:"Move the chest forward, back and side to side without moving the whole body.",he:"הזז את החזה קדימה, אחורה ולצדדים בלי להזיז את כל הגוף."},duration:12},
+{id:"shoulder",fr:"Shoulder Isolation",en:"Shoulder Isolation",he:"בידוד כתפיים",how:{fr:"Bouge une épaule puis l’autre indépendamment, avec des accents nets.",en:"Move one shoulder then the other independently with clear accents.",he:"הזז כל כתף בנפרד עם הדגשות ברורות."},duration:12},
+{id:"freeze",fr:"Freeze Finish",en:"Freeze Finish",he:"סיום Freeze",how:{fr:"Danse une courte phrase puis immobilise une pose nette pendant 2 secondes.",en:"Dance a short phrase, then hold a clear pose for 2 seconds.",he:"רקוד משפט קצר ואז עצור בפוזה ברורה למשך 2 שניות."},duration:12}
+];
+function trickName(k){return k?(k[S.lang]||k.en||k.fr):""}
+function trickHow(k){return k&&k.how?(k.how[S.lang]||k.how.en||k.how.fr):""}
+function trickById(id){return TRICK_MISSIONS.find(x=>x.id===id)}
+const FAMILY_MISSIONS=[
+{id:"freeze",title:{fr:"Family Freeze",en:"Family Freeze",he:"פריז משפחתי"},desc:{fr:"Dansez ensemble 10 secondes puis faites tous un freeze en même temps.",en:"Dance together for 10 seconds, then everyone freezes at the same time.",he:"רקדו יחד 10 שניות ואז כולם עוצרים יחד בפריז."},duration:10},
+{id:"leader",title:{fr:"Follow the Leader",en:"Follow the Leader",he:"עקבו אחרי המוביל"},desc:{fr:"Une personne invente 3 mouvements et les autres les copient.",en:"One person creates 3 moves and everyone else copies them.",he:"אדם אחד ממציא 3 תנועות והאחרים מחקים."},duration:15},
+{id:"circle",title:{fr:"Family Circle",en:"Family Circle",he:"מעגל משפחתי"},desc:{fr:"Faites un petit cercle et dansez ensemble pendant 15 secondes.",en:"Make a small circle and dance together for 15 seconds.",he:"צרו מעגל קטן ורקדו יחד 15 שניות."},duration:15},
+{id:"battle",title:{fr:"Mini Dance Battle",en:"Mini Dance Battle",he:"מיני באטל"},desc:{fr:"Chacun fait son meilleur mouvement, puis tout le monde finit ensemble.",en:"Everyone shows their best move, then finish together.",he:"כל אחד מציג את התנועה הכי טובה שלו ואז כולם מסיימים יחד."},duration:20}
+];
+function familyById(id){return FAMILY_MISSIONS.find(x=>x.id===id)}
+function familyText(f,field){if(!f)return"";const v=f[field];return typeof v==="object"?(v[S.lang]||v.en||v.fr):v}
+const TEST_ANYWHERE={id:"test-solo-anywhere-v08",type:"dance",test:true,title:"Mission test solo",desc:"Mission de vérification : filme-toi seul n’importe où pour tester l’enregistrement et le partage vidéo.",xp:0,area:"N’importe où",free:true,minPlayers:1,duration:10};
+const FAMILY_ANYWHERE=[
+{id:"family-free-freeze",familyId:"freeze",type:"familyfree",xp:160,area:"N’importe où",free:true,minPlayers:2,duration:10},
+{id:"family-free-leader",familyId:"leader",type:"familyfree",xp:180,area:"N’importe où",free:true,minPlayers:2,duration:15},
+{id:"family-free-circle",familyId:"circle",type:"familyfree",xp:180,area:"N’importe où",free:true,minPlayers:2,duration:15},
+{id:"family-free-battle",familyId:"battle",type:"familyfree",xp:200,area:"N’importe où",free:true,minPlayers:2,duration:20}
+];
+const MOODS=[
+{id:"joy",name:{fr:"JOIE",en:"JOY",he:"שמחה"},cue:{fr:"Tout doit sembler léger et contagieux.",en:"Make everything feel light and contagious.",he:"הכול צריך להרגיש קל ומדבק."}},
+{id:"anger",name:{fr:"COLÈRE",en:"ANGER",he:"כעס"},cue:{fr:"Mouvements nets, puissants, sans te faire mal.",en:"Use sharp, powerful movement without hurting yourself.",he:"תנועות חדות וחזקות בלי לפגוע בעצמך."}},
+{id:"slow",name:{fr:"RALENTI",en:"SLOW MOTION",he:"הילוך איטי"},cue:{fr:"Bouge comme si le temps était presque arrêté.",en:"Move as if time were almost stopped.",he:"זוז כאילו הזמן כמעט נעצר."}},
+{id:"robot",name:{fr:"ROBOT",en:"ROBOT",he:"רובוט"},cue:{fr:"Transforme ton corps en machine.",en:"Turn your body into a machine.",he:"הפוך את הגוף למכונה."}},
+{id:"elegant",name:{fr:"ÉLÉGANT",en:"ELEGANT",he:"אלגנטי"},cue:{fr:"Cherche la précision et les lignes.",en:"Aim for precision and clean lines.",he:"חפש דיוק וקווים נקיים."}},
+{id:"absurd",name:{fr:"ABSURDE",en:"ABSURD",he:"אבסורדי"},cue:{fr:"Plus c’est étrange, mieux c’est.",en:"The stranger it is, the better.",he:"ככל שזה מוזר יותר, יותר טוב."}},
+{id:"mystery",name:{fr:"MYSTÈRE",en:"MYSTERY",he:"מסתורין"},cue:{fr:"Fais croire qu’il y a une histoire cachée.",en:"Make it feel like there is a hidden story.",he:"תן תחושה שיש סיפור נסתר."}}
+];
+function moodById(id){return MOODS.find(x=>x.id===id)}
+function moodText(m,field){if(!m)return"";const v=m[field];return v[S.lang]||v.en||v.fr}
+const ROTATION_EPOCH=Date.UTC(2026,0,1),ROTATION_MIN_MS=48*3600*1000,ROTATION_EXTRA_MS=24*3600*1000;
+const URBAN_MISSION_COUNT=600,REMOTE_MISSION_COUNT=28,LOCAL_MISSION_COUNT=95,FLASH_MISSION_COUNT=3;
+function allocateHubCounts(total,hubs){
+ const floor=Math.min(6,Math.max(1,Math.floor(total/Math.max(1,hubs.length)))),base=hubs.map(()=>floor),remaining=Math.max(0,total-floor*hubs.length),sum=hubs.reduce((a,h)=>a+h.w,0);
+ const raw=hubs.map(h=>remaining*h.w/sum),extra=raw.map(Math.floor);let left=remaining-extra.reduce((a,b)=>a+b,0);
+ raw.map((n,i)=>({i,f:n-Math.floor(n)})).sort((a,b)=>b.f-a.f).slice(0,left).forEach(x=>extra[x.i]++);
+ return base.map((n,i)=>n+extra[i])
+}
+function hubCenter(h){return{lat:h.lat,lon:h.lon}}
+function safeRelocate(prev,h,r,minM=1000,maxM=2000){
+ for(let tries=0;tries<50;tries++){
+   const angle=r()*Math.PI*2,radius=minM+r()*(maxM-minM),c=offset(prev.lat,prev.lon,Math.cos(angle)*radius,Math.sin(angle)*radius);
+   if(!isWaterPoint(c)&&dist(hubCenter(h),c)<=h.s*1.12)return c
+ }
+ const toward=Math.atan2(h.lon-prev.lon,h.lat-prev.lat),radius=minM+r()*(maxM-minM);
+ const c=offset(prev.lat,prev.lon,Math.cos(toward)*radius,Math.sin(toward)*radius);
+ return isWaterPoint(c)?safeHubPoint(h,r):c
+}
+function rotationState(slotKey,h,now=Date.now()){
+ let start=ROTATION_EPOCH,cycle=0,r0=rng32(hash("anchor:"+slotKey)),p=safeHubPoint(h,r0);
+ while(true){
+   const rr=rng32(hash("cycle:"+slotKey+":"+cycle)),duration=ROTATION_MIN_MS+Math.floor(rr()*ROTATION_EXTRA_MS),end=start+duration;
+   if(now<end)return{cycle,start,end,p};
+   p=safeRelocate(p,h,rr,1000,2000);start=end;cycle++
+ }
+}
+function generationKey(slotKey,cycle){return slotKey+":c"+cycle}
+function playerGeneration(slotKey,cycle){return Math.max(0,Number(S.profile.slotGeneration&&S.profile.slotGeneration[generationKey(slotKey,cycle)])||0)}
+function applyPlayerGeneration(p,slotKey,h,cycle,gen){
+ let out=p;for(let g=1;g<=gen;g++){const rr=rng32(hash("player:"+slotKey+":"+cycle+":"+g));out=safeRelocate(out,h,rr,1000,2000)}return out
+}
+function currentMissionForSlot(slotKey,h,area,now=Date.now()){
+ const state=rotationState(slotKey,h,now),gen=playerGeneration(slotKey,state.cycle),rr=rng32(hash("type:"+slotKey+":"+state.cycle+":"+gen));
+ let base=weightedType(rr);if(slotKey.startsWith("local:")&&base.type==="duo")base=TYPES.find(x=>x.type==="trick");const t=missionFromType(base,rr),p=applyPlayerGeneration(state.p,slotKey,h,state.cycle,gen);
+ return{id:`${slotKey}:c${state.cycle}:g${gen}`,slotKey,cycle:state.cycle,generation:gen,type:t.type,title:t.title,desc:t.desc,p,r:t.r,xp:t.xp,minPlayers:t.minPlayers||1,duration:t.duration||15,area,expiresAt:state.end,autoXp:!!t.autoXp,communityVerdict:!!t.communityVerdict}
+}
+function localHub(){
+ if(!S.pos)return null;const qLat=Math.round(S.pos.lat*100)/100,qLon=Math.round(S.pos.lon*100)/100;
+ return{name:"Près de toi",lat:qLat,lon:qLon,w:1,s:1500,local:true,key:`${qLat.toFixed(2)}:${qLon.toFixed(2)}`}
+}
+function formatExpiry(ts){const ms=Math.max(0,ts-Date.now()),h=Math.ceil(ms/3600000);if(h<=24)return"⏳ "+h+" h";const d=Math.floor(h/24),rh=h%24;return"⏳ "+d+" j"+(rh?" "+rh+" h":"")}
+function advanceMissionSlot(m){if(!m||m.free||!m.slotKey)return;S.profile.slotGeneration=S.profile.slotGeneration||{};S.profile.slotGeneration[generationKey(m.slotKey,m.cycle)]=playerGeneration(m.slotKey,m.cycle)+1;save();makeMissions(m.slotKey)}
+function label(x){const fr={dance:"DANSE",trick:"TECHNIQUE",group:"COLLECTIF",weekly:"GRAND EVENT",speed:"VITESSE",family:"FAMILLE",familyfree:"FAMILLE LIBRE",object:"OBJET",duo:"DUO",battle:"BATTLE",mood:"MOOD",special:"SPÉCIALE"},en={dance:"DANCE",trick:"TECHNIQUE",group:"GROUP",weekly:"BIG EVENT",speed:"SPEED",family:"FAMILY",familyfree:"FREE FAMILY",object:"OBJECT",duo:"DUO",battle:"BATTLE",mood:"MOOD",special:"SPECIAL"},he={dance:"ריקוד",trick:"טכניקה",group:"קבוצה",weekly:"אירוע גדול",speed:"מהירות",family:"משפחה",familyfree:"משפחה חופשי",object:"חפץ",duo:"זוג",battle:"באטל",mood:"מצב רוח",special:"מיוחד"};return (S.lang==="he"?he:S.lang==="en"?en:fr)[x]}
+function emoji(t){return{dance:"💃",trick:"🕴️",group:"👥",weekly:"🌍",speed:"⚡",family:"👨‍👩‍👧‍👦",familyfree:"🏠",object:"🪑",duo:"🕺🕺",battle:"🔥",mood:"🎭",special:"🌟"}[t]}
+function initMap(){
+ S.map=L.map("map",{zoomControl:true,preferCanvas:true}).setView([31.8,34.9],8);
+ const osm=L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap contributors",crossOrigin:true});
+ const fallback=L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{maxZoom:20,subdomains:"abcd",attribution:"© OpenStreetMap © CARTO"});
+ let switched=false;osm.on("tileerror",()=>{if(!switched){switched=true;S.map.removeLayer(osm);fallback.addTo(S.map)}});osm.addTo(S.map)
+}
+const MED_COAST=[
+{lat:31.30,lon:34.43},{lat:31.50,lon:34.50},{lat:31.67,lon:34.56},{lat:31.80,lon:34.64},{lat:31.98,lon:34.74},{lat:32.08,lon:34.77},{lat:32.17,lon:34.80},{lat:32.32,lon:34.85},{lat:32.50,lon:34.89},{lat:32.70,lon:34.94},{lat:32.82,lon:34.97},{lat:32.93,lon:35.06},{lat:33.10,lon:35.10}
+];
+function medCoastLon(lat){
+ if(lat<MED_COAST[0].lat||lat>MED_COAST[MED_COAST.length-1].lat)return null;
+ for(let i=1;i<MED_COAST.length;i++){
+  const a=MED_COAST[i-1],b=MED_COAST[i];
+  if(lat<=b.lat){const t=(lat-a.lat)/(b.lat-a.lat);return a.lon+t*(b.lon-a.lon)}
+ }
+ return MED_COAST[MED_COAST.length-1].lon
+}
+function inEllipse(lat,lon,clat,clon,rlat,rlon){return ((lat-clat)/rlat)**2+((lon-clon)/rlon)**2<1}
+function isWaterPoint(p){
+ // These masks are Israel/West-Bank specific. Outside this longitude range, local missions stay worldwide instead of being falsely rejected.
+ if(p.lon<34.15||p.lon>36.05)return false;
+ const coast=medCoastLon(p.lat);
+ if(coast!==null&&p.lon<coast-.002)return true; // Méditerranée
+ if(inEllipse(p.lat,p.lon,32.815,35.590,.115,.075))return true; // Kinneret
+ if(inEllipse(p.lat,p.lon,31.36,35.47,.43,.075))return true; // Mer Morte
+ if(p.lat<29.555&&p.lat>29.38&&p.lon>34.90&&p.lon<35.08)return true; // Golfe d'Eilat
+ return false
+}
+function safeHubPoint(h,r){
+ let p={lat:h.lat,lon:h.lon};
+ for(let tries=0;tries<24;tries++){
+  const angle=r()*Math.PI*2,radius=Math.sqrt(r())*h.s*(h.local?1:(r()<.88?1:1.65));
+  const c=offset(h.lat,h.lon,Math.cos(angle)*radius,Math.sin(angle)*radius);
+  if(!isWaterPoint(c))return c
+ }
+ return offset(h.lat,h.lon,150,350)
+}
+function safeLocalPoint(plan,r){
+ for(let tries=0;tries<28;tries++){
+  const angle=r()*Math.PI*2,radius=plan.min+r()*(plan.max-plan.min);
+  const c=offset(S.pos.lat,S.pos.lon,Math.cos(angle)*radius,Math.sin(angle)*radius);
+  if(!isWaterPoint(c))return c
+ }
+ return offset(S.pos.lat,S.pos.lon,0,Math.max(plan.min,120))
+}
+function nearestHubInfo(){if(!S.pos)return{hub:HUBS[0],d:Infinity};let best=HUBS[0],bd=Infinity;HUBS.forEach(h=>{const d=dist(S.pos,{lat:h.lat,lon:h.lon});if(d<bd){bd=d;best=h}});return{hub:best,d:bd}}
+function nearestHub(){return nearestHubInfo().hub}
+function nextWeeklyDate(now=new Date()){
+ const d=new Date(now);d.setHours(20,0,0,0);const target=6;let add=(target-d.getDay()+7)%7;if(add===0&&now.getTime()>d.getTime()+2*3600000)add=7;d.setDate(d.getDate()+add);return d
+}
+const WEEKLY_VENUES=[
+{city:"Tel Aviv",name:"Habima Square",lat:32.0723,lon:34.7790},{city:"Jaffa",name:"Charles Clore Park",lat:32.0568,lon:34.7615},{city:"Bat Yam",name:"Bat Yam Promenade",lat:32.0135,lon:34.7388},{city:"Holon",name:"Peres Park",lat:32.0080,lon:34.8150},
+{city:"Jerusalem",name:"Safra Square",lat:31.7797,lon:35.2233},{city:"Haifa",name:"Hecht Park",lat:32.8055,lon:34.9565},{city:"Ramat Gan",name:"National Park",lat:32.0450,lon:34.8232},{city:"Givatayim",name:"Givatayim Park",lat:32.0620,lon:34.8150},
+{city:"Rishon LeZion",name:"Gan HaMoshava",lat:31.9638,lon:34.8030},{city:"Petah Tikva",name:"Yad Labanim Park",lat:32.0915,lon:34.8850},{city:"Ashdod",name:"Ashdod Yam Park",lat:31.7905,lon:34.6387},{city:"Netanya",name:"Independence Square",lat:32.3278,lon:34.8560},
+{city:"Beersheba",name:"Be'er Sheva River Park",lat:31.2400,lon:34.7890},{city:"Herzliya",name:"Herzliya Park",lat:32.1670,lon:34.8260},{city:"Raanana",name:"Raanana Park",lat:32.1846,lon:34.8530},{city:"Kfar Saba",name:"Kfar Saba Park",lat:32.1765,lon:34.9270},
+{city:"Hadera",name:"Eco Park",lat:32.4380,lon:34.9090},{city:"Modiin",name:"Anaba Park",lat:31.8945,lon:35.0050},{city:"Nazareth",name:"Mary's Well Square",lat:32.7060,lon:35.3000},{city:"Acre",name:"Acre Promenade",lat:32.9230,lon:35.0700},
+{city:"Nahariya",name:"Ga'aton Promenade",lat:33.0060,lon:35.0940},{city:"Tiberias",name:"Tiberias Promenade",lat:32.7900,lon:35.5410},{city:"Afula",name:"Afula Municipal Park",lat:32.6030,lon:35.2940},{city:"Karmiel",name:"Galilee Park",lat:32.9180,lon:35.2940},
+{city:"Safed",name:"Citadel Park",lat:32.9680,lon:35.4950},{city:"Kiryat Shmona",name:"Golden Park",lat:33.2040,lon:35.5730},{city:"Ashkelon",name:"Delila Beach Promenade",lat:31.6650,lon:34.5550},{city:"Sderot",name:"Sderot Public Park",lat:31.5270,lon:34.5920},
+{city:"Netivot",name:"Central Public Park",lat:31.4210,lon:34.5890},{city:"Dimona",name:"Ben Gurion Park",lat:31.0700,lon:35.0330},{city:"Arad",name:"Arad Central Plaza",lat:31.2610,lon:35.2140},{city:"Mitzpe Ramon",name:"Spice Route Quarter Plaza",lat:30.6110,lon:34.8010},{city:"Eilat",name:"Central Park",lat:29.5560,lon:34.9520}
+];
+function weeklyVenueForHub(h){let best=null,bd=Infinity;WEEKLY_VENUES.forEach(v=>{const d=dist({lat:h.lat,lon:h.lon},{lat:v.lat,lon:v.lon});if(d<bd){bd=d;best=v}});return bd<=18000?best:null}
+function weeklyEventForHub(h){const v=weeklyVenueForHub(h);if(!v)return null;const dt=nextWeeklyDate(),wk=Math.floor(dt.getTime()/(7*86400000));return{id:`weekly:${v.city}:${wk}`,type:"weekly",title:"Grand Weekly Jam",desc:t("weeklyDesc"),cityName:v.city,p:{lat:v.lat,lon:v.lon},r:240,xp:900,minPlayers:2,duration:30,area:v.city+" · "+v.name,venueName:v.name,expiresAt:dt.getTime()+2*3600000,eventAt:dt.getTime(),communityVerdict:true,weekly:true}}
+function formatEventTime(ts){try{return new Date(ts).toLocaleString([], {weekday:"short",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}catch(e){return"cette semaine"}}
+function flashMissions(now=Date.now()){
+ if(!S.pos)return[];const bucket=Math.floor(now/(30*60*1000)),end=(bucket+1)*30*60*1000,out=[];
+ for(let i=0;i<FLASH_MISSION_COUNT;i++){
+   const rr=rng32(hash(`flash:${bucket}:${i}:${Math.round(S.pos.lat*100)}:${Math.round(S.pos.lon*100)}`));
+   const p=safeLocalPoint({min:350,max:1450},rr),kind=i===0?"trick":i===1?"speed":"special";
+   const base=kind==="trick"?missionFromType(TYPES.find(x=>x.type==="trick"),rr):kind==="speed"?missionFromType(TYPES.find(x=>x.type==="speed"),rr):missionFromType({...TYPES.find(x=>x.type==="special"),duration:15},rr);
+   out.push({id:`flash:${bucket}:${i}`,type:base.type,title:"🔥 FLASH · "+base.title,desc:"Challenge temporaire proche. "+base.desc,p,r:90,xp:Math.max(base.xp,kind==="speed"?1000:base.xp),minPlayers:base.minPlayers||1,duration:base.duration||15,area:t("flashArea"),expiresAt:end,flash:true,autoXp:!!base.autoXp,communityVerdict:!!base.communityVerdict})
+ }
+ return out
+}
+function makeMissions(preferredSlot=null){
+ const now=Date.now(),out=[],urbanCounts=allocateHubCounts(URBAN_MISSION_COUNT,HUBS);
+ HUBS.forEach((h,hi)=>{for(let j=0;j<urbanCounts[hi];j++){const slotKey=`urban:${h.name}:${j}`;out.push(currentMissionForSlot(slotKey,h,h.name,now))}});
+ const remoteHubs=REMOTE_HUB_NAMES.map(n=>HUBS.find(h=>h.name===n)).filter(Boolean),remoteCounts=allocateHubCounts(REMOTE_MISSION_COUNT,remoteHubs);
+ remoteHubs.forEach((h,hi)=>{for(let j=0;j<remoteCounts[hi];j++){const slotKey=`remote:${h.name}:${j}`;out.push(currentMissionForSlot(slotKey,h,h.name+" · isolé",now))}});
+ const lh=localHub();if(lh){for(let i=0;i<LOCAL_MISSION_COUNT;i++){const slotKey=`local:${lh.key}:${i}`;out.push(currentMissionForSlot(slotKey,lh,t("nearYou"),now))}}
+ if(S.pos){
+  out.push(...flashMissions(now));
+  (S.publicJams||[]).forEach(j=>{if(now>=j.eventAt-7*3600000&&now<j.expiresAt&&dist(S.pos,j.p)<=50000)out.push(j)});
+ }
+ S.missions=out;
+ if(preferredSlot){const i=S.missions.findIndex(m=>m.slotKey===preferredSlot);S.selected=i>=0?i:nearest()}else S.selected=nearest();
+ renderAll();if(loggedIn())refreshDuoMeetups(false)
+}
+function nearest(){if(!S.pos)return 0;let bi=0,bd=Infinity;S.missions.forEach((m,i)=>{const d=dist(S.pos,m.p);if(d<bd){bd=d;bi=i}});return bi}
+function icon(m){const dm=m.type==="duo"?currentDuoMeet(m):null,ping=dm?`<span class="duoPing">${dm.status==="matched"?2:1}</span>`:"";return L.divIcon({className:"",html:`<div class="questIcon ${m.type}">${emoji(m.type)}${ping}</div>`,iconSize:[42,42],iconAnchor:[21,21]})}
+function meIcon(){return L.divIcon({className:"",html:'<div class="meIcon"></div>',iconSize:[22,22],iconAnchor:[11,11]})}
+
+function renderMissionList(){
+ const box=$("missionList");if(!box)return;box.innerHTML="";
+
+ const test=document.createElement("div");test.className="card freeMission";
+ test.innerHTML=`<div class="row"><div><span class="type">TEST SOLO</span><h3>🎥 ${missionTitle(TEST_ANYWHERE)}</h3></div><b style="color:#8fa0b8">TEST</b></div><p>${missionDesc(TEST_ANYWHERE)}</p><div class="meta"><span class="pill">👤 1 personne</span><span class="pill">📍 N’importe où</span><span class="pill">⏱ ${TEST_ANYWHERE.duration} s</span></div><button class="primary" style="width:100%" id="testAnywhere">Tester maintenant</button>`;
+ box.appendChild(test);
+ test.querySelector("#testAnywhere").onclick=()=>startFreeMission(TEST_ANYWHERE);
+
+ const freeHead=document.createElement("div");freeHead.className="card freeMission";
+ freeHead.innerHTML='<span class="type">SANS LIEU PRÉCIS</span><h3>🏠 Missions famille — joue n’importe où</h3><p>Chez toi, au parc, à la plage… aucun GPS nécessaire.</p>';
+ box.appendChild(freeHead);
+ const familyIndex=Math.floor(Date.now()/(60*3600*1000))%FAMILY_ANYWHERE.length,m=FAMILY_ANYWHERE[familyIndex];
+ {
+   const e=document.createElement("div");e.className="card freeMission";
+   e.innerHTML=`<div class="row"><div><span class="type">FAMILLE LIBRE</span><h3>🏠 ${esc(missionTitle(m))}</h3></div><b style="color:#ffd06a">+${m.xp}</b></div><p>${esc(missionDesc(m))}</p><div class="meta"><span class="pill">📍 N’importe où</span></div><button class="primary" style="width:100%" data-free="${familyIndex}">Jouer maintenant</button>`;
+   box.appendChild(e)
+ }
+ box.querySelectorAll("[data-free]").forEach(b=>b.onclick=()=>startFreeMission(FAMILY_ANYWHERE[+b.dataset.free]));
+
+ const mapHead=document.createElement("div");mapHead.className="card creativeMission";
+ mapHead.innerHTML='<span class="type">SUR LA CARTE</span><h3>🌍 Missions autour de toi</h3><p>Principalement des missions précises : Moonwalk, Backpack/Floss, Running Man, Shuffle, Charleston, objets, moods, vitesse et Battles. Les simples “danse 10 s” sont rares.</p>';
+ box.appendChild(mapHead);
+
+ if(!S.missions.length){box.innerHTML+='<div class="card"><p>Recherche des missions proches…</p></div>';return}
+ const sorted=[...S.missions].map((m,i)=>({m,i,d:S.pos?dist(S.pos,m.p):Infinity})).sort((a,b)=>a.d-b.d).slice(0,35);
+ sorted.forEach(({m,i,d})=>{
+   const e=document.createElement("div");e.className="card";
+   const people=m.minPlayers>1?`<span class="pill">👥 ${m.minPlayers}+ personnes</span>`:"";
+   e.innerHTML=`<div class="row"><div><span class="type">${label(m.type)}</span><h3>${emoji(m.type)} ${esc(missionTitle(m))}${m.type==="duo"&&currentDuoMeet(m)?.status==="open"?' <span class="duoPing">1</span>':""}</h3></div><b style="color:#ffd06a">+${m.xp}</b></div>
+   <p>${esc(missionDesc(m))}</p>
+   <div class="meta"><span class="pill">${isFinite(d)?fmt(d):"GPS…"}</span><span class="pill">${esc(m.area)}</span><span class="pill">${m.r} m</span><span class="pill">${m.weekly?"📅 "+formatEventTime(m.eventAt):formatExpiry(m.expiresAt)}</span>${people}</div>
+   <button class="primary" style="width:100%" data-mission="${i}">${S.lang==="he"?"הצג במפה":S.lang==="en"?"View on map":"Voir sur carte"}</button>`;
+   box.appendChild(e)
+ });
+ box.querySelectorAll("[data-mission]").forEach(b=>b.onclick=()=>{S.selected=+b.dataset.mission;show("mapScreen");renderSelected();const m=S.missions[S.selected];S.map.flyTo([m.p.lat,m.p.lon],16)});localizeDOM(box)
+}
+
+function missionDuration(m){return Math.max(1,Number(m&&m.duration)||15)}
+function clockText(ms,totalSec){
+ const es=Math.min(totalSec,Math.floor(Math.max(0,ms)/1000));
+ return "00:"+String(es).padStart(2,"0")+" / 00:"+String(totalSec).padStart(2,"0")
+}
+function resetRecordClock(){
+ clearInterval(S.recordTimer);S.recordTimer=null;S.recordStarted=null;S.recordedMs=0;
+ $("recordClock").classList.remove("live");
+ $("recordTime").textContent=clockText(0,missionDuration(S.active))
+}
+function updateRecordClock(){
+ if(!S.recordStarted)return;
+ const total=missionDuration(S.active),ms=Date.now()-S.recordStarted;S.recordedMs=ms;
+ $("recordTime").textContent=clockText(ms,total);
+ if(ms>=total*1000){
+   S.recordedMs=total*1000;clearInterval(S.recordTimer);S.recordTimer=null;
+   $("recordTime").textContent=clockText(total*1000,total);
+   if(S.recorder&&S.recorder.state!=="inactive"){S.recorder.stop();$("stop").disabled=true}
+ }
+}
+function prepareMissionCamera(m){
+ S.active=m;resetRecordClock();resetPersonCheck();
+ const need=(m.minPlayers||1)>1;
+ $("personCheck").classList.toggle("show",need);
+ $("camTitle").textContent=m.title;
+ $("camDesc").textContent=(m.free?m.desc+" · Aucun GPS nécessaire.":m.desc)+" · Filme "+missionDuration(m)+" s.";
+ show("cameraScreen");
+}
+function startFreeMission(m){prepareMissionCamera({...m,p:null,r:0});toast("Mission libre lancée 🏠")}
+
+function renderAll(){
+ S.markers.forEach(x=>S.map.removeLayer(x));S.zones.forEach(x=>S.map.removeLayer(x));S.markers=[];S.zones=[];
+ if(S.me)S.map.removeLayer(S.me);if(S.pos)S.me=L.marker([S.pos.lat,S.pos.lon],{icon:meIcon(),interactive:false}).addTo(S.map);
+ S.missions.forEach((m,i)=>{S.zones.push(L.circle([m.p.lat,m.p.lon],{radius:m.r,color:i===S.selected?"#58d678":"#9567ff",weight:2,fillOpacity:.06}).addTo(S.map));S.markers.push(L.marker([m.p.lat,m.p.lon],{icon:icon(m)}).addTo(S.map).on("click",()=>{S.selected=i;renderSelected();S.map.flyTo([m.p.lat,m.p.lon],16)}))});renderSelected();renderTop();renderMissionList()
+}
+function renderSelected(){
+ if(!S.missions.length)return;const m=S.missions[S.selected],d=S.pos?dist(S.pos,m.p):Infinity,near=S.pos&&d<=m.r+Math.max(20,S.pos.accuracy||0),eventOpen=!m.weekly||(Date.now()>=m.eventAt&&Date.now()<=m.expiresAt),ok=near&&eventOpen;
+ $("type").textContent=label(m.type);$("title").textContent=missionTitle(m);$("desc").textContent=missionDesc(m);$("reward").textContent="+"+m.xp+" XP";$("distance").textContent=isFinite(d)?fmt(d):"GPS…";$("area").textContent=m.weekly?m.area+" · "+formatEventTime(m.eventAt):m.area;
+ $("startRace").style.display=m.type==="speed"&&!S.raceStart?"block":"none";
+ $("speedTimer").style.display=m.type==="speed"&&S.raceStart?"inline-block":"none";
+ $("action").disabled=!ok;$("action").textContent=m.weekly&&!eventOpen?(S.lang==="he"?"מפגש ":S.lang==="en"?"Meetup ":"Rendez-vous ")+formatEventTime(m.eventAt):ok?(m.type==="speed"?(S.lang==="he"?"הגעת ✓":S.lang==="en"?"Arrived ✓":"Arrivée ✓"):(S.lang==="he"?"האתגר פתוח ✓":S.lang==="en"?"Challenge unlocked ✓":"Défi débloqué ✓")):t("approach");renderDuoSelected()
+}
+function renderTop(){const xp=S.remoteProfile?Number(S.remoteProfile.xp_total||0):S.profile.xp;$("xpTop").textContent=xp;$("levelTop").textContent=Math.floor(xp/500)+1;$("pXP").textContent=xp;$("pLevel").textContent=Math.floor(xp/500)+1;$("pDone").textContent=S.profile.done.length;$("pRaces").textContent=S.profile.races||0}
+
+function alertNearbyMission(){
+ if(!S.pos||!S.missions.length)return;
+ let best=null,bd=Infinity;
+ S.missions.forEach(m=>{
+   if(S.profile.done.includes(m.id))return;
+   const d=dist(S.pos,m.p);
+   if(d<bd){bd=d;best=m}
+ });
+ if(!best||bd>180)return;
+ const now=Date.now();
+ if(S.lastNearbyId===best.id&&now-S.lastNearbyAt<10*60*1000)return;
+ S.lastNearbyId=best.id;S.lastNearbyAt=now;
+ $("nearAlertTitle").textContent="📍 "+t("nearby")+" "+missionTitle(best);
+ $("nearAlertText").textContent="À environ "+fmt(bd)+" · +"+best.xp+" XP";
+ $("nearAlert").classList.add("show");
+ clearTimeout($("nearAlert")._t);$("nearAlert")._t=setTimeout(()=>$("nearAlert").classList.remove("show"),7000);
+ try{navigator.vibrate&&navigator.vibrate([120,80,120])}catch(e){}
+ // Hook for the next native APK version if available.
+ try{
+   if(window.AndroidNotify&&typeof window.AndroidNotify.nearby==="function"){
+     window.AndroidNotify.nearby(missionTitle(best),(S.lang==="he"?"משימה במרחק ":S.lang==="en"?"Mission at ":"Mission à ")+fmt(bd)+" · +"+best.xp+" XP")
+   }
+ }catch(e){}
+}
+function gpsOK(p){
+ const first=!S.pos;S.pos={lat:p.coords.latitude,lon:p.coords.longitude,accuracy:p.coords.accuracy};$("gpsTitle").textContent="GPS actif ✓";$("gpsSub").textContent="Précision ≈ "+Math.round(S.pos.accuracy)+" m";
+ if(first||!S.missions.length){makeMissions();S.map.setView([S.pos.lat,S.pos.lon],15);refreshJams(true);setTimeout(alertNearbyMission,400)}else{if(S.me)S.me.setLatLng([S.pos.lat,S.pos.lon]);renderSelected();renderMissionList();alertNearbyMission()}
+}
+let disclosureAccept=null,disclosureDecline=null;
+function showDisclosure(kind,onAccept,onDecline){const modal=$("permissionDisclosure"),title=$("disclosureTitle"),text=$("disclosureText");if(!modal)return onAccept&&onAccept();disclosureAccept=onAccept||null;disclosureDecline=onDecline||null;if(kind==="location"){title.textContent="Localisation pour les missions";text.textContent="Dance World Quest utilise ta localisation précise pendant le jeu pour afficher les missions proches et vérifier que tu es dans la zone demandée. Lorsqu’une mission est validée, la position nécessaire à la vérification peut être transmise au serveur puis elle est supprimée après traitement. La localisation n’est pas utilisée en arrière-plan."}else{title.textContent="Caméra pour les missions";text.textContent="Dance World Quest utilise la caméra uniquement quand tu ouvres une mission filmée. La vidéo reste sur ton appareil jusqu’à ce que tu choisisses de la valider. Si tu la valides, elle est envoyée dans l’espace Community privé et devient visible aux joueurs connectés éligibles pour être notée. Le partage Instagram/Facebook reste facultatif."}modal.classList.add("show")}
+function closeDisclosure(accepted){const modal=$("permissionDisclosure");if(modal)modal.classList.remove("show");const fn=accepted?disclosureAccept:disclosureDecline;disclosureAccept=null;disclosureDecline=null;if(fn)fn()}
+function startGPSWithDisclosure(){if(localStorage.getItem("dwqLocationDisclosureV1")==="yes"){getGPS();return}showDisclosure("location",()=>{localStorage.setItem("dwqLocationDisclosureV1","yes");getGPS()},()=>{$("gpsTitle").textContent="Localisation non activée";$("gpsSub").textContent="Tu peux continuer sans GPS et l’activer plus tard.";makeMissions()})}
+function getGPS(){if(!navigator.geolocation){$("gpsTitle").textContent="GPS indisponible";makeMissions();return}navigator.geolocation.getCurrentPosition(gpsOK,e=>{$("gpsTitle").textContent="GPS bloqué";$("gpsSub").textContent="Vérifie l’autorisation Localisation · "+e.message;makeMissions()},{enableHighAccuracy:true,timeout:15000,maximumAge:0});navigator.geolocation.watchPosition(gpsOK,()=>{}, {enableHighAccuracy:true,maximumAge:2500,timeout:15000})}
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("active",s.id===id));document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.screen===id));if(id==="mapScreen")setTimeout(()=>S.map.invalidateSize(),80)}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>show(b.dataset.screen));
+$("country").onclick=()=>S.pos?S.map.setView([S.pos.lat,S.pos.lon],10):S.map.fitWorld({padding:[15,15]});$("recenter").onclick=()=>S.pos&&S.map.setView([S.pos.lat,S.pos.lon],15);
+function bindJamMapPicker(){S.map.on("click",e=>{if(!S.jamPickMode)return;S.jamPickMode=false;$("jamLat").value=e.latlng.lat.toFixed(6);$("jamLon").value=e.latlng.lng.toFixed(6);show("profileScreen");renderJamAdmin();toast(jamText("Position du Jam choisie ✓","Jam position selected ✓","מיקום ה-Jam נבחר ✓"))})}
+$("next").onclick=()=>{if(!S.missions.length)return;S.raceStart=null;clearInterval(S.raceTimer);S.selected=(S.selected+1)%S.missions.length;renderSelected();const m=S.missions[S.selected];S.map.flyTo([m.p.lat,m.p.lon],16)};
+$("startRace").onclick=()=>{const m=S.missions[S.selected];if(m.type!=="speed")return;S.raceStart=Date.now();$("startRace").style.display="none";$("speedTimer").style.display="inline-block";clearInterval(S.raceTimer);S.raceTimer=setInterval(()=>{$("speedTimer").textContent=formatTime(Date.now()-S.raceStart)},250);toast("Course lancée ⚡")};
+function formatTime(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60);return String(m).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
+$("action").onclick=()=>{
+ const m=S.missions[S.selected],d=dist(S.pos,m.p);if(m.weekly&&Date.now()<m.eventAt){toast("Le Grand Weekly Jam commence "+formatEventTime(m.eventAt));return}if(d>m.r+Math.max(20,S.pos.accuracy||0)){toast("Encore "+fmt(d));return}
+ if(m.type==="speed"){
+   if(!S.raceStart){toast("Démarre d'abord la course");return}
+   clearInterval(S.raceTimer);const t=Date.now()-S.raceStart;S.profile.races=(S.profile.races||0)+1;S.raceStart=null;prepareMissionCamera({...m,raceMs:t});toast("Arrivée en "+formatTime(t)+" · filme la preuve pour demander le verdict");return
+ }
+ prepareMissionCamera(m);toast(m.type==="special"?"Mission spéciale débloquée 🌟":m.minPlayers>1?"Mission à plusieurs débloquée 👥":m.type==="family"?"Mission famille débloquée 👨‍👩‍👧‍👦":"Mission débloquée ✓")
+};
+
+
+function resetPersonCheck(){
+ clearInterval(S.personTimer);S.personTimer=null;S.personSamples=[];
+ const box=$("personCheck");box.classList.remove("ok","bad");
+ $("personCheckTitle").textContent="👥 Vérification des personnes";
+ $("personCheckText").textContent="La détection démarre avec l’enregistrement.";
+}
+function loadScriptOnce(src,id){return new Promise((resolve,reject)=>{if(document.getElementById(id)){resolve();return}const s=document.createElement("script");s.id=id;s.src=src;s.onload=resolve;s.onerror=reject;document.head.appendChild(s)})}
+async function ensurePersonModel(){
+ if(S.personModel)return S.personModel;if(S.personLoading)return S.personLoading;
+ S.personLoading=(async()=>{try{
+   $("personCheckText").textContent="Chargement de la vérification personnes…";
+   await loadScriptOnce("https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js","dwq-tf");
+   await loadScriptOnce("https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js","dwq-coco");
+   S.personModel=await cocoSsd.load({base:"lite_mobilenet_v2"});return S.personModel
+ }catch(e){S.personLoading=null;throw e}})();return S.personLoading
+}
+async function samplePeople(min){
+ if(!S.personModel||!S.stream||$("live").readyState<2)return;
+ try{const preds=await S.personModel.detect($("live"));const n=preds.filter(p=>p.class==="person"&&p.score>=.45).length;S.personSamples.push(n);if(S.personSamples.length>40)S.personSamples.shift();const best=Math.max(0,...S.personSamples);$("personCheckTitle").textContent="👥 "+best+" / "+min+" personnes détectées";$("personCheckText").textContent=n>=min?"Nombre de personnes OK ✓":"Restez tous bien visibles dans l’image.";$("personCheck").classList.toggle("ok",best>=min);$("personCheck").classList.toggle("bad",best<min)}catch(e){}
+}
+async function startPersonCheck(min){
+ if(min<=1)return true;resetPersonCheck();$("personCheck").classList.add("show");
+ try{await ensurePersonModel()}catch(e){$("personCheck").classList.add("bad");$("personCheckText").textContent="Détection indisponible. Vérifie ta connexion et réessaie.";return false}
+ await samplePeople(min);S.personTimer=setInterval(()=>samplePeople(min),700);return true
+}
+function stopPersonCheck(){clearInterval(S.personTimer);S.personTimer=null}
+function peopleVerified(m){const min=m.minPlayers||1;if(min<=1)return true;const good=S.personSamples.filter(n=>n>=min).length;return Math.max(0,...S.personSamples)>=min&&good>=2}
+function stopBuiltinBeat(){clearInterval(S.beatTimer);S.beatTimer=null;(S.beatNodes||[]).forEach(n=>{try{n.stop&&n.stop()}catch(e){}try{n.disconnect&&n.disconnect()}catch(e){}});S.beatNodes=[]}
+async function ensureBeatAudio(){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;S.audioCtx=S.audioCtx||new C();await S.audioCtx.resume();if(!S.mixDest)S.mixDest=S.audioCtx.createMediaStreamDestination();return S.audioCtx}
+function beatHit(ctx,type,when){const o=ctx.createOscillator(),g=ctx.createGain();o.type=type==="hat"?"square":"sine";o.frequency.setValueAtTime(type==="kick"?115:type==="snare"?210:1800,when);if(type==="kick")o.frequency.exponentialRampToValueAtTime(48,when+.11);g.gain.setValueAtTime(.0001,when);g.gain.exponentialRampToValueAtTime(type==="hat"?.025:.11,when+.008);g.gain.exponentialRampToValueAtTime(.0001,when+(type==="hat"?.045:.14));o.connect(g);g.connect(ctx.destination);if(S.mixDest)g.connect(S.mixDest);o.start(when);o.stop(when+(type==="hat"?.06:.16));S.beatNodes.push(o);setTimeout(()=>{S.beatNodes=S.beatNodes.filter(x=>x!==o)},400)}
+async function startBuiltinBeat(){stopBuiltinBeat();if(S.beatChoice==="off"||$("music").src)return;const ctx=await ensureBeatAudio();if(!ctx)return;const cfg=S.beatChoice==="house"?{bpm:124,pattern:["kick","hat","kick","hat"]}:S.beatChoice==="groove"?{bpm:104,pattern:["kick","hat","snare","hat","kick","hat","snare","hat"]}:{bpm:112,pattern:["kick","hat","snare","hat"]};let step=0;const tick=()=>{beatHit(ctx,cfg.pattern[step%cfg.pattern.length],ctx.currentTime+.015);step++};tick();S.beatTimer=setInterval(tick,(60000/cfg.bpm)/2)}
+function setBeatChoice(k){S.beatChoice=k;document.querySelectorAll("[data-beat]").forEach(b=>b.classList.toggle("active",b.dataset.beat===k));if(k!=="off"&&$("music").src){$("music").pause();$("music").removeAttribute("src");$("music").load();if(S.musicURL){URL.revokeObjectURL(S.musicURL);S.musicURL=null}}}
+document.querySelectorAll("[data-beat]").forEach(b=>b.onclick=()=>setBeatChoice(b.dataset.beat));
+$("musicFile").onchange=e=>{const f=e.target.files?.[0];if(!f)return;if(S.musicURL)URL.revokeObjectURL(S.musicURL);S.musicURL=URL.createObjectURL(f);$("music").src=S.musicURL;S.beatChoice="off";document.querySelectorAll("[data-beat]").forEach(b=>b.classList.toggle("active",b.dataset.beat==="off"));$("music").load();toast("Musique chargée ✓")};
+$("musicToggle").onclick=async()=>{const a=$("music");if(!a.src){toast("Choisis une musique");return}if(a.paused){try{await a.play();$("musicToggle").textContent="⏸"}catch(e){toast("Lecture impossible")}}else{a.pause();$("musicToggle").textContent="▶︎"}};
+async function openCam(){if(localStorage.getItem("dwqCameraDisclosureV1")==="yes"){return openCamCore()}showDisclosure("camera",()=>{localStorage.setItem("dwqCameraDisclosureV1","yes");openCamCore()},()=>toast("Caméra non activée"))}
+async function openCamCore(){cancelCountdown();stopStream();clearInterval(S.recordTimer);S.recordTimer=null;S.recordStarted=null;S.recordedMs=0;$("recordClock").classList.remove("live");$("recordTime").textContent=clockText(0,missionDuration(S.active));$("playback").style.display="none";$("live").style.display="block";try{if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error("getUserMedia indisponible");const facing=S.cameraFacing||"user";try{S.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:facing}},audio:false})}catch(first){try{S.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facing}},audio:false})}catch(second){S.stream=await navigator.mediaDevices.getUserMedia({video:true,audio:false})}}$("live").classList.toggle("frontCam",facing==="user");$("live").classList.toggle("backCam",facing!=="user");$("live").srcObject=S.stream;$("placeholder").style.display="none";$("rec").disabled=false;$("flipCam").disabled=false;toast("Caméra prête ✓")}catch(e){console.error("DWQ camera",e);$("flipCam").disabled=true;toast("Caméra indisponible · "+(e&&e.name?e.name:(e&&e.message?e.message:"erreur")))}}
+function stopStream(){if(S.stream){S.stream.getTracks().forEach(t=>t.stop());S.stream=null}}
+async function flipCamera(){if(S.countdownActive||(S.recorder&&S.recorder.state!=="inactive"))return;S.cameraFacing=S.cameraFacing==="environment"?"user":"environment";await openCam()}
+function cancelCountdown(){if(S.countdownTimer){clearInterval(S.countdownTimer);S.countdownTimer=null}S.countdownActive=false;const o=$("countdownOverlay");if(o)o.classList.remove("show")}
+function runCountdown(seconds=5){return new Promise(resolve=>{cancelCountdown();S.countdownActive=true;let n=seconds;const o=$("countdownOverlay");o.textContent=n;o.classList.add("show");S.countdownTimer=setInterval(()=>{n--;if(n<=0){clearInterval(S.countdownTimer);S.countdownTimer=null;S.countdownActive=false;o.classList.remove("show");resolve(true)}else{o.textContent=n}},1000)})}
+async function buildStream(){
+ const vt=S.stream?.getVideoTracks()[0];if(!vt)return null;const a=$("music");
+ try{const ctx=await ensureBeatAudio();if(!ctx)return new MediaStream([vt]);if(a.src){if(!a._src)a._src=ctx.createMediaElementSource(a);try{a._src.connect(S.mixDest)}catch(e){}try{a._src.connect(ctx.destination)}catch(e){}}else if(S.beatChoice!=="off"){await startBuiltinBeat()}const at=S.mixDest&&S.mixDest.stream.getAudioTracks()[0];return at?new MediaStream([vt,at]):new MediaStream([vt])}catch(e){return new MediaStream([vt])}
+}
+async function startRec(){if(!S.active){toast("Choisis une mission");return}if(S.countdownActive)return;const minP=S.active.minPlayers||1;if(minP>1){const ok=await startPersonCheck(minP);if(!ok)return}$("rec").disabled=true;$("flipCam").disabled=true;$("stop").disabled=true;await runCountdown(3);if(!S.stream){$("stop").disabled=true;return}S.chunks=[];const rs=await buildStream();if(!rs){$("stop").disabled=true;return}if($("music").src&&$("music").paused){try{$("music").currentTime=0;await $("music").play()}catch(e){}}try{
+ const types=["video/webm;codecs=vp8,opus","video/webm;codecs=vp8","video/webm","video/mp4"];
+ const chosen=types.find(t=>window.MediaRecorder&&MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t));
+ S.recorder=chosen?new MediaRecorder(rs,{mimeType:chosen}):new MediaRecorder(rs);
+ S.recorder.ondataavailable=e=>e.data.size&&S.chunks.push(e.data);
+ S.recorder.onstop=()=>{
+   clearInterval(S.recordTimer);S.recordTimer=null;
+   const total=missionDuration(S.active)*1000;
+   if(S.recordStarted)S.recordedMs=Math.min(total,Math.max(S.recordedMs,Date.now()-S.recordStarted));
+   S.videoBlob=new Blob(S.chunks,{type:S.recorder.mimeType||chosen||"video/webm"});
+   if(S.videoURL)URL.revokeObjectURL(S.videoURL);S.videoURL=URL.createObjectURL(S.videoBlob);
+   $("playback").src=S.videoURL;$("playback").style.display="block";$("live").style.display="none";
+   const enough=S.recordedMs>=total-400;
+   $("validate").disabled=!enough;$("redo").disabled=false;$("instagram").disabled=false;$("facebook").disabled=false;$("youtube").disabled=false;$("shareAny").disabled=false;
+   $("recordClock").classList.remove("live");const cc=document.querySelector(".cameraCard");cc&&cc.classList.remove("recording","ready");cc&&cc.classList.add("recorded");stopPersonCheck();stopStream();$("flipCam").disabled=true;$("music").pause();stopBuiltinBeat();
+   toast(enough?missionDuration(S.active)+" secondes ✓":"Vidéo trop courte · "+Math.floor(S.recordedMs/1000)+"/"+missionDuration(S.active)+" s")
+ };
+ S.recorder.start();S.recordStarted=Date.now();S.recordedMs=0;
+ $("recordClock").classList.add("live");$("recordTime").textContent=clockText(0,missionDuration(S.active));
+ clearInterval(S.recordTimer);S.recordTimer=setInterval(updateRecordClock,100);
+ $("rec").disabled=true;$("stop").disabled=false
+}catch(e){toast("Enregistrement non supporté")}}
+function stopRec(){if(S.countdownActive){cancelCountdown();stopBuiltinBeat();stopPersonCheck();$("rec").disabled=false;$("flipCam").disabled=!S.stream;$("stop").disabled=true;toast("Compte à rebours annulé");return}if(S.recordStarted)S.recordedMs=Date.now()-S.recordStarted;clearInterval(S.recordTimer);S.recordTimer=null;if(S.recorder&&S.recorder.state!=="inactive")S.recorder.stop();$("stop").disabled=true}
+function redo(){resetRecordClock();if(S.videoURL)URL.revokeObjectURL(S.videoURL);S.videoBlob=null;S.videoURL=null;$("validate").disabled=true;$("redo").disabled=true;$("instagram").disabled=true;$("facebook").disabled=true;$("youtube").disabled=true;$("shareAny").disabled=true;openCam()}
+
+const DB_NAME="dwqVideos10",DB_STORE="videos";
+function openVideoDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(DB_STORE))r.result.createObjectStore(DB_STORE)};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+async function putVideo(id,blob){try{const db=await openVideoDB();await new Promise((res,rej)=>{const tx=db.transaction(DB_STORE,"readwrite");tx.objectStore(DB_STORE).put(blob,id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});db.close()}catch(e){}}
+async function getVideo(id){try{const db=await openVideoDB();const b=await new Promise((res,rej)=>{const r=db.transaction(DB_STORE).objectStore(DB_STORE).get(id);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});db.close();return b}catch(e){return null}}
+
+function setCommunityState(text,on=false){
+ const st=$("authState"),badge=$("communitySyncBadge");
+ if(st)st.innerHTML='<span class="onlineDot '+(on?'on':'')+'"></span>'+text;
+ if(badge){badge.textContent=on?'EN LIGNE':'HORS LIGNE';badge.classList.toggle('good',on)}
+ S.communityOnline=on
+}
+function cleanCountry(v){return String(v||'').trim().toUpperCase().slice(0,2)}
+function cleanText(v,n=60){return String(v||'').trim().slice(0,n)}
+async function syncRemoteProfile(){
+ if(!SB||!loggedIn())return null;
+ const uid=S.session.user.id;
+ const pending=JSON.parse(localStorage.getItem('dwqPendingProfile')||'null');
+ if(pending){
+   const patch={username:cleanText(pending.username,30)||('Dancer-'+uid.slice(0,8)),country_code:cleanCountry(pending.country)||null,city:cleanText(pending.city,60)||null};
+   const {error}=await SB.from('profiles').update(patch).eq('id',uid);if(!error)localStorage.removeItem('dwqPendingProfile')
+ }
+ const {data,error}=await SB.from('profiles').select('id,username,country_code,city,xp_total,hype_total,age_13_confirmed_at,community_terms_version,community_terms_accepted_at').eq('id',uid).single();
+ if(error){setCommunityState('Profil serveur indisponible',false);return null}
+ S.remoteProfile=data;renderAuth();renderTop();return data
+}
+function renderAuth(){
+ const inEl=$("authLoggedIn"),outEl=$("authLoggedOut"),badge=$("authBadge");if(!inEl||!outEl)return;
+ const on=loggedIn(),eligible=on&&eligibleOnline();inEl.style.display=on?'block':'none';outEl.style.display=on?'none':'block';badge.textContent=on?(eligible?'CONNECTÉ':'ACCÈS À CONFIRMER'):'NON CONNECTÉ';badge.className=eligible?'good':'pending';
+ if(on){const p=S.remoteProfile||{};$("authName").textContent=p.username||S.session.user.email||'Joueur';$("authMeta").textContent=[p.city,p.country_code].filter(Boolean).join(' · ')||S.session.user.email||'';$("profileUsername").value=p.username||'';$("profileCountry").value=p.country_code||'';$("profileCity").value=p.city||'';if($("eligibilityGate"))$("eligibilityGate").style.display=eligible?'none':'block'}
+}
+async function authSignup(){
+ if(!SB){toast('Serveur Community indisponible');return}
+ const email=cleanText($("authEmail").value,120),password=$("authPassword").value,username=cleanText($("authUsername").value,30),country=cleanCountry($("authCountry").value),city=cleanText($("authCity").value,60);
+ if(!email||password.length<6||username.length<2){toast('Pseudo, email et mot de passe requis');return}
+ if(!$("authBirthdate")||!birthdateEligible($("authBirthdate").value)){toast('La Community n’est pas disponible pour ce compte');return}
+ if(!$("authTermsCheck")||!$("authTermsCheck").checked){toast('Accepte les règles de la Communauté pour créer le compte');return}
+ localStorage.setItem('dwqPendingProfile',JSON.stringify({username,country,city}));localStorage.setItem('dwqPendingEligibility','yes');setCommunityState('Création du compte…',false);
+ const {data,error}=await SB.auth.signUp({email,password,options:{data:{community_terms_version:COMMUNITY_TERMS_VERSION}}});if(error){toast('Compte : '+error.message);return}
+ S.session=data.session||null;if(S.session){await syncRemoteProfile();await refreshJamAdminState(false);await acceptEligibilityOnline(true);localStorage.removeItem('dwqPendingEligibility');await refreshOnlineAll();await refreshJams(true);renderJamAdmin();toast('Compte créé ✓')}else{toast('Compte créé · vérifie ton email puis connecte-toi')};renderAuth()
+}
+async function authLogin(){
+ if(!SB){toast('Serveur Community indisponible');return}
+ const email=cleanText($("authEmail").value,120),password=$("authPassword").value;if(!email||!password){toast('Email et mot de passe requis');return}
+ setCommunityState('Connexion…',false);const {data,error}=await SB.auth.signInWithPassword({email,password});if(error){toast('Connexion impossible : '+error.message);return}
+ S.session=data.session;await syncRemoteProfile();await refreshJamAdminState(false);if(localStorage.getItem('dwqPendingEligibility')==='yes'){if(await acceptEligibilityOnline(true))localStorage.removeItem('dwqPendingEligibility')}if(eligibleOnline())await refreshOnlineAll();else{setCommunityState('Complète le contrôle d’âge pour ouvrir la Community',false);renderCommunity();renderRanksEmpty()}await refreshJams(true);renderJamAdmin();toast(eligibleOnline()?'Connecté ✓':'Connecté · contrôle d’âge requis')
+}
+async function authLogout(){if(!SB)return;await SB.auth.signOut();S.session=null;S.remoteProfile=null;S.remotePosts=[];S.myRemoteVotes=new Set();S.jamAdmin=false;S.jamAdminRequested=false;S.adminJams=[];setCommunityState('Connecte-toi pour la Community',false);renderAuth();renderTop();renderCommunity();renderRanksEmpty();renderJamAdmin()}
+async function saveRemoteProfile(){
+ if(!SB||!loggedIn())return;
+ const patch={username:cleanText($("profileUsername").value,30),country_code:cleanCountry($("profileCountry").value)||null,city:cleanText($("profileCity").value,60)||null};if(patch.username.length<2){toast('Pseudo trop court');return}
+ const {error}=await SB.from('profiles').update(patch).eq('id',S.session.user.id);if(error){toast('Profil : '+error.message);return}await syncRemoteProfile();await refreshRanks();toast('Profil enregistré ✓')
+}
+async function initOnline(){
+ renderAuth();if(!SB){setCommunityState('Bibliothèque Community indisponible',false);return}
+ try{const {data,error}=await SB.auth.getSession();if(error)throw error;S.session=data.session||null;if(S.session){await syncRemoteProfile();await refreshJamAdminState(false);if(eligibleOnline())await refreshOnlineAll();else{setCommunityState('Complète le contrôle d’âge pour ouvrir la Community',false);renderCommunity();renderRanksEmpty()}}else{setCommunityState('Connecte-toi pour publier et voter',false);renderCommunity();renderRanksEmpty()}await refreshJams(true);renderJamAdmin();
+ SB.auth.onAuthStateChange(async(_event,session)=>{S.session=session||null;if(S.session){await syncRemoteProfile();await refreshJamAdminState(false);if(eligibleOnline())await refreshOnlineAll();else{setCommunityState('Complète le contrôle d’âge pour ouvrir la Community',false);renderCommunity();renderRanksEmpty()}}else{S.remoteProfile=null;S.remotePosts=[];S.jamAdmin=false;S.jamAdminRequested=false;renderAuth();renderTop();renderCommunity();renderRanksEmpty()}await refreshJams(true);renderJamAdmin()})
+ }catch(e){setCommunityState('Connexion serveur impossible',false)}
+}
+function jamRowToMission(x){const start=new Date(x.starts_at).getTime(),end=new Date(x.ends_at).getTime();return{id:`jam:${x.id}`,serverJamId:x.id,type:"weekly",title:x.mission_title||"Grand Weekly Jam",desc:x.mission_description||t("weeklyDesc"),cityName:x.city,p:{lat:Number(x.latitude),lon:Number(x.longitude)},r:240,xp:Number(x.base_xp)||900,minPlayers:2,duration:30,area:(x.city||"")+" · "+(x.venue_name||""),venueName:x.venue_name,eventAt:start,expiresAt:end,communityVerdict:true,weekly:true,countryCode:x.country_code}}
+function nextSaturdayDateValue(){const d=new Date();d.setHours(12,0,0,0);let add=(6-d.getDay()+7)%7;if(add===0&&new Date().getHours()>=20)add=7;d.setDate(d.getDate()+add);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function weekStartISO(ms){const d=new Date(ms),day=(d.getUTCDay()+6)%7,m=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()-day));return m.toISOString().slice(0,10)}
+async function refreshJamAdminState(redraw=true){
+ if(!SB||!loggedIn()){S.jamAdmin=false;S.jamAdminRequested=false;if(redraw)renderJamAdmin();return}
+ const uid=S.session.user.id;
+ const [{data:a},{data:r}]=await Promise.all([SB.from("jam_admins").select("user_id").eq("user_id",uid).maybeSingle(),SB.from("jam_admin_requests").select("user_id").eq("user_id",uid).maybeSingle()]);
+ S.jamAdmin=!!a;S.jamAdminRequested=!!r;if(redraw)renderJamAdmin()
+}
+async function refreshJams(redraw=true){
+ if(!SB)return;
+ const {data,error}=await SB.from("weekly_jams").select("id,country_code,city,venue_name,latitude,longitude,week_start,starts_at,ends_at,mission_title,mission_description,base_xp,created_at,updated_at").gt("ends_at",new Date().toISOString()).order("starts_at",{ascending:true}).limit(100);
+ if(error)return;const now=Date.now(),all=(data||[]).map(jamRowToMission);S.adminJams=S.jamAdmin?all:[];S.publicJams=all.filter(j=>now>=j.eventAt-7*3600000&&now<j.expiresAt);if(redraw){makeMissions();renderJamAdmin()}
+}
+async function requestJamAdmin(){if(!SB||!loggedIn()){toast(t("duoNeedLogin"));return}const uid=S.session.user.id;const {error}=await SB.from("jam_admin_requests").insert({user_id:uid});if(error&&error.code!=="23505"){toast("Admin : "+error.message);return}S.jamAdminRequested=true;renderJamAdmin();toast(S.lang==="he"?"הבקשה נשלחה.":S.lang==="en"?"Admin request sent.":"Demande Admin envoyée.")}
+function jamText(fr,en,he){return S.lang==="he"?he:S.lang==="en"?en:fr}
+function msg(fr,en,he){return S.lang==="he"?he:S.lang==="en"?en:fr}
+
+function resetJamForm(){S.jamEditId=null;if($("jamCountry"))$("jamCountry").value="IL";if($("jamCity"))$("jamCity").value="";if($("jamVenue"))$("jamVenue").value="";if($("jamDate"))$("jamDate").value=nextSaturdayDateValue();if($("jamTime"))$("jamTime").value="20:00";if($("jamLat"))$("jamLat").value="";if($("jamLon"))$("jamLon").value="";if($("jamPublicConfirm"))$("jamPublicConfirm").checked=false;renderJamAdmin()}
+function editJam(id){const j=S.adminJams.find(x=>x.serverJamId===id);if(!j)return;S.jamEditId=id;const d=new Date(j.eventAt);$("jamCountry").value=j.countryCode||"IL";$("jamCity").value=j.cityName||"";$("jamVenue").value=j.venueName||"";$("jamDate").value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");$("jamTime").value=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");$("jamLat").value=j.p.lat.toFixed(6);$("jamLon").value=j.p.lon.toFixed(6);$("jamPublicConfirm").checked=true;renderJamAdmin()}
+async function deleteJam(id){if(!S.jamAdmin)return;if(!confirm(jamText("Supprimer ce Jam ?","Delete this Jam?","למחוק את ה-Jam?")))return;const {error}=await SB.from("weekly_jams").delete().eq("id",id);if(error){toast("Jam : "+error.message);return}await refreshJams(true);toast(jamText("Jam supprimé","Jam deleted","ה-Jam נמחק"))}
+async function saveJam(){
+ if(!S.jamAdmin)return;const country=cleanCountry($("jamCountry").value),city=cleanText($("jamCity").value,80),venue=cleanText($("jamVenue").value,120),date=$("jamDate").value,time=$("jamTime").value,lat=Number($("jamLat").value),lon=Number($("jamLon").value);
+ if(!country||!city||!venue||!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)||!/^\\d{2}:\\d{2}$/.test(time)||!Number.isFinite(lat)||!Number.isFinite(lon)||lat<-90||lat>90||lon<-180||lon>180){toast(jamText("Complète le lieu, la date, l’heure et la position.","Complete the place, date, time and position.","יש להשלים מקום, תאריך, שעה ומיקום."));return}
+ if(!$("jamPublicConfirm").checked){toast(jamText("Confirme d’abord qu’il s’agit d’un lieu public avec assez d’espace.","First confirm this is a spacious public place.","יש לאשר קודם שזה מקום ציבורי עם מספיק מרחב."));return}
+ const start=new Date(date+"T"+time+":00");if(!Number.isFinite(start.getTime())||start.getTime()<=Date.now()){toast(jamText("Choisis une date future.","Choose a future date.","בחר תאריך עתידי."));return}
+ const row={country_code:country,city,venue_name:venue,latitude:lat,longitude:lon,week_start:weekStartISO(start.getTime()),starts_at:start.toISOString(),ends_at:new Date(start.getTime()+2*3600000).toISOString(),mission_title:"Grand Weekly Jam",mission_description:"Mission collective Dance World Quest dans un espace public.",base_xp:900,venue_confirmed:true};
+ let error;if(S.jamEditId)({error}=await SB.from("weekly_jams").update(row).eq("id",S.jamEditId));else({error}=await SB.from("weekly_jams").insert({...row,created_by:S.session.user.id}));if(error){toast("Jam : "+error.message);return}resetJamForm();await refreshJams(true);toast(jamText("Jam programmé ✓","Jam scheduled ✓","ה-Jam נקבע ✓"))
+}
+function renderJamAdmin(){
+ const card=$("jamAdminCard");if(!card)return;if(!loggedIn()){card.style.display="none";return}card.style.display="block";const req=$("jamAdminRequestBox"),panel=$("jamAdminPanel"),badge=$("jamAdminBadge");
+ $("jamAdminTitle").textContent=jamText("Programmation des Jams","Jam scheduling","תזמון Jams");
+ if(S.jamAdmin){badge.textContent="ADMIN ✓";badge.className="success";req.style.display="none";panel.style.display="block"}else{badge.textContent=S.jamAdminRequested?jamText("EN ATTENTE","PENDING","ממתין"):jamText("VERROUILLÉ","LOCKED","נעול");badge.className="pending";req.style.display="block";panel.style.display="none";$("jamAdminRequestText").textContent=S.jamAdminRequested?jamText("Demande envoyée. L’accès doit être approuvé avant de pouvoir programmer des Jams.","Request sent. Access must be approved before scheduling Jams.","הבקשה נשלחה. יש לאשר גישה לפני תזמון Jams."):jamText("Cet accès est réservé à l’administration de Dance World Quest.","This access is reserved for Dance World Quest administration.","הגישה שמורה לניהול Dance World Quest.");$("requestJamAdmin").style.display=S.jamAdminRequested?"none":"block";return}
+ $("jamAdminIntro").textContent=jamText("Crée plusieurs Jams la même semaine. Ils deviennent visibles exactement 7 heures avant le rassemblement.","Create several Jams in the same week. They become visible exactly 7 hours before the meetup.","אפשר ליצור כמה Jams באותו שבוע. הם נהיים גלויים בדיוק 7 שעות לפני המפגש.");
+ $("jamPublicConfirmText").textContent=jamText("Je confirme que le lieu est public et dispose de suffisamment d’espace pour un rassemblement.","I confirm this is a public place with enough space for a meetup.","אני מאשר שזה מקום ציבורי עם מספיק מרחב למפגש.");$("jamPublish").textContent=S.jamEditId?jamText("Enregistrer la modification","Save changes","שמור שינויים"):jamText("Publier ce Jam","Publish this Jam","פרסם Jam");$("jamCancelEdit").style.display=S.jamEditId?"block":"none";$("jamCancelEdit").textContent=jamText("Annuler modification","Cancel edit","בטל עריכה");$("jamUseGPS").textContent=jamText("Ma position","My position","המיקום שלי");$("jamPickMap").textContent=jamText("Choisir sur la carte","Pick on map","בחר במפה");
+ const list=$("jamAdminList");list.innerHTML=(S.adminJams||[]).length?(S.adminJams||[]).map(j=>`<div class="jamAdminRow"><div class="row"><div><b>${esc(j.cityName)} · ${esc(j.venueName)}</b><small style="display:block">${esc(formatEventTime(j.eventAt))} · ${esc(j.countryCode||"")}</small></div><div><button data-jam-edit="${escAttr(j.serverJamId)}">${jamText("Modifier","Edit","ערוך")}</button><button data-jam-delete="${escAttr(j.serverJamId)}">${jamText("Supprimer","Delete","מחק")}</button></div></div></div>`).join(""):`<div class="communityEmpty">${jamText("Aucun Jam programmé.","No Jam scheduled.","אין Jam מתוזמן.")}</div>`;list.querySelectorAll("[data-jam-edit]").forEach(b=>b.onclick=()=>editJam(b.dataset.jamEdit));list.querySelectorAll("[data-jam-delete]").forEach(b=>b.onclick=()=>deleteJam(b.dataset.jamDelete))
+}
+
+function onlineMissionKey(m){if(m&&m.type==="duo"&&m.p)return `duo:${Math.round(m.p.lat*10000)}:${Math.round(m.p.lon*10000)}:${m.cycle||0}`;return cleanText(String(m.id||m.slotKey||m.title||"mission").replace(/[^a-zA-Z0-9:_-]/g,"-"),160)}
+
+function currentDuoMeet(m){return m?S.duoMeetups.get(onlineMissionKey(m))||null:null}
+async function refreshDuoMeetups(redraw=true){
+ if(!SB||!loggedIn()){S.duoMeetups=new Map();if(redraw){renderDuoSelected()}return}
+ const {data,error}=await SB.from("duo_meetups").select("id,mission_key,owner_id,partner_id,status,expires_at").gt("expires_at",new Date().toISOString()).in("status",["open","matched"]);
+ if(error)return;S.duoMeetups=new Map((data||[]).map(x=>[x.mission_key,x]));if(redraw){renderAll()}else renderDuoSelected()
+}
+function renderDuoSelected(){
+ const box=$("duoMeet"),btn=$("duoMeetAction"),txt=$("duoMeetText");if(!box||!btn||!txt)return;const m=S.missions[S.selected];
+ if(!m||m.type!=="duo"){box.classList.remove("show");return}box.classList.add("show");const meet=currentDuoMeet(m),uid=loggedIn()?S.session.user.id:null;
+ if(!uid){txt.textContent=t("duoNeedLogin");btn.textContent=t("login");btn.onclick=()=>show("profileScreen");return}
+ if(!meet){txt.textContent=t("duoNone");btn.textContent=t("duoGo");btn.onclick=()=>announceDuo(m);return}
+ if(meet.status==="open"){
+  if(meet.owner_id===uid){txt.textContent=t("duoYou");btn.textContent=t("duoCancel");btn.onclick=()=>cancelDuo(m)}
+  else{txt.textContent=t("duoOne");btn.textContent=t("duoJoin");btn.onclick=()=>joinDuo(m)}
+ }else if(meet.status==="matched"){
+  if(meet.owner_id===uid||meet.partner_id===uid){txt.textContent=t("duoMatched");btn.textContent=t("duoCancel");btn.onclick=()=>cancelDuo(m)}
+  else{txt.textContent=S.lang==="he"?"כבר יש שני משתתפים במשימה.":S.lang==="en"?"This duo already has two players.":"Deux joueurs sont déjà associés.";btn.textContent="✓";btn.onclick=null}
+ }
+}
+async function announceDuo(m){if(!await ensureCommunityConsent())return;const {error}=await SB.rpc("announce_duo_meetup",{p_mission_key:onlineMissionKey(m),p_title:missionTitle(m)});if(error){toast("Duo : "+error.message);return}await refreshDuoMeetups(true);toast(t("duoYou"))}
+async function joinDuo(m){if(!await ensureCommunityConsent())return;const {error}=await SB.rpc("join_duo_meetup",{p_mission_key:onlineMissionKey(m)});if(error){toast(S.lang==="he"?"המשימה כבר לא זמינה.":S.lang==="en"?"This duo is no longer available.":"Ce duo n’est plus disponible.");await refreshDuoMeetups(true);return}await refreshDuoMeetups(true);toast(t("duoMatched"))}
+async function cancelDuo(m){if(!loggedIn())return;await SB.rpc("cancel_duo_meetup",{p_mission_key:onlineMissionKey(m)});await refreshDuoMeetups(true)}
+function extForBlob(b){const t=(b&&b.type)||'';return t.includes('mp4')?'mp4':t.includes('quicktime')?'mov':'webm'}
+async function addCommunityPostOnline(m){
+ if(!SB||!loggedIn()){show('profileScreen');toast('Connecte-toi pour envoyer la vidéo dans la Communauté');return null}
+ if(!(await ensureCommunityConsent()))return null;
+ const uid=S.session.user.id,key=onlineMissionKey(m),ext=extForBlob(S.videoBlob),path=`${uid}/${key}-${Date.now()}.${ext}`;
+ setCommunityState('Envoi de la vidéo…',true);
+ const {error:upErr}=await SB.storage.from('mission-videos').upload(path,S.videoBlob,{contentType:(S.videoBlob.type||'video/webm').split(';')[0],upsert:false});if(upErr){toast('Envoi vidéo impossible : '+upErr.message);return null}
+ const useLocation=!m.free&&!!S.pos;const row={user_id:uid,mission_key:key,mission_type:m.type,title:missionTitle(m),description:missionDesc(m)||'',base_xp:Number(m.xp)||0,video_path:path,video_mime:(S.videoBlob.type||'video/webm').split(';')[0],duration_seconds:Math.round((S.recordedMs||0)/100)/10,race_ms:m.raceMs||null,latitude:useLocation?S.pos.lat:null,longitude:useLocation?S.pos.lon:null,gps_accuracy_m:useLocation?S.pos.accuracy:null,auto_validated:!!m.autoXp};
+ const {data,error}=await SB.from('submissions').insert(row).select('id,user_id,mission_type,title,description,base_xp,video_path,video_mime,duration_seconds,race_ms,status,score_avg,votes_count,final_xp,created_at').single();
+ if(error){await SB.storage.from('mission-videos').remove([path]);toast(error.code==='23505'?'Cette mission a déjà été envoyée':'Mission serveur : '+error.message);return null}
+ await refreshCommunity();await syncRemoteProfile();await refreshRanks();return data
+}
+async function refreshCommunity(){
+ if(!SB||!loggedIn()){S.remotePosts=[];renderCommunity();return}
+ if(!eligibleOnline()){S.remotePosts=[];setCommunityState('Complète le contrôle d’âge pour ouvrir la Community',false);renderCommunity();return}
+ const {data,error}=await SB.from('submissions').select('id,user_id,mission_type,title,description,base_xp,video_path,video_mime,duration_seconds,race_ms,status,score_avg,votes_count,final_xp,created_at').order('created_at',{ascending:false}).limit(60);
+ if(error){setCommunityState('Community indisponible',false);return}
+ const {data:myVotes}=await SB.from('votes').select('submission_id').eq('voter_id',S.session.user.id);S.myRemoteVotes=new Set((myVotes||[]).map(v=>v.submission_id));
+ S.remotePosts=(data||[]).map(x=>({id:x.id,owner:x.user_id,type:x.mission_type,title:x.title,desc:x.description,baseXp:x.base_xp,videoPath:x.video_path,mime:x.video_mime,created:new Date(x.created_at).getTime(),raceMs:x.race_ms,status:x.status,scoreAvg:x.score_avg,votesCount:x.votes_count,finalXp:x.final_xp,remote:true,autoXp:x.status==='auto'}));
+ setCommunityState('Community synchronisée',true);renderCommunity()
+}
+async function signedVideo(path){
+ if(!SB||!path)return null;if(S.signedVideoUrls.has(path))return S.signedVideoUrls.get(path);
+ const {data,error}=await SB.storage.from('mission-videos').createSignedUrl(path,900);if(error)return null;const u=data&&data.signedUrl; if(u)S.signedVideoUrls.set(path,u);return u||null
+}
+async function attachCommunityVideosOnline(){for(const el of document.querySelectorAll('[data-video-path]')){const u=await signedVideo(el.dataset.videoPath);if(u){const v=document.createElement('video');v.controls=true;v.playsInline=true;v.preload='metadata';v.src=u;el.innerHTML='';el.appendChild(v)}}}
+async function castVoteOnline(id,payload){
+ if(!SB||!loggedIn()){show('profileScreen');toast('Connecte-toi pour voter');return}
+ if(!eligibleOnline()){show('profileScreen');toast('Complète le contrôle d’âge et accepte les règles pour voter');return}
+ if(S.myRemoteVotes.has(id)){toast('Vote déjà enregistré');return}
+ const row={submission_id:id,voter_id:S.session.user.id,score:payload.value||null,battle_choice:payload.choice||null};const {error}=await SB.from('votes').insert(row);if(error){toast(error.message.includes('self_vote')?'Tu ne peux pas voter pour ta propre vidéo':'Vote impossible : '+error.message);return}
+ S.myRemoteVotes.add(id);sfx('vote');toast('Vote enregistré · bonus XP si éligible');await refreshCommunity();await syncRemoteProfile();await refreshRanks()
+}
+async function reportPostOnline(id){if(!SB||!loggedIn()||!eligibleOnline())return;const {error}=await SB.from('reports').insert({reporter_id:S.session.user.id,submission_id:id,reason:'community_report'});if(error&&!String(error.message).includes('duplicate')){toast('Signalement impossible');return}toast('Vidéo signalée et masquée');await refreshCommunity()}
+async function blockOwnerOnline(owner){if(!SB||!loggedIn()||!eligibleOnline()||owner===S.session.user.id)return;const {error}=await SB.from('blocks').insert({blocker_id:S.session.user.id,blocked_id:owner});if(error&&!String(error.message).includes('duplicate')){toast('Blocage impossible');return}toast('Utilisateur masqué');await refreshCommunity()}
+async function reportUserOnline(owner){if(!SB||!loggedIn()||!eligibleOnline()||owner===S.session.user.id)return;const {error}=await SB.from('user_reports').insert({reporter_id:S.session.user.id,reported_user_id:owner,reason:'community_user_report'});if(error&&!String(error.message).includes('duplicate')){toast('Signalement utilisateur impossible');return}toast('Utilisateur signalé');}
+async function deleteMyAccount(){if(!SB||!loggedIn())return;const ok=confirm('Supprimer définitivement ton compte, tes vidéos, tes votes et tes données Dance World Quest ? Cette action est irréversible.');if(!ok)return;const {data,error}=await SB.functions.invoke('delete-account',{body:{confirm:true}});if(error||!data||!data.ok){toast('Suppression impossible pour le moment');return}localStorage.removeItem('dwqPendingProfile');await authLogout();toast('Compte et données supprimés')}
+function renderRanksEmpty(){if($("rankSync"))$("rankSync").textContent='NON CONNECTÉ';if($("rankNational"))$("rankNational").textContent='#—';if($("rankWorld"))$("rankWorld").textContent='#—';if($("rankNote"))$("rankNote").textContent='Connecte-toi pour rejoindre le classement partagé.';if($("leaderList"))$("leaderList").innerHTML=''}
+function renderLeaderboard(rows,country=false){const box=$("leaderList");if(!box)return;box.innerHTML='';(rows||[]).slice(0,20).forEach(r=>{const e=document.createElement('div');e.className='leaderRow';e.innerHTML=`<b>#${Number(r.rank)||0}</b><div><b>${esc(r.username)}</b><small>${esc([r.city,r.country_code].filter(Boolean).join(' · '))}</small></div><b>${Number(r.xp_total)||0} XP</b>`;box.appendChild(e)});$("leaderTitle").textContent=country?'Top national':'Top mondial'}
+async function refreshRanks(){
+ if(!SB||!loggedIn()||!eligibleOnline()){renderRanksEmpty();if(loggedIn()&&$("rankNote"))$("rankNote").textContent='Complète le contrôle d’âge et accepte les règles pour rejoindre le classement.';return}
+ const {data:mine,error}=await SB.rpc('get_my_ranks');if(!error&&mine&&mine[0]){$("rankWorld").textContent='#'+mine[0].global_rank;$("rankNational").textContent=mine[0].country_rank?'#'+mine[0].country_rank:'#—';$("rankSync").textContent='LIVE';$("rankSync").className='good';$("rankNote").textContent='Classement partagé mis à jour par le serveur.'}
+ const country=S.remoteProfile&&S.remoteProfile.country_code;let res;if(country)res=await SB.rpc('get_country_leaderboard',{p_country_code:country,p_limit:20});else res=await SB.rpc('get_global_leaderboard',{p_limit:20});if(!res.error)renderLeaderboard(res.data||[],!!country)
+}
+async function refreshOnlineAll(){await refreshCommunity();await refreshRanks();setCommunityState('Community synchronisée',true)}
+
+function communityQuestion(p){
+ const fr={battle:"Qui gagne ce Battle ?",trick:"La technique demandée est-elle vraiment réussie ?",speed:"La mission vitesse est-elle validée ?",mood:"Le mood est-il reconnaissable ?",group:"La mission collective est-elle réussie ?",object:"L’objet est-il utilisé de façon créative ?",def:"Quelle note pour cette mission ?"};
+ const en={battle:"Who wins this Battle?",trick:"Was the requested technique really completed?",speed:"Is the speed mission valid?",mood:"Is the mood clearly recognizable?",group:"Was the group mission completed?",object:"Was the object used creatively?",def:"How would you rate this mission?"};
+ const he={battle:"מי ניצח בבאטל?",trick:"האם הטכניקה המבוקשת באמת בוצעה?",speed:"האם משימת המהירות תקפה?",mood:"האם מצב הרוח ברור?",group:"האם המשימה הקבוצתית הצליחה?",object:"האם השתמשו בחפץ בצורה יצירתית?",def:"איזה ציון מגיע למשימה?"};
+ const d=S.lang==="he"?he:S.lang==="en"?en:fr,k=(p.type==="family"||p.type==="familyfree"||p.type==="weekly"||p.type==="group"||p.type==="duo")?"group":p.type;return d[k]||d.def
+}
+function calcCommunityScore(p){if(!p.votes||!p.votes.length)return null;if(p.type==="battle"){const a=p.votes.filter(v=>v.choice==="A").length,b=p.votes.filter(v=>v.choice==="B").length,d=p.votes.filter(v=>v.choice==="D").length;return{a,b,d,label:a>b?"Danseur 1 gagne":b>a?"Danseur 2 gagne":"Égalité"}}const vals=p.votes.map(v=>Number(v.value)).filter(Number.isFinite);return vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null}
+function maybeCommunityVerdict(p){if(p.rewardResolved||!p.votes||p.votes.length<5||p.owner!==userId())return;const s=calcCommunityScore(p);let ok=false,earned=0;if(p.type==="battle"){ok=!!s&&s.d<Math.max(s.a,s.b);earned=ok?(p.baseXp||0):0}else if(typeof s==="number"){ok=s>=3;earned=ok?Math.round((p.baseXp||0)*(1+Math.max(0,s-3)*.10)):0}p.rewardResolved=true;p.status=ok?"success":"failed";p.finalXp=earned;if(earned>0){awardXP(earned);toast("Mission validée par la communauté · +"+earned+" XP")}else toast("Verdict reçu · mission non validée")}
+async function addCommunityPost(m){return addCommunityPostOnline(m)}
+function voteXP(){const day=new Date().toISOString().slice(0,10);if(S.voteState.day!==day)S.voteState={day,count:0,voted:[]};if(S.voteState.count>=20)return 0;S.voteState.count++;saveVoteState();awardXP(5);return 5}
+function castVote(id,payload){const p=DEMO_POSTS.find(x=>x.id===id);if(p){toast("Les vidéos démo ne comptent pas");return}return castVoteOnline(id,payload)}
+const DEMO_POSTS=[
+{id:"demo-battle",demo:true,owner:"demo-a",type:"battle",title:"Dance Battle · Démo",desc:"Premier danseur puis deuxième danseur.",baseXp:420,votes:[{choice:"A"},{choice:"B"},{choice:"A"}]},
+{id:"demo-mood",demo:true,owner:"demo-b",type:"mood",title:"Mood Challenge · ROBOT",desc:"Le mood doit être reconnaissable.",baseXp:300,votes:[{value:5},{value:4},{value:4}]},
+{id:"demo-family",demo:true,owner:"demo-c",type:"family",title:"Family Freeze · Démo",desc:"Toute la famille freeze ensemble.",baseXp:260,votes:[{value:5},{value:5},{value:4}]}
+];
+async function attachCommunityVideos(){for(const el of document.querySelectorAll("[data-video-id]")){const id=el.dataset.videoId,b=await getVideo(id);if(b){const v=document.createElement("video");v.controls=true;v.playsInline=true;v.src=URL.createObjectURL(b);el.innerHTML="";el.appendChild(v)}}}
+function voteButtons(p){
+ if(p.demo)return `<div class="mutedLine">${S.lang==="he"?"הדגמה — אין XP ואין הצבעה אמיתית.":S.lang==="en"?"Demo — no XP or real vote.":"Démo — aucun XP ni vote réel."}</div>`;
+ if(p.owner===userId())return `<div class="mutedLine pending">${S.lang==="he"?"הסרטון שלך מחכה להכרעת שחקנים אחרים.":S.lang==="en"?"Your video is waiting for other players’ verdict.":"Ta vidéo attend le verdict des autres joueurs."}</div>`;
+ if(p.remote&&S.myRemoteVotes.has(p.id))return `<div class="mutedLine good">${S.lang==="he"?"ההצבעה נשמרה ✓":S.lang==="en"?"Vote recorded ✓":"Vote enregistré ✓"}</div>`;
+ if(p.type==="battle")return `<div class="voteRow"><button data-vote="${p.id}:A">${S.lang==="he"?"רקדן 1":S.lang==="en"?"Dancer 1":"Danseur 1"}</button><button data-vote="${p.id}:B">${S.lang==="he"?"רקדן 2":S.lang==="en"?"Dancer 2":"Danseur 2"}</button><button data-vote="${p.id}:D">${S.lang==="he"?"תיקו":S.lang==="en"?"Tie":"Égalité"}</button></div>`;
+ return `<div class="voteRow"><button data-rate="${p.id}:1">1</button><button data-rate="${p.id}:2">2</button><button data-rate="${p.id}:3">3</button><button data-rate="${p.id}:4">4</button><button data-rate="${p.id}:5">5 ⭐</button></div>`
+}
+function renderCommunity(){
+ const box=$("communityFeed");if(!box)return;box.innerHTML="";
+ const posts=loggedIn()?[...S.remotePosts]:DEMO_POSTS;
+ if(loggedIn()&&!eligibleOnline()){const gate=document.createElement('div');gate.className='card';gate.innerHTML=`<b>${S.lang==="he"?"גישה לקהילה":S.lang==="en"?"Community access":"Accès Community"}</b><p>${S.lang==="he"?"השלם את בדיקת הגיל ואשר את הכללים לפני צפייה, פרסום או דירוג סרטונים.":S.lang==="en"?"Complete the age check and accept the current rules before viewing, publishing or rating videos.":"Complète le contrôle d’âge et accepte les règles actuelles avant de voir, publier ou noter les vidéos."}</p><button class="primary" id="goEligibility" style="width:100%;margin-top:8px">${S.lang==="he"?"אשר בפרופיל":S.lang==="en"?"Confirm in profile":"Confirmer dans mon profil"}</button>`;box.appendChild(gate);gate.querySelector('#goEligibility').onclick=()=>show('profileScreen');return}
+ if(!loggedIn()){const gate=document.createElement('div');gate.className='card';gate.innerHTML=`<b>🔐 ${S.lang==="he"?"התחבר לקהילה האמיתית":S.lang==="en"?"Sign in for the real Community":"Connecte-toi pour la vraie Communauté"}</b><p>${S.lang==="he"?"סרטונים, הצבעות ו-XP משותפים בין השחקנים לאחר התחברות. Dance World Quest מיועד לגיל 13 ומעלה.":S.lang==="en"?"Videos, votes and XP are shared between players after sign-in. Dance World Quest is for ages 13+.":"Les vidéos, votes et XP sont partagés entre tous les joueurs après connexion. Dance World Quest est réservé aux 13 ans et plus."}</p><button class="primary" id="goLogin" style="width:100%;margin-top:8px">${S.lang==="he"?"צור / פתח חשבון":S.lang==="en"?"Create / open my account":"Créer / ouvrir mon compte"}</button>`;box.appendChild(gate);gate.querySelector('#goLogin').onclick=()=>show('profileScreen')}
+ if(!posts.length){box.innerHTML+=`<div class="communityEmpty">${S.lang==="he"?"עדיין אין סרטונים שפורסמו.":S.lang==="en"?"No videos published yet.":"Aucune vidéo publiée pour le moment."}</div>`;return}
+ posts.forEach(p=>{
+   let result='';const voteWord=S.lang==="he"?"הצבעות":S.lang==="en"?"votes":"votes";if(p.type==='battle')result=`<div class="mutedLine">${p.votesCount||0} ${voteWord} · ${p.status==='success'?(S.lang==="he"?"הבאטל הוכרע ✓":S.lang==="en"?"Battle won ✓":"Battle gagné ✓"):p.status==='failed'?(S.lang==="he"?"הבאטל הסתיים":S.lang==="en"?"Battle finished":"Battle terminé"):(S.lang==="he"?"ממתין להכרעה":S.lang==="en"?"waiting for verdict":"verdict en attente")}</div>`;else if(p.remote)result=`<div class="mutedLine">${p.scoreAvg!=null?(S.lang==="he"?"ציון ":S.lang==="en"?"Score ":"Score ")+Number(p.scoreAvg).toFixed(1)+'/5 · ':''}${p.votesCount||0} ${voteWord}</div>${p.scoreAvg!=null?`<div class="resultBar"><i style="width:${Math.min(100,Number(p.scoreAvg)/5*100)}%"></i></div>`:''}`;else{const score=calcCommunityScore(p);if(typeof score==='number')result=`<div class="mutedLine">${S.lang==="he"?"ציון":S.lang==="en"?"Score":"Score"} ${score.toFixed(1)}/5 · ${p.votes.length} ${voteWord}</div>`}
+   const rewardText=p.demo?`+${p.baseXp} XP`:p.status==='auto'?`+${p.finalXp||p.baseXp} XP`:p.status==='success'?`+${p.finalXp||p.baseXp} XP`:p.status==='failed'?'0 XP':(S.lang==="he"?"XP בהמתנה":S.lang==="en"?"XP PENDING":"XP EN ATTENTE");
+   const e=document.createElement('div');e.className='communityCard';
+   e.innerHTML=`<div class="communityHead"><div class="row"><div><span class="communityBadge">${p.demo?(S.lang==='he'?'הדגמה':S.lang==='en'?'DEMO':'DÉMO'):p.owner===userId()?(S.lang==='he'?'המשימה שלך':S.lang==='en'?'YOUR MISSION':'TA MISSION'):(S.lang==='he'?'קהילה':S.lang==='en'?'COMMUNITY':'COMMUNAUTÉ')}</span><h3 style="margin:5px 0 0">${esc(p.title)}</h3></div><b style="color:#ffd06a">${rewardText}</b></div></div><div class="communityMedia" ${p.remote?'data-video-path="'+escAttr(p.videoPath)+'"':p.demo?'':'data-video-id="'+p.id+'"'}><div class="demo">${p.demo?(p.type==='battle'?'🔥':p.type==='mood'?'🎭':'👨‍👩‍👧‍👦'):'🎬'}</div></div><div class="communityBody"><b>${communityQuestion(p)}</b><p>${esc(p.desc)}</p>${p.raceMs?`<div class="mutedLine">⚡ Temps GPS : ${formatTime(p.raceMs)}</div>`:''}${result}${voteButtons(p)}${!p.demo&&p.owner!==userId()?`<div class="voteRow"><button data-report="${p.id}">⚑ ${S.lang==='he'?'סרטון':S.lang==='en'?'Video':'Vidéo'}</button><button data-report-user="${p.owner}">⚑ ${S.lang==='he'?'משתמש':S.lang==='en'?'User':'Utilisateur'}</button><button data-block="${p.owner}">${S.lang==='he'?'חסום':S.lang==='en'?'Block':'Bloquer'}</button></div>`:''}</div>`;box.appendChild(e)
+ });
+ box.querySelectorAll('[data-report]').forEach(b=>b.onclick=()=>reportPost(b.dataset.report));box.querySelectorAll('[data-report-user]').forEach(b=>b.onclick=()=>reportUserOnline(b.dataset.reportUser));box.querySelectorAll('[data-block]').forEach(b=>b.onclick=()=>blockOwner(b.dataset.block));box.querySelectorAll('[data-vote]').forEach(b=>b.onclick=()=>{const [id,c]=b.dataset.vote.split(':');castVote(id,{choice:c})});box.querySelectorAll('[data-rate]').forEach(b=>b.onclick=()=>{const [id,v]=b.dataset.rate.split(':');castVote(id,{value:+v})});if(loggedIn())attachCommunityVideosOnline();else attachCommunityVideos();localizeDOM(box)
+}
+
+// ---- v1.3.4 dance-first / social feed layer ----
+const V134={
+ fr:{danceNow:"🔥 DANCE NOW",danceNowSub:"20 secondes · n’importe où · 1 bouton",daily:"DAILY DANCE",dailyPlay:"Danser maintenant",dailyDone:"Daily Dance fait aujourd’hui ✓",streak:"jours de suite",following:"👥 Suivis",forYou:"✨ Pour toi",newest:"🆕 Nouveau",findDancer:"Trouver un danseur…",follow:"Suivre",followingBtn:"Suivi ✓",close:"Fermer",cameraHint:"La caméra s’ouvre automatiquement. Quand tu es prêt : un seul bouton.",record:"● DANSER",publish:"Publier",hype:"HYPE",noFollowing:"Tu ne suis encore personne. Passe sur “Pour toi”, ouvre un profil et appuie sur Suivre.",reactionSaved:"Réaction envoyée · HYPE +",socialXp:"Mission terminée",whyFollow:"Parce que tu suis ce danseur",whyLocal:"Près de toi",whyHot:"Ça bouge dans la Community",whyNew:"Nouveau",searchEmpty:"Aucun danseur trouvé."},
+ en:{danceNow:"🔥 DANCE NOW",danceNowSub:"20 seconds · anywhere · 1 button",daily:"DAILY DANCE",dailyPlay:"Dance now",dailyDone:"Daily Dance done today ✓",streak:"day streak",following:"👥 Following",forYou:"✨ For you",newest:"🆕 New",findDancer:"Find a dancer…",follow:"Follow",followingBtn:"Following ✓",close:"Close",cameraHint:"Camera opens automatically. When you're ready: one big button.",record:"● DANCE",publish:"Publish",hype:"HYPE",noFollowing:"You are not following anyone yet. Open “For you”, tap a profile and follow dancers you like.",reactionSaved:"Reaction sent · HYPE +",socialXp:"Mission complete",whyFollow:"Because you follow this dancer",whyLocal:"Near you",whyHot:"Trending in the Community",whyNew:"New",searchEmpty:"No dancers found."},
+ he:{danceNow:"🔥 לרקוד עכשיו",danceNowSub:"20 שניות · בכל מקום · כפתור אחד",daily:"ריקוד יומי",dailyPlay:"לרקוד עכשיו",dailyDone:"הריקוד היומי הושלם להיום ✓",streak:"ימים ברצף",following:"👥 במעקב",forYou:"✨ בשבילך",newest:"🆕 חדש",findDancer:"חפש רקדן…",follow:"לעקוב",followingBtn:"במעקב ✓",close:"סגור",cameraHint:"המצלמה נפתחת אוטומטית. כשמוכנים: כפתור אחד גדול.",record:"● לרקוד",publish:"לפרסם",hype:"HYPE",noFollowing:"עדיין אינך עוקב אחרי אף אחד. עבור ל״בשבילך״, פתח פרופיל ולחץ מעקב.",reactionSaved:"התגובה נשלחה · HYPE +",socialXp:"המשימה הושלמה",whyFollow:"כי אתה עוקב אחרי הרקדן",whyLocal:"קרוב אליך",whyHot:"חם עכשיו בקהילה",whyNew:"חדש",searchEmpty:"לא נמצאו רקדנים."}
+};
+function vtxt(k){return (V134[S.lang]&&V134[S.lang][k])||V134.en[k]||k}
+const DAILY_DANCES=[
+ {title:{fr:"Groove 8",en:"Groove 8",he:"גרוב 8"},desc:{fr:"8 temps. Laisse le groove passer dans tout le corps. Finis avec une pose nette.",en:"8 counts. Let the groove travel through your whole body. Finish with a clean pose.",he:"8 ספירות. תן לגרוב לעבור בכל הגוף וסיים בפוזה ברורה."}},
+ {title:{fr:"Freeze & Flow",en:"Freeze & Flow",he:"פריז ופלואו"},desc:{fr:"Bouge librement, freeze 2 secondes, puis repars avec une autre qualité.",en:"Move freely, freeze for 2 seconds, then restart with a different quality.",he:"זוז בחופשיות, קפא ל־2 שניות ואז חזור באיכות תנועה אחרת."}},
+ {title:{fr:"Footwork Flash",en:"Footwork Flash",he:"פוטוורק פלאש"},desc:{fr:"20 secondes de pas rapides. Change de direction au moins deux fois.",en:"20 seconds of quick footwork. Change direction at least twice.",he:"20 שניות של עבודת רגליים מהירה. שנה כיוון לפחות פעמיים."}},
+ {title:{fr:"One Move, Big Energy",en:"One Move, Big Energy",he:"תנועה אחת, אנרגיה גדולה"},desc:{fr:"Choisis un mouvement simple et fais-le grand, musical et assumé.",en:"Pick one simple move and make it big, musical and confident.",he:"בחר תנועה פשוטה אחת ועשה אותה גדולה, מוזיקלית ובטוחה."}},
+ {title:{fr:"Slow Motion",en:"Slow Motion",he:"סלואו מושן"},desc:{fr:"Danse comme si le temps ralentissait. Aucun arrêt brusque.",en:"Dance as if time slowed down. Keep every transition smooth.",he:"רקוד כאילו הזמן האט. שמור על מעברים חלקים בלי עצירות חדות."}},
+ {title:{fr:"Beat Switch",en:"Beat Switch",he:"ביט סוויץ׳"},desc:{fr:"Change soudainement de qualité à mi-parcours : doux → explosif.",en:"Switch quality halfway through: soft → explosive.",he:"באמצע החלף איכות: רך → מתפרץ."}}
+];
+function dayKey(d=new Date()){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),dd=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${dd}`}
+function dailyMission(){const key=dayKey(),idx=hash(key)%DAILY_DANCES.length,d=DAILY_DANCES[idx];return{id:`daily:${key}`,slotKey:`daily:${key}`,type:"dance",title:d.title[S.lang]||d.title.en,desc:d.desc[S.lang]||d.desc.en,xp:180,duration:20,minPlayers:1,free:true,daily:true,autoXp:true,area:S.lang==="he"?"בכל מקום":S.lang==="en"?"Anywhere":"N’importe où"}}
+function streakFromServerDays(rows){const days=new Set((rows||[]).map(x=>x.dance_date)),d=new Date();let n=0,grace=1;for(let i=0;i<45;i++){const k=dayKey(d);if(days.has(k)){n++}else if(grace>0&&n>0){grace--}else break;d.setDate(d.getDate()-1)}return n}
+function localDailyDone(){return localStorage.getItem("dwqDailyDone")==dayKey()}
+function markLocalDaily(){const today=dayKey(),prev=localStorage.getItem("dwqDailyLast"),y=new Date();y.setDate(y.getDate()-1);const yk=dayKey(y),yy=new Date();yy.setDate(yy.getDate()-2);const y2=dayKey(yy),week=today.slice(0,7)+":"+Math.ceil(new Date().getDate()/7);let streak=Number(localStorage.getItem("dwqDailyStreak")||0);if(prev===today)return streak;if(prev===yk)streak+=1;else if(prev===y2&&localStorage.getItem("dwqStreakGraceWeek")!==week){streak+=1;localStorage.setItem("dwqStreakGraceWeek",week)}else streak=1;localStorage.setItem("dwqDailyLast",today);localStorage.setItem("dwqDailyDone",today);localStorage.setItem("dwqDailyStreak",String(streak));return streak}
+function burstConfetti(){const box=$("confettiBurst");if(!box)return;box.innerHTML="";for(let i=0;i<24;i++){const e=document.createElement("i");e.style.setProperty("--c",["#ff4eb4","#62c8ff","#ffd35c","#8f65ff","#58d678"][i%5]);e.style.setProperty("--x",((Math.random()-.5)*320)+"px");e.style.setProperty("--y",((-80-Math.random()*280))+"px");e.style.setProperty("--r",(Math.random()*720-360)+"deg");box.appendChild(e)}setTimeout(()=>box.innerHTML="",1000)}
+function unlockName(level){const map={2:{fr:"Street Explorer",en:"Street Explorer",he:"חוקר רחוב"},3:{fr:"Flash Hunter",en:"Flash Hunter",he:"צייד פלאש"},5:{fr:"Battle Ready",en:"Battle Ready",he:"מוכן לבאטל"},8:{fr:"City Legend",en:"City Legend",he:"אגדת העיר"}};return map[level]&&map[level][S.lang]}
+function showUnlock(level){const name=unlockName(level);if(!name)return;const key="dwqUnlock:"+level;if(localStorage.getItem(key))return;localStorage.setItem(key,"1");const b=$("unlockToast");b.innerHTML=`<div style="font-size:28px">✨</div><b>LEVEL ${level}</b><div style="font-size:18px;margin-top:4px">${esc(name)}</div>`;b.classList.add("show");burstConfetti();sfx("level");setTimeout(()=>b.classList.remove("show"),2200)}
+function updateV134Copy(){
+ if($("danceNow"))$("danceNow").innerHTML=vtxt("danceNow")+`<small>${vtxt("danceNowSub")}</small>`;
+ if($("feedFollowing"))$("feedFollowing").textContent=vtxt("following");if($("feedForYou"))$("feedForYou").textContent=vtxt("forYou");if($("feedNew"))$("feedNew").textContent=vtxt("newest");
+ if($("communitySearch"))$("communitySearch").placeholder=vtxt("findDancer");localizeDOM(document.querySelector(".music"));if($("cameraHint"))$("cameraHint").textContent=vtxt("cameraHint");if($("rec"))$("rec").textContent=vtxt("record");if($("validate"))$("validate").textContent=vtxt("publish");if($("userProfileClose"))$("userProfileClose").textContent=vtxt("close");renderDailyDanceCard();renderTop()
+}
+const _applyLanguageV133=applyLanguage;applyLanguage=function(){_applyLanguageV133();updateV134Copy()};
+const _toastV133=toast;toast=function(text){const translated=literalTarget(text);_toastV133(translated||text)};
+function currentXp(){return S.remoteProfile?Number(S.remoteProfile.xp_total||0):Number(S.profile.xp||0)}
+function renderTop(){const xp=currentXp(),lv=Math.floor(xp/500)+1,hype=S.remoteProfile?Number(S.remoteProfile.hype_total||0):0,progress=(xp%500)/500*100;$("xpTop").textContent=xp;$("levelTop").textContent=lv;if($("hypeTop"))$("hypeTop").textContent=hype;if($("xpProgress"))$("xpProgress").style.width=progress+"%";$("pXP").textContent=xp;$("pLevel").textContent=lv;if($("pHype"))$("pHype").textContent=hype;if($("pStreak"))$("pStreak").textContent=S.dailyStreak||Number(localStorage.getItem("dwqDailyStreak")||0);$("pDone").textContent=S.profile.done.length;$("pRaces").textContent=S.profile.races||0;if(S.lastXpSeen&&lv>Math.floor(S.lastXpSeen/500)+1)showUnlock(lv);S.lastXpSeen=xp;const streak=S.dailyStreak||Number(localStorage.getItem("dwqDailyStreak")||0);if($("dailyStreakMini"))$("dailyStreakMini").textContent="🔥 "+streak;if($("dailyStatusMini"))$("dailyStatusMini").textContent=localDailyDone()?vtxt("dailyDone"):vtxt("daily")}
+function renderDailyDanceCard(){const box=$("dailyDanceCard");if(!box)return;const m=dailyMission(),done=localDailyDone();box.innerHTML=`<span class="type">${vtxt("daily")}</span><div class="dailyTitle">🔥 ${esc(m.title)}</div><p>${esc(m.desc)}</p><div class="dailyMeta"><span class="pill">⏱ ${m.duration}s</span><span class="pill">📍 ${m.area}</span><span class="pill">+${m.xp} XP</span><span class="pill">🔥 ${S.dailyStreak||Number(localStorage.getItem("dwqDailyStreak")||0)} ${vtxt("streak")}</span></div><button id="dailyPlay" class="primary" style="width:100%">${done?vtxt("dailyDone"):vtxt("dailyPlay")}</button>`;box.querySelector("#dailyPlay").onclick=()=>startDailyDance()}
+async function startDailyDance(){const m=dailyMission();prepareMissionCamera(m);toast(m.title+" 🔥")}
+function prepareMissionCamera(m){S.active=m;resetRecordClock();resetPersonCheck();const need=(m.minPlayers||1)>1;$("personCheck").classList.toggle("show",need);$("camTitle").textContent=missionTitle(m);$("camDesc").textContent=(m.free?missionDesc(m)+" · "+(S.lang==="he"?"ללא GPS.":S.lang==="en"?"No GPS needed.":"Aucun GPS nécessaire."):missionDesc(m))+" · "+missionDuration(m)+" s";const card=document.querySelector(".cameraCard");card&&card.classList.remove("recording","recorded","ready");show("cameraScreen");setTimeout(()=>openCam(),120)}
+const _openCamCoreV133=openCamCore;openCamCore=async function(){await _openCamCoreV133();const card=document.querySelector(".cameraCard");if(S.stream){card&&card.classList.add("ready");$("rec").disabled=false}}
+const _startRecV133=startRec;startRec=async function(){const card=document.querySelector(".cameraCard");card&&card.classList.add("recording");card&&card.classList.remove("ready","recorded");await _startRecV133()}
+const _stopRecV133=stopRec;stopRec=function(){_stopRecV133();const card=document.querySelector(".cameraCard");setTimeout(()=>{card&&card.classList.remove("recording");card&&card.classList.add("recorded")},120)}
+const _redoV133=redo;redo=function(){const card=document.querySelector(".cameraCard");card&&card.classList.remove("recorded","recording");_redoV133()}
+function startFreeMission(m){prepareMissionCamera({...m,p:null,r:0})}
+function missionStartButton(m,i,d){if(m.free)return `<button class="primary" style="width:100%" data-start-free="${i}">${vtxt("dailyPlay")}</button>`;const near=S.pos&&d<=m.r+Math.max(25,S.pos.accuracy||0);return near?`<button class="primary" style="width:100%" data-start-near="${i}">${S.lang==="he"?"להתחיל ולצלם":S.lang==="en"?"Start & record":"Démarrer & filmer"}</button>`:`<button class="primary" style="width:100%" data-mission="${i}">${S.lang==="he"?"נווט למשימה":S.lang==="en"?"Go to mission":"Aller à la mission"}</button>`}
+function renderMissionList(){const box=$("missionList");if(!box)return;box.innerHTML="";renderDailyDanceCard();const sorted=[...S.missions].map((m,i)=>({m,i,d:S.pos?dist(S.pos,m.p):Infinity})).sort((a,b)=>a.d-b.d).slice(0,40);if(!sorted.length){box.innerHTML=`<div class="card"><p>${S.lang==="he"?"מחפש משימות קרובות…":S.lang==="en"?"Finding nearby missions…":"Recherche des missions proches…"}</p></div>`;return}sorted.forEach(({m,i,d})=>{const e=document.createElement("div");e.className="card";const live=m.flash||m.weekly?`<span class="missionLive">● LIVE</span>`:"";const social=m.flash?(S.lang==="he"?"זמין לזמן מוגבל":S.lang==="en"?"Limited-time mission":"Mission limitée dans le temps"):m.weekly?(S.lang==="he"?"אירוע קבוצתי":S.lang==="en"?"Group event":"Événement collectif"):"";e.innerHTML=`<div class="row"><div><span class="type">${label(m.type)}</span><h3>${emoji(m.type)} ${esc(missionTitle(m))}</h3>${live}</div><b style="color:#ffd06a">+${m.xp}</b></div><p>${esc(missionDesc(m))}</p><div class="meta"><span class="pill">${isFinite(d)?fmt(d):"GPS…"}</span><span class="pill">${esc(m.area)}</span><span class="pill">${formatExpiry(m.expiresAt)}</span></div>${social?`<div class="missionSocial">${social}</div>`:""}${missionStartButton(m,i,d)}`;box.appendChild(e)});box.querySelectorAll("[data-mission]").forEach(b=>b.onclick=()=>{S.selected=+b.dataset.mission;show("mapScreen");renderSelected();const m=S.missions[S.selected];S.map.flyTo([m.p.lat,m.p.lon],16)});box.querySelectorAll("[data-start-near]").forEach(b=>b.onclick=()=>{S.selected=+b.dataset.startNear;prepareMissionCamera(S.missions[S.selected])});box.querySelectorAll("[data-start-free]").forEach(b=>b.onclick=()=>{S.selected=+b.dataset.startFree;prepareMissionCamera({...S.missions[S.selected],p:null,r:0})});localizeDOM(box)}
+function reactionWeight(k){return k==="heart"?3:2}
+function reactionSummaryFor(id){const rows=S.reactionRows.filter(r=>r.submission_id===id),c={heart:0,energy:0,clean:0,creative:0,total:0,hype:0};rows.forEach(r=>{if(c[r.kind]!=null)c[r.kind]++;c.total++;c.hype+=reactionWeight(r.kind)});return c}
+function reactionButtons(p){if(p.demo||p.owner===userId())return "";const c=reactionSummaryFor(p.id),mine=S.myReactions.get(p.id);const items=[["heart","❤️"],["energy","🙌"],["clean","🔥"],["creative","✨"]];return `<div class="reactionBar">${items.map(([k,e])=>`<button data-react="${p.id}:${k}" class="${mine===k?"mine":""}">${e}<small>${c[k]||0}</small></button>`).join("")}</div>`}
+async function castReaction(id,kind){if(!SB||!loggedIn()||!eligibleOnline()){show("profileScreen");return}const old=S.myReactions.get(id);let error;if(old===kind){({error}=await SB.from("reactions").delete().eq("submission_id",id).eq("user_id",S.session.user.id));if(!error)S.myReactions.delete(id)}else if(old){({error}=await SB.from("reactions").update({kind,updated_at:new Date().toISOString()}).eq("submission_id",id).eq("user_id",S.session.user.id));if(!error)S.myReactions.set(id,kind)}else{({error}=await SB.from("reactions").insert({submission_id:id,user_id:S.session.user.id,kind}));if(!error)S.myReactions.set(id,kind)}if(error){toast(S.lang==="he"?"לא ניתן לשלוח תגובה":S.lang==="en"?"Could not send reaction":"Réaction impossible");return}sfx("vote");toast(old===kind?(S.lang==="he"?"התגובה הוסרה":S.lang==="en"?"Reaction removed":"Réaction retirée"):vtxt("reactionSaved")+reactionWeight(kind));await refreshCommunity();await syncRemoteProfile();renderTop()}
+async function toggleFollow(owner){if(!SB||!loggedIn()||owner===userId())return;if(S.following.has(owner)){await SB.from("follows").delete().eq("follower_id",S.session.user.id).eq("followed_id",owner);S.following.delete(owner)}else{const {error}=await SB.from("follows").insert({follower_id:S.session.user.id,followed_id:owner});if(!error)S.following.add(owner)}renderCommunity();openUserProfile(owner)}
+function profileFor(id){return S.profileMap.get(id)||{id,username:"Dancer",country_code:"",city:"",hype_total:0,xp_total:0}}
+function feedWhy(p){const pr=profileFor(p.owner);if(S.following.has(p.owner))return vtxt("whyFollow");if(S.remoteProfile&&pr.city&&S.remoteProfile.city&&pr.city.toLowerCase()===S.remoteProfile.city.toLowerCase())return vtxt("whyLocal");const rs=reactionSummaryFor(p.id);if(rs.hype>=6)return vtxt("whyHot");return vtxt("whyNew")}
+function sortedPosts(){let posts=[...S.remotePosts],now=Date.now();if(S.feedMode==="following")return posts.filter(p=>S.following.has(p.owner)||p.owner===userId()).sort((a,b)=>b.created-a.created);if(S.feedMode==="new")return posts.sort((a,b)=>b.created-a.created);return posts.sort((a,b)=>{const pa=profileFor(a.owner),pb=profileFor(b.owner),ra=reactionSummaryFor(a.id),rb=reactionSummaryFor(b.id);const sa=(S.following.has(a.owner)?5000:0)+(S.remoteProfile&&pa.city&&pa.city===S.remoteProfile.city?900:0)+ra.hype*55+Math.max(0,900-(now-a.created)/3600000*25);const sb=(S.following.has(b.owner)?5000:0)+(S.remoteProfile&&pb.city&&pb.city===S.remoteProfile.city?900:0)+rb.hype*55+Math.max(0,900-(now-b.created)/3600000*25);return sb-sa})}
+async function refreshCommunity(){if(!SB||!loggedIn()){S.remotePosts=[];renderCommunity();return}if(!eligibleOnline()){S.remotePosts=[];setCommunityState(t("offline"),false);renderCommunity();return}const {data,error}=await SB.from("submissions").select("id,user_id,mission_type,title,description,base_xp,video_path,video_mime,duration_seconds,race_ms,status,score_avg,votes_count,final_xp,created_at").neq("status","hidden").order("created_at",{ascending:false}).limit(100);if(error){setCommunityState("Community indisponible",false);return}S.remotePosts=(data||[]).map(x=>({id:x.id,owner:x.user_id,type:x.mission_type,title:x.title,desc:x.description,baseXp:x.base_xp,videoPath:x.video_path,mime:x.video_mime,created:new Date(x.created_at).getTime(),raceMs:x.race_ms,status:x.status,scoreAvg:x.score_avg,votesCount:x.votes_count,finalXp:x.final_xp,remote:true,autoXp:x.status==="auto"}));const owners=[...new Set(S.remotePosts.map(p=>p.owner).concat([S.session.user.id]))];const [followsRes,reactionsRes,profilesRes,dailyRes]=await Promise.all([SB.from("follows").select("follower_id,followed_id").or(`follower_id.eq.${S.session.user.id},followed_id.eq.${S.session.user.id}`),SB.from("reactions").select("submission_id,user_id,kind,created_at").in("submission_id",S.remotePosts.map(p=>p.id).slice(0,100)),owners.length?SB.from("profiles").select("id,username,country_code,city,xp_total,hype_total").in("id",owners):Promise.resolve({data:[]}),SB.from("daily_dance_completions").select("dance_date").eq("user_id",S.session.user.id).order("dance_date",{ascending:false}).limit(40)]);S.following=new Set((followsRes.data||[]).filter(x=>x.follower_id===S.session.user.id).map(x=>x.followed_id));S.followers=new Set((followsRes.data||[]).filter(x=>x.followed_id===S.session.user.id).map(x=>x.follower_id));S.reactionRows=reactionsRes.data||[];S.myReactions=new Map(S.reactionRows.filter(r=>r.user_id===S.session.user.id).map(r=>[r.submission_id,r.kind]));S.profileMap=new Map((profilesRes.data||[]).map(x=>[x.id,x]));if(dailyRes.data){S.dailyStreak=streakFromServerDays(dailyRes.data)}setCommunityState("Community synchronisée",true);renderCommunity();renderTop()}
+async function addCommunityPostOnline(m){if(!SB||!loggedIn()){show("profileScreen");return null}if(!(await ensureCommunityConsent()))return null;const uid=S.session.user.id,key=m.daily?`daily:${dayKey()}`:onlineMissionKey(m),ext=extForBlob(S.videoBlob),path=`${uid}/${key.replace(/[^a-zA-Z0-9:_-]/g,"-")}-${Date.now()}.${ext}`;setCommunityState(S.lang==="he"?"מעלה סרטון…":S.lang==="en"?"Uploading video…":"Envoi de la vidéo…",true);const {error:upErr}=await SB.storage.from("mission-videos").upload(path,S.videoBlob,{contentType:(S.videoBlob.type||"video/webm").split(";")[0],upsert:false});if(upErr){toast(upErr.message);return null}const useLocation=!m.free&&!!S.pos,row={user_id:uid,mission_key:key,mission_type:m.type,title:missionTitle(m),description:missionDesc(m)||"",base_xp:Number(m.xp)||0,video_path:path,video_mime:(S.videoBlob.type||"video/webm").split(";")[0],duration_seconds:Math.round((S.recordedMs||0)/100)/10,race_ms:m.raceMs||null,latitude:useLocation?S.pos.lat:null,longitude:useLocation?S.pos.lon:null,gps_accuracy_m:useLocation?S.pos.accuracy:null,auto_validated:false};const {data,error}=await SB.from("submissions").insert(row).select("id,user_id,mission_type,title,description,base_xp,video_path,video_mime,duration_seconds,race_ms,status,score_avg,votes_count,final_xp,created_at").single();if(error){await SB.storage.from("mission-videos").remove([path]);toast(error.message);return null}let reward=null;try{const r=await SB.rpc("complete_social_submission",{p_submission_id:data.id});if(!r.error)reward=r.data}catch(e){}if(m.daily){S.dailyStreak=markLocalDaily();burstConfetti()}await refreshCommunity();await syncRemoteProfile();renderTop();if(reward&&Number(reward.earned||0)>0){showXP(Number(reward.earned||0)+Number(reward.bonus||0));toast(vtxt("socialXp")+" · +"+(Number(reward.earned||0)+Number(reward.bonus||0))+" XP")}return data}
+function renderCommunity(){const box=$("communityFeed");if(!box)return;box.innerHTML="";document.querySelectorAll(".feedTabs button").forEach(b=>b.classList.remove("active"));const active=S.feedMode==="following"?$("feedFollowing"):S.feedMode==="new"?$("feedNew"):$("feedForYou");active&&active.classList.add("active");if(!loggedIn()){box.innerHTML=`<div class="card"><b>🔐 ${S.lang==="he"?"התחבר לקהילה":S.lang==="en"?"Sign in to Community":"Connecte-toi à la Community"}</b><p>${S.lang==="he"?"עקוב אחרי רקדנים, פרסם סרטונים וקבל HYPE.":S.lang==="en"?"Follow dancers, publish videos and earn HYPE.":"Suis des danseurs, publie tes vidéos et gagne du HYPE."}</p></div>`;return}if(!eligibleOnline()){box.innerHTML=`<div class="card"><b>${S.lang==="he"?"יש לאשר גישה לקהילה":S.lang==="en"?"Confirm Community access":"Confirme l’accès Community"}</b></div>`;return}const posts=sortedPosts();if(!posts.length){box.innerHTML=`<div class="communityEmpty">${S.feedMode==="following"?vtxt("noFollowing"):(S.lang==="he"?"עדיין אין סרטונים.":S.lang==="en"?"No videos yet.":"Aucune vidéo pour le moment.")}</div>`;return}posts.forEach(p=>{const pr=profileFor(p.owner),rs=reactionSummaryFor(p.id),e=document.createElement("div");e.className="communityCard";e.innerHTML=`<div class="communityHead"><div class="row"><div><button class="userLink" data-user="${escAttr(p.owner)}">@${esc(pr.username||"Dancer")}</button><div class="mutedLine">${esc([pr.city,pr.country_code].filter(Boolean).join(" · "))}</div></div><div><b style="color:#ff80c5">${rs.hype} HYPE</b><div class="feedWhy">${feedWhy(p)}</div></div></div><h3 style="margin:7px 0 0">${esc(p.title)}</h3></div><div class="communityMedia" data-video-path="${escAttr(p.videoPath)}"><div class="demo">🎬</div></div><div class="communityBody"><p>${esc(p.desc)}</p><div class="hypeLine"><b>❤️ ${rs.heart}</b><span>🙌 ${rs.energy}</span><span>🔥 ${rs.clean}</span><span>✨ ${rs.creative}</span></div>${reactionButtons(p)}${p.owner!==userId()?`<div class="voteRow"><button data-report="${p.id}">⚑ ${S.lang==="he"?"דווח על סרטון":S.lang==="en"?"Report video":"Signaler vidéo"}</button><button data-block="${p.owner}">${S.lang==="he"?"חסום":S.lang==="en"?"Block":"Bloquer"}</button></div>`:""}</div>`;box.appendChild(e)});box.querySelectorAll("[data-react]").forEach(b=>b.onclick=()=>{const [id,k]=b.dataset.react.split(":");castReaction(id,k)});box.querySelectorAll("[data-user]").forEach(b=>b.onclick=()=>openUserProfile(b.dataset.user));box.querySelectorAll("[data-report]").forEach(b=>b.onclick=()=>reportPostOnline(b.dataset.report));box.querySelectorAll("[data-block]").forEach(b=>b.onclick=()=>blockOwnerOnline(b.dataset.block));attachCommunityVideosOnline();localizeDOM(box)}
+async function openUserProfile(owner){if(!owner)return;let pr=profileFor(owner);if(!S.profileMap.has(owner)&&SB){const r=await SB.from("profiles").select("id,username,country_code,city,xp_total,hype_total").eq("id",owner).single();if(r.data){pr=r.data;S.profileMap.set(owner,pr)}}const posts=S.remotePosts.filter(p=>p.owner===owner).slice(0,8),following=S.following.has(owner),modal=$("userProfileModal"),box=$("userProfileContent");box.innerHTML=`<div class="userProfileHero"><div class="avatarBubble">${esc((pr.username||"D").slice(0,1).toUpperCase())}</div><div><h2 style="margin:0">${esc(pr.username||"Dancer")}</h2><div class="mutedLine">${esc([pr.city,pr.country_code].filter(Boolean).join(" · "))}</div><div class="hypeLine"><b>${Number(pr.hype_total||0)} HYPE</b><span>${Number(pr.xp_total||0)} XP</span></div></div>${owner!==userId()?`<button id="profileFollowBtn" class="primary">${following?vtxt("followingBtn"):vtxt("follow")}</button>`:""}</div><h3>${S.lang==="he"?"סרטונים":S.lang==="en"?"Videos":"Vidéos"}</h3><div class="miniVideoGrid">${posts.map(p=>`<div class="miniVideo" data-mini-path="${escAttr(p.videoPath)}">🎬</div>`).join("")||"—"}</div>`;modal.classList.add("show");if($("profileFollowBtn"))$("profileFollowBtn").onclick=()=>toggleFollow(owner);for(const el of box.querySelectorAll("[data-mini-path]")){signedVideo(el.dataset.miniPath).then(u=>{if(u){const v=document.createElement("video");v.muted=true;v.playsInline=true;v.preload="metadata";v.src=u;v.controls=true;el.innerHTML="";el.appendChild(v)}})}}
+async function searchUsers(){const q=($("communitySearch").value||"").trim(),out=$("userSearchResults");if(q.length<2){out.innerHTML="";return}const {data}=await SB.from("profiles").select("id,username,country_code,city,xp_total,hype_total").ilike("username",`%${q.replace(/[%_]/g,"")}%`).limit(8);out.innerHTML=(data||[]).map(p=>`<div class="leaderRow"><div>💃</div><div><button class="userLink" data-search-user="${escAttr(p.id)}">${esc(p.username)}</button><small>${esc([p.city,p.country_code].filter(Boolean).join(" · "))}</small></div><b>${Number(p.hype_total||0)} HYPE</b></div>`).join("")||`<div class="mutedLine">${vtxt("searchEmpty")}</div>`;out.querySelectorAll("[data-search-user]").forEach(b=>b.onclick=()=>openUserProfile(b.dataset.searchUser))}
+if($("danceNow"))$("danceNow").onclick=startDailyDance;if($("feedFollowing"))$("feedFollowing").onclick=()=>{S.feedMode="following";renderCommunity()};if($("feedForYou"))$("feedForYou").onclick=()=>{S.feedMode="foryou";renderCommunity()};if($("feedNew"))$("feedNew").onclick=()=>{S.feedMode="new";renderCommunity()};if($("communitySearchBtn"))$("communitySearchBtn").onclick=searchUsers;if($("communitySearch"))$("communitySearch").onkeydown=e=>{if(e.key==="Enter")searchUsers()};if($("userProfileClose"))$("userProfileClose").onclick=()=>$("userProfileModal").classList.remove("show");
+
+
+function renderRanksEmpty(){if($("rankSync"))$("rankSync").textContent=S.lang==="he"?"לא מחובר":S.lang==="en"?"NOT SIGNED IN":"NON CONNECTÉ";if($("rankNational"))$("rankNational").textContent="#—";if($("rankWorld"))$("rankWorld").textContent="#—";if($("rankNote"))$("rankNote").textContent=S.lang==="he"?"תגובות חיוביות מעלות HYPE, דירוג וחשיפה.":S.lang==="en"?"Positive reactions raise HYPE, ranking and exposure.":"Les réactions positives font monter le HYPE, le classement et l’exposition.";if($("leaderList"))$("leaderList").innerHTML=""}
+function renderLeaderboard(rows,country=false){const box=$("leaderList");if(!box)return;box.innerHTML="";(rows||[]).slice(0,20).forEach(r=>{const e=document.createElement("div");e.className="leaderRow";e.innerHTML=`<b>#${Number(r.rank)||0}</b><div><button class="userLink" data-rank-user="${escAttr(r.id)}">${esc(r.username)}</button><small>${esc([r.city,r.country_code].filter(Boolean).join(" · "))} · ${Number(r.xp_total)||0} XP</small></div><b>${Number(r.hype_total)||0} HYPE</b>`;box.appendChild(e)});box.querySelectorAll("[data-rank-user]").forEach(b=>b.onclick=()=>openUserProfile(b.dataset.rankUser));$("leaderTitle").textContent=country?(S.lang==="he"?"HYPE ארצי":S.lang==="en"?"National HYPE":"HYPE national"):(S.lang==="he"?"HYPE עולמי":S.lang==="en"?"Global HYPE":"HYPE mondial")}
+async function refreshRanks(){if(!SB||!loggedIn()||!eligibleOnline()){renderRanksEmpty();return}const {data:mine,error}=await SB.rpc("get_my_hype_ranks");if(!error&&mine&&mine[0]){$("rankWorld").textContent="#"+mine[0].global_rank;$("rankNational").textContent=mine[0].country_rank?"#"+mine[0].country_rank:"#—";$("rankSync").textContent="HYPE";$("rankSync").className="good";$("rankNote").textContent=S.lang==="he"?"תגובות חיוביות מעלות HYPE, דירוג וחשיפה.":S.lang==="en"?"Positive reactions raise HYPE, ranking and exposure.":"Les réactions positives font monter le HYPE, le classement et l’exposition."}const country=S.remoteProfile&&S.remoteProfile.country_code;let res;if(country)res=await SB.rpc("get_country_hype_leaderboard",{p_country_code:country,p_limit:20});else res=await SB.rpc("get_hype_leaderboard",{p_limit:20});if(!res.error)renderLeaderboard(res.data||[],!!country)}
+
+$("validate").onclick=async()=>{
+ if(!S.active||!S.videoBlob)return;
+ const m=S.active;
+ if(S.recordedMs<missionDuration(m)*1000-400){toast(msg("Vidéo trop courte","Video is too short","הסרטון קצר מדי"));return}
+ if(!peopleVerified(m)){toast(msg("Nombre de personnes non vérifié","Number of people not verified","מספר המשתתפים לא אומת"));$("personCheck").classList.add("bad");return}
+ if(!m.free){
+   if(!S.pos){toast(msg("GPS nécessaire pour cette mission","GPS is required for this mission","נדרש GPS למשימה הזו"));return}
+   const d=dist(S.pos,m.p);if(d>m.r+Math.max(25,S.pos.accuracy||0)){toast(msg("Tu es sorti de la zone","You left the mission zone","יצאת מאזור המשימה"));return}
+ }
+ if(!loggedIn()){show("profileScreen");toast(msg("Connecte-toi pour envoyer cette mission dans la Communauté","Sign in to send this mission to the Community","התחבר כדי לשלוח את המשימה לקהילה"));return}
+ const post=await addCommunityPost(m);
+ if(!post){toast(msg("Impossible d’envoyer la vidéo à la communauté","Could not upload the video to the Community","לא ניתן להעלות את הסרטון לקהילה"));return}
+ if(!S.profile.done.includes(m.id))S.profile.done.push(m.id);save();
+ $("validate").disabled=true;$("rec").disabled=true;$("redo").disabled=true;
+ if(!m.free&&!m.weekly)advanceMissionSlot(m);
+ await syncRemoteProfile();await refreshRanks();
+ toast(msg("Vidéo publiée · ton XP est ajouté, les réactions feront monter ton HYPE","Video published · XP added, reactions will raise your HYPE","הסרטון פורסם · ה-XP נוסף והתגובות יעלו את ה-HYPE שלך"));show("communityScreen")
+};
+async function blobToBase64Chunk(blob){return await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>{const all=String(r.result||"");resolve(all.includes(",")?all.split(",")[1]:all)};r.onerror=()=>reject(r.error||new Error("read_failed"));r.readAsDataURL(blob)})}
+async function share(target){
+ if(!S.videoBlob){toast(msg("Filme d'abord","Record a video first","צלם סרטון קודם"));return}
+ const mime=S.videoBlob.type||"video/webm",title=(S.active&&S.active.title)||"DANCE WORLD QUEST";
+ if(window.AndroidShare&&typeof window.AndroidShare.beginVideo==="function"){
+   try{
+     AndroidShare.beginVideo(mime,target||"",title);
+     const bytesPerChunk=135000;
+     for(let off=0;off<S.videoBlob.size;off+=bytesPerChunk){const b64=await blobToBase64Chunk(S.videoBlob.slice(off,Math.min(S.videoBlob.size,off+bytesPerChunk),mime));AndroidShare.appendVideoChunk(b64);await new Promise(r=>setTimeout(r,0))}
+     AndroidShare.finishVideo();toast(msg("Préparation du partage…","Preparing share…","מכין שיתוף…"));return
+   }catch(e){try{AndroidShare.cancelVideo&&AndroidShare.cancelVideo()}catch(_){}toast(msg("Partage Android indisponible","Android sharing unavailable","השיתוף באנדרואיד לא זמין"));return}
+ }
+ const ext=mime.includes("mp4")?"mp4":"webm",file=new File([S.videoBlob],`dance-world-quest.${ext}`,{type:mime});try{if(navigator.canShare&&navigator.canShare({files:[file]})&&navigator.share)await navigator.share({files:[file],title:"DANCE WORLD QUEST",text:"DANCE WORLD QUEST 🌍💃"});else toast(msg("Utilise l’app Android pour partager","Use the Android app to share","השתמש באפליקציית Android לשיתוף")) }catch(e){if(e.name!=="AbortError")toast(msg("Partage indisponible","Sharing unavailable","השיתוף לא זמין"))}
+}
+$("openCam").onclick=openCam;$("flipCam").onclick=flipCamera;if($("disclosureContinue"))$("disclosureContinue").onclick=()=>closeDisclosure(true);if($("disclosureCancel"))$("disclosureCancel").onclick=()=>closeDisclosure(false);$("rec").onclick=startRec;$("stop").onclick=stopRec;$("redo").onclick=redo;$("instagram").onclick=()=>share("Instagram");$("facebook").onclick=()=>share("Facebook");$("youtube").onclick=()=>share("YouTube");$("shareAny").onclick=()=>share("");
+if($("authLogin"))$("authLogin").onclick=authLogin;if($("authSignup"))$("authSignup").onclick=authSignup;if($("eligibilityAccept"))$("eligibilityAccept").onclick=async()=>{if(await acceptEligibilityOnline(false)){await refreshOnlineAll();toast("Accès confirmé · Community ouverte ✓")}};if($("authLogout"))$("authLogout").onclick=authLogout;if($("profileSave"))$("profileSave").onclick=saveRemoteProfile;if($("deleteAccount"))$("deleteAccount").onclick=deleteMyAccount;if($("refreshRanks"))$("refreshRanks").onclick=refreshRanks;
+if($("langSelect"))$("langSelect").onchange=e=>{S.lang=e.target.value;applyLanguage()};
+$("requestJamAdmin").onclick=requestJamAdmin;$("jamPublish").onclick=saveJam;$("jamCancelEdit").onclick=resetJamForm;$("jamUseGPS").onclick=()=>{if(!S.pos){toast(jamText("GPS indisponible","GPS unavailable","GPS לא זמין"));return}$("jamLat").value=S.pos.lat.toFixed(6);$("jamLon").value=S.pos.lon.toFixed(6)};$("jamPickMap").onclick=()=>{S.jamPickMode=true;show("mapScreen");toast(jamText("Tape sur la carte à l’endroit exact du Jam.","Tap the exact Jam location on the map.","לחץ במפה על מיקום ה-Jam המדויק."))};resetJamForm();window.addEventListener("resize",()=>setTimeout(()=>S.map.invalidateSize(),60));window.addEventListener("orientationchange",()=>setTimeout(()=>S.map.invalidateSize(),250));window.addEventListener("beforeunload",stopStream);setInterval(()=>loggedIn()&&refreshDuoMeetups(true),15000);
+S.jamRefreshTimer=setInterval(()=>refreshJams(true),5*60*1000);
+setInterval(()=>{if(S.missions.some(m=>m.expiresAt&&m.expiresAt<=Date.now()))makeMissions()},60000);
+const todayISO=new Date().toISOString().slice(0,10);if($("authBirthdate"))$("authBirthdate").max=todayISO;if($("eligibilityBirthdate"))$("eligibilityBirthdate").max=todayISO;
+const langObserver=new MutationObserver(ms=>{for(const m of ms){if(m.type==="characterData"&&m.target.parentNode)localizeDOM(m.target.parentNode);else m.addedNodes&&m.addedNodes.forEach(n=>{if(n.nodeType===1)localizeDOM(n);else if(n.parentNode)localizeDOM(n.parentNode)})}});langObserver.observe(document.body,{subtree:true,childList:true,characterData:true});
+initMap();bindJamMapPicker();applyLanguage();renderTop();renderCommunity();renderAuth();initOnline();startGPSWithDisclosure();
+</script>
+</body>
+</html>
