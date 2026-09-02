@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DWQ Admin</title>
+<style>
+:root{--bg:#080b12;--panel:#101722;--line:#303b4d;--text:#f7f8fb;--muted:#aeb8c7;--violet:#8f5cff;--green:#58d678;--yellow:#ffc75b;--red:#ff7468}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;padding:20px}
+.wrap{max-width:980px;margin:auto}
+h1{margin-bottom:4px}.sub{color:var(--muted);margin-bottom:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.stat{background:#0b111a;border:1px solid #2f3a4c;border-radius:12px;padding:12px}
+.stat strong{display:block;font-size:24px}.stat span{font-size:11px;color:var(--muted)}
+button,input,textarea{font:inherit;color:#fff;background:#151d29;border:1px solid #39475c;border-radius:11px;padding:11px}
+button{cursor:pointer}.primary{background:linear-gradient(135deg,#7646e8,#a26fff);border:0}
+input,textarea{width:100%}textarea{min-height:90px}
+.hidden{display:none!important}.muted{color:var(--muted);font-size:12px}.ok{color:var(--green)}.warn{color:var(--yellow)}.err{color:var(--red)}
+.output{background:#090d14;border:1px solid #2d3849;border-radius:12px;padding:12px;min-height:62px;margin-top:10px}
+.report,.draft,.priority{background:#0d141e;border:1px solid #2d3849;border-radius:12px;padding:12px;margin:8px 0}
+.badge{display:inline-block;border:1px solid #46536a;border-radius:999px;padding:3px 8px;font-size:10px;color:#cfd7e4}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+@media(max-width:720px){.grid,.stats{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🤖 DWQ Admin</h1>
+  <div class="sub">Modération · analyse · aide créative — aucun jugement de danse</div>
+
+  <div class="card">
+    <b>Connexion</b>
+    <div id="authState" class="muted" style="margin:7px 0">Vérification…</div>
+    <div id="loginBox" class="grid">
+      <input id="email" type="email" placeholder="Email du compte DWQ">
+      <input id="password" type="password" placeholder="Mot de passe">
+      <button id="login" class="primary">Se connecter</button>
+      <button id="signup">Créer le compte</button>
+    </div>
+    <button id="logout" class="hidden">Déconnexion</button>
+  </div>
+
+  <div id="setup" class="card hidden">
+    <b>Accès Admin</b>
+    <div id="setupState" class="muted" style="margin:8px 0"></div>
+    <button id="requestAdmin" class="primary hidden">Demander l’accès Admin</button>
+  </div>
+
+  <div id="adminArea" class="hidden">
+    <div class="card">
+      <div class="row"><b>📊 Tableau de bord</b><button id="refreshDash">Actualiser</button></div>
+      <div id="stats" class="stats" style="margin-top:12px"></div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <b>🛡️ Modération</b>
+        <p class="muted">L’agent aide à prioriser les signalements. Aucun jugement de danse et aucune suppression automatique.</p>
+        <button id="loadReports">Voir les signalements</button>
+        <div id="reportsOut" class="output">—</div>
+      </div>
+
+      <div class="card">
+        <b>📈 Brief créateur</b>
+        <p class="muted">Demande à l’agent ce qu’il faut améliorer dans le jeu.</p>
+        <textarea id="briefNote" placeholder="Ex : Analyse l’activité actuelle et donne-moi les 3 priorités les plus importantes."></textarea>
+        <button id="creatorBrief" class="primary">Analyser</button>
+        <div id="briefOut" class="output">—</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <b>💡 Brouillons de missions</b>
+      <p class="muted">Des idées uniquement pour toi. Rien n’est publié automatiquement.</p>
+      <div class="grid">
+        <input id="city" placeholder="Ville (ex : Tel Aviv)">
+        <input id="theme" placeholder="Thème (ex : groove, duo, drôle)">
+        <input id="level" type="number" min="1" max="10" value="3" placeholder="Niveau">
+        <input id="count" type="number" min="1" max="20" value="5" placeholder="Nombre">
+      </div>
+      <textarea id="constraints" placeholder="Contraintes optionnelles"></textarea>
+      <button id="makeMissions" class="primary">Créer des brouillons</button>
+      <div id="missionsOut" class="output">—</div>
+    </div>
+  </div>
+
+  <div id="msg" class="muted"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SB_URL='https://lbmgmfpvxggxoboxfsib.supabase.co';
+const SB_KEY='sb_publishable_muyBjmwQ7Z8u3rk-UjXfDw_DANAEmCe';
+const sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+const $=id=>document.getElementById(id);
+let session=null;
+
+function msg(t,cls='muted'){ $('msg').className=cls; $('msg').textContent=t||''; }
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function call(action,extra={}){
+  const {data,error}=await sb.functions.invoke('dwq-admin-agent',{body:{action,...extra}});
+  if(error) throw error;
+  if(data?.error){
+    const detail=data?.detail ? ` — ${data.detail}` : '';
+    throw new Error(`${data.error}${detail}`);
+  }
+  return data;
+}
+function stat(label,value){return `<div class="stat"><strong>${esc(value)}</strong><span>${esc(label)}</span></div>`}
+
+async function auth(){
+  session=(await sb.auth.getSession()).data.session;
+  $('loginBox').classList.toggle('hidden',!!session);
+  $('logout').classList.toggle('hidden',!session);
+  $('setup').classList.toggle('hidden',!session);
+  $('authState').innerHTML=session?'<span class="ok">Connecté ✓</span>':'Connecte-toi avec ton compte Dance World Quest.';
+  if(session) await setup();
+}
+async function setup(){
+  try{
+    const d=await call('setup_status');
+    $('setupState').innerHTML=d.admin?'<span class="ok">Admin actif ✓</span>':d.request_pending?'<span class="warn">Demande Admin en attente</span>':'Pas encore Admin';
+    $('requestAdmin').classList.toggle('hidden',d.admin||d.request_pending);
+    $('adminArea').classList.toggle('hidden',!d.admin);
+    if(d.admin) await dashboard();
+  }catch(e){
+    $('setupState').innerHTML='<span class="err">Vérification impossible : '+esc(e.message)+'</span>';
+  }
+}
+async function dashboard(){
+  try{
+    const d=(await call('dashboard')).snapshot;
+    $('stats').innerHTML=
+      stat('VIDÉOS 24H',d.submissions.last_24h)+
+      stat('VIDÉOS 7J',d.submissions.last_7d)+
+      stat('NOUVEAUX 7J',d.new_users.last_7d)+
+      stat('SIGNALEMENTS',d.moderation.open_submission_reports+d.moderation.open_user_reports)+
+      stat('VOTES 7J',d.engagement.votes_7d)+
+      stat('RÉACTIONS 7J',d.engagement.reactions_7d)+
+      stat('XP 7J',d.engagement.xp_awarded_7d)+
+      stat('NOUVEAUX 24H',d.new_users.last_24h);
+  }catch(e){msg('Dashboard indisponible : '+e.message,'err')}
+}
+
+$('login').onclick=async()=>{
+  msg('Connexion…');
+  const {error}=await sb.auth.signInWithPassword({email:$('email').value,password:$('password').value});
+  if(error)return msg(error.message,'err');
+  await auth(); msg('');
+};
+$('signup').onclick=async()=>{
+  const {error}=await sb.auth.signUp({email:$('email').value,password:$('password').value});
+  if(error)return msg(error.message,'err');
+  msg('Compte créé. Vérifie ton email si Supabase le demande.','ok'); await auth();
+};
+$('logout').onclick=async()=>{await sb.auth.signOut();await auth()};
+$('requestAdmin').onclick=async()=>{try{await call('request_admin');msg('Demande envoyée','ok');await setup()}catch(e){msg(e.message,'err')}};
+$('refreshDash').onclick=dashboard;
+
+$('loadReports').onclick=async()=>{
+  $('reportsOut').textContent='Chargement…';
+  try{
+    const q=(await call('moderation_queue')).queue;
+    const items=[];
+    (q.submission_reports||[]).forEach(r=>items.push(`<div class="report"><span class="badge">VIDÉO</span><b> ${esc(r.reason||'Signalement')}</b><div class="muted">${esc(r.details||'')}</div><div>${esc(r.submission?.title||'')}</div></div>`));
+    (q.user_reports||[]).forEach(r=>items.push(`<div class="report"><span class="badge">UTILISATEUR</span><b> ${esc(r.reason||'Signalement')}</b><div class="muted">${esc(r.details||'')}</div></div>`));
+    $('reportsOut').innerHTML=items.length?items.join(''):'Aucun signalement ouvert.';
+  }catch(e){$('reportsOut').textContent='Indisponible : '+e.message}
+};
+
+$('creatorBrief').onclick=async()=>{
+  $('briefOut').textContent='Analyse…';
+  try{
+    const d=await call('creator_brief',{note:$('briefNote').value});
+    const b=d.brief||{};
+    let h=`<h3>${esc(b.headline||'Brief')}</h3>`;
+    (b.top_priorities||[]).forEach(p=>h+=`<div class="priority"><b>#${esc(p.priority)} · ${esc(p.action)}</b><div class="muted">${esc(p.why)}</div></div>`);
+    if((b.what_changed||[]).length)h+=`<b>Ce qui change</b><ul>${b.what_changed.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>`;
+    if((b.experiments||[]).length)h+=`<b>Expériences</b><ul>${b.experiments.map(x=>'<li>'+esc(x.idea)+' — '+esc(x.metric)+'</li>').join('')}</ul>`;
+    if((b.warnings||[]).length)h+=`<b>Attention</b><ul>${b.warnings.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>`;
+    $('briefOut').innerHTML=h;
+  }catch(e){$('briefOut').textContent='Indisponible : '+e.message}
+};
+
+$('makeMissions').onclick=async()=>{
+  $('missionsOut').textContent='Création…';
+  try{
+    const d=await call('suggest_missions',{city:$('city').value,theme:$('theme').value,level:+$('level').value,count:+$('count').value,constraints:$('constraints').value,language:'fr'});
+    const drafts=d.drafts||[];
+    $('missionsOut').innerHTML=drafts.length?drafts.map(x=>`<div class="draft"><div class="row"><span class="badge">${esc(x.type)}</span><b>${esc(x.title)}</b></div><p>${esc(x.instruction)}</p><div class="muted">${esc(x.duration_sec)} s · XP suggéré ${esc(x.suggested_xp)} · difficulté ${esc(x.difficulty)}/10</div>${x.safety_note?'<div class="muted">Sécurité : '+esc(x.safety_note)+'</div>':''}</div>`).join(''):'Aucun brouillon.';
+  }catch(e){$('missionsOut').textContent='Indisponible : '+e.message}
+};
+
+sb.auth.onAuthStateChange(()=>setTimeout(auth,0));
+auth();
+</script>
+</body>
+</html>
