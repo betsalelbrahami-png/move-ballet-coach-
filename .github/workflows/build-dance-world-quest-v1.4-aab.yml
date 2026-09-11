@@ -1,0 +1,55 @@
+name: Build Dance World Quest v1.4 AAB
+
+on:
+  push:
+    branches:
+      - release-v1.4-build
+    paths:
+      - DanceWorldQuest-Android-v1.4-source.zip
+      - .github/workflows/build-dance-world-quest-v1.4-aab.yml
+  workflow_dispatch:
+
+jobs:
+  build-aab:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle 9.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.1.0"
+
+      - name: Verify source archive
+        shell: bash
+        run: |
+          echo "5c51288aad250f9d35740e01ec706671f767d8501520743e31ef64b21a14fe4c  DanceWorldQuest-Android-v1.4-source.zip" | sha256sum --check --strict
+
+      - name: Extract and verify v1.4
+        shell: bash
+        run: |
+          mkdir -p build-v14
+          unzip -q DanceWorldQuest-Android-v1.4-source.zip -d build-v14
+          project_dir="build-v14/DanceWorldQuest-Android-v1.3.4"
+          grep -Eq 'versionCode[[:space:]]+17' "$project_dir/app/build.gradle"
+          grep -Eq 'versionName[[:space:]]+"1\.4"' "$project_dir/app/build.gradle"
+          grep -Eq 'targetSdk[[:space:]]+36' "$project_dir/app/build.gradle"
+
+      - name: Build unsigned release App Bundle
+        working-directory: build-v14/DanceWorldQuest-Android-v1.3.4
+        run: gradle --no-daemon :app:bundleRelease
+
+      - name: Upload unsigned App Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: DanceWorldQuest-v1.4-AAB-UNSIGNED
+          path: build-v14/DanceWorldQuest-Android-v1.3.4/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 7

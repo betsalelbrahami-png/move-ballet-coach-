@@ -1,0 +1,58 @@
+name: Publish Dance World Quest Web v1.4
+
+on:
+  push:
+    branches:
+      - release-v1.4-build
+    paths:
+      - .github/workflows/publish-dwq-web-v1.4.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish-web:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out release branch
+        uses: actions/checkout@v4
+        with:
+          ref: release-v1.4-build
+
+      - name: Extract v1.4 source
+        shell: bash
+        run: |
+          rm -rf build-v14
+          mkdir -p build-v14
+          unzip -q DanceWorldQuest-Android-v1.4-source.zip -d build-v14
+
+      - name: Find the v1.4 web app and publish it as index.html
+        shell: bash
+        run: |
+          candidate="$(grep -RIl --include='*.html' 'web-beta-1\.4\.0' build-v14 | head -n 1 || true)"
+          if [ -z "$candidate" ]; then
+            candidate="$(grep -RIl --include='*.html' 'WORLD UPDATE' build-v14 | head -n 1 || true)"
+          fi
+          if [ -z "$candidate" ]; then
+            echo 'Could not find the Dance World Quest v1.4 HTML inside the source archive.' >&2
+            find build-v14 -type f | sort | head -n 200
+            exit 1
+          fi
+          echo "Publishing $candidate"
+          cp "$candidate" index.html
+          grep -q 'web-beta-1.4.0' index.html
+          grep -q 'DANCE WORLD QUEST' index.html
+
+      - name: Commit published web app
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          if git diff --cached --quiet; then
+            echo 'index.html is already the v1.4 web app.'
+            exit 0
+          fi
+          git commit -m 'Publish Dance World Quest web v1.4'
+          git push origin HEAD:release-v1.4-build
