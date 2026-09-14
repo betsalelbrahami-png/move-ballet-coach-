@@ -21,7 +21,7 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Restore and patch LookMe v0.8 source
+      - name: Restore and patch LookMe v0.9 source
         run: |
           set -euo pipefail
           rm -rf lookme
@@ -54,15 +54,18 @@ jobs:
           data['expo']['android']['versionCode']=8
           app.write_text(json.dumps(data, ensure_ascii=False, indent=2)+"\n")
           PY
+          sed -e 's|/mnt/data/lookme_v08_pristine/|lookme/|g' -e 's|/mnt/data/lookme_v08_src/|lookme/|g' lookme-v09.patch > /tmp/lookme-v09.patch
+          patch -p0 < /tmp/lookme-v09.patch
           test -f lookme/App.tsx
           test -f lookme/src/services/localVision.ts
           test -f lookme/src/services/localStylist.ts
-          grep -q 'Android V1 • 0.8' lookme/App.tsx
+          grep -q 'Android V1 • 0.9' lookme/App.tsx
           ! grep -q 'getAssetInfoAsync(asset)' lookme/App.tsx
           ! grep -q 'info.width' lookme/App.tsx
           ! grep -q 'info.height' lookme/App.tsx
-          grep -q 'lookme-fashion-v2.onnx' lookme/src/services/localVision.ts
-          grep -q '"version": "0.8.0"' lookme/app.json
+          grep -q 'quality_score' lookme/src/services/localVision.ts
+          grep -q 'Ajouter une photo de vêtement' lookme/App.tsx
+          grep -q '"version": "0.9.0"' lookme/app.json
 
       - name: Install SDK-compatible dependencies
         working-directory: lookme
@@ -128,7 +131,7 @@ jobs:
       - name: Upload APK and AAB
         uses: actions/upload-artifact@v4
         with:
-          name: LookMe-Android-V0.8-Release
+          name: LookMe-Android-V0.9-Release
           path: |
             lookme/android/app/build/outputs/apk/release/*.apk
             lookme/android/app/build/outputs/bundle/release/*.aab
