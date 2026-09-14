@@ -33,10 +33,11 @@ jobs:
         run: |
           npm install
           npx expo install --fix
+          npm install --save-dev @react-native-community/cli
 
       - name: Prebuild Android
         working-directory: lookme
-        run: npx expo prebuild --platform android --non-interactive --clean
+        run: npx expo prebuild --platform android --clean
 
       - name: Bundle JavaScript into APK
         working-directory: lookme
