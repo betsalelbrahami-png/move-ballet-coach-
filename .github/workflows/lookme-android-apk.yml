@@ -24,10 +24,14 @@ jobs:
       - name: Restore complete LookMe V1 source
         run: |
           set -euo pipefail
-          rm -rf lookme
+          rm -rf lookme /tmp/lookme-v1-source.zip /tmp/lookme-v1-source.b64
           mkdir -p lookme
-          unzip -t lookme-v1-source.zip
-          unzip -q lookme-v1-source.zip -d lookme
+          cat lookme-v1-source.b64.part00 lookme-v1-source.b64.part01 lookme-v1-source.b64.part02 lookme-v1-source.b64.part03 lookme-v1-source.b64.part04 lookme-v1-source.b64.part05 > /tmp/lookme-v1-source.b64
+          test "$(wc -c < /tmp/lookme-v1-source.b64)" -eq 33884
+          base64 -d /tmp/lookme-v1-source.b64 > /tmp/lookme-v1-source.zip
+          echo '7ac4ff0dd316cf6952ca152315596b6e0a2da02284397f4aceb2c29383bf1179  /tmp/lookme-v1-source.zip' | sha256sum -c -
+          unzip -t /tmp/lookme-v1-source.zip
+          unzip -q /tmp/lookme-v1-source.zip -d lookme
           test -f lookme/App.tsx
           test -f lookme/src/services/faceIdentity.ts
           test -f lookme/src/services/garmentIdentity.ts
