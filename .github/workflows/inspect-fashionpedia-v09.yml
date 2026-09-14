@@ -1,0 +1,41 @@
+name: Inspect Fashionpedia V0.9
+
+on:
+  push:
+    branches: [lookme-android-v1]
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download Fashionpedia ONNX
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 --retry-delay 2 'https://huggingface.co/louisJLN/yolo8-fashionpedia/resolve/main/results/yolov8n-fashionpedia-1.onnx?download=true' -o /tmp/fashionpedia.onnx
+          ls -lh /tmp/fashionpedia.onnx
+          test $(stat -c%s /tmp/fashionpedia.onnx) -gt 5000000
+      - name: Inspect and smoke-test model
+        run: |
+          pip -q install onnx onnxruntime numpy
+          python - <<'PY'
+          import onnx, onnxruntime as ort, numpy as np
+          p='/tmp/fashionpedia.onnx'
+          m=onnx.load(p)
+          print('IR',m.ir_version,'opset',[(x.domain,x.version) for x in m.opset_import])
+          s=ort.InferenceSession(p,providers=['CPUExecutionProvider'])
+          print('inputs',[(i.name,i.shape,i.type) for i in s.get_inputs()])
+          print('outputs',[(o.name,o.shape,o.type) for o in s.get_outputs()])
+          inp=s.get_inputs()[0]
+          shape=[1 if isinstance(x,str) or x is None else int(x) for x in inp.shape]
+          x=np.zeros(shape,dtype=np.float32)
+          out=s.run(None,{inp.name:x})
+          print('runtime output shapes',[np.asarray(v).shape for v in out])
+          for v in out:
+              a=np.asarray(v)
+              print('stats',float(np.nanmin(a)),float(np.nanmax(a)),float(np.nanmean(a)))
+          PY
