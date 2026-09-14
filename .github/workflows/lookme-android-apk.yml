@@ -24,15 +24,10 @@ jobs:
       - name: Restore LookMe v0.6 source
         run: |
           set -euo pipefail
-          cat .github/lookme-v06-source.part00 \
-              .github/lookme-v06-source.part01 \
-              .github/lookme-v06-source.part02 \
-              .github/lookme-v06-source.part03 \
-              .github/lookme-v06-source.part04 > /tmp/lookme.b64
-          test "$(wc -c < /tmp/lookme.b64)" -eq 24640
-          base64 -d /tmp/lookme.b64 > /tmp/lookme.zip
           rm -rf lookme
           mkdir -p lookme
+          curl -fsSL 'https://lbmgmfpvxggxoboxfsib.supabase.co/functions/v1/lookme-build-source' -o /tmp/lookme.zip
+          unzip -t /tmp/lookme.zip
           unzip -q /tmp/lookme.zip -d lookme
           test -f lookme/App.tsx
           test -f lookme/src/services/localFashion.ts
