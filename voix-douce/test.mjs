@@ -10,7 +10,10 @@ const browser=await chromium.launch({headless:true,args:['--use-fake-ui-for-medi
 const context=await browser.newContext({permissions:['microphone'],viewport:{width:390,height:844}});
 const page=await context.newPage();
 const errors=[];page.on('pageerror',e=>errors.push(e.message));
+page.on('requestfailed',r=>console.log('NETWORK_FAILURE',r.url(),r.failure()?.errorText));
+page.on('console',m=>{if(m.type()==='error')console.log('BROWSER_ERROR',m.text());});
 const report={};
+for(const url of ['https://swc2-target-speaker-extraction.hf.space/config','https://huggingface.co/api/spaces/swc2/Target-speaker-extraction','https://betsalelbrahami-png.github.io/move-ballet-coach-/voix-douce/']){try{const r=await fetch(url,{signal:AbortSignal.timeout(20000)});console.log('HTTP_CHECK',url,r.status,(await r.text()).slice(0,150));}catch(e){console.log('HTTP_CHECK_FAILED',url,e.message);}}
 try{
  await page.goto('http://127.0.0.1:8765');
  report.ui=await page.evaluate(()=>({title:document.title,overflow:document.documentElement.scrollWidth>innerWidth,initialDisabled:document.getElementById('process').disabled}));
