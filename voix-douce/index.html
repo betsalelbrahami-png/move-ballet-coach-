@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Voix douce — atténuer une voix</title><meta name="theme-color" content="#113b39">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f5ef;color:#153c39;font:16px/1.55 system-ui,-apple-system,sans-serif}main{max-width:850px;margin:0 auto;padding:32px 20px 60px}.brand{font-weight:800;letter-spacing:-.5px;font-size:21px;display:flex;justify-content:space-between;align-items:center}.badge{font-size:12px;border:1px solid #b6c7bd;border-radius:20px;padding:4px 12px;letter-spacing:0}h1{font-size:clamp(34px,6vw,54px);line-height:1.1;letter-spacing:-2px;margin:32px 0 12px;max-width:650px}h2{font-size:21px;margin:0 0 8px}.lead{color:#536b63;max-width:610px;margin-bottom:26px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}section{background:#fff;border:1px solid #dce4d9;border-radius:22px;padding:23px;margin-bottom:18px}.step{font-size:12px;text-transform:uppercase;letter-spacing:2px;color:#5b7968;margin-bottom:12px}p{margin:8px 0 16px}.muted,small{font-size:13px;color:#587068}button,.download{border:0;background:#174f48;color:#fff;border-radius:12px;padding:14px 18px;font:inherit;font-weight:650;cursor:pointer;display:inline-block;text-decoration:none}button:hover,.download:hover{background:#24685f}button:disabled{opacity:.45;cursor:default}button.secondary{background:#e8eee6;color:#234d45}button.stop{background:#a03838}button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #c39c44;outline-offset:3px}audio{width:100%;margin-top:10px}label.file{display:block;font-size:13px;margin:15px 0 8px}input[type=file]{display:block;width:100%;font:inherit;font-size:13px;margin-top:7px}input[type=range]{width:100%;accent-color:#174f48}.wide{width:100%}#status{padding:15px 18px;border-radius:14px;background:#e5eddf;margin:0 0 18px;white-space:pre-wrap}#status.error{background:#fae4df;color:#87352a}.result{background:#ecf3e5}details{margin-top:18px}summary{cursor:pointer;font-weight:600}#progress{height:6px;width:100%;accent-color:#174f48}#cancel{margin-top:8px}a{color:#17564d}#diagnostic{white-space:pre-wrap;overflow-wrap:anywhere}.rows{display:flex;gap:10px;align-items:center;flex-wrap:wrap}[hidden]{display:none!important}@media(max-width:600px){.grid{grid-template-columns:1fr}main{padding-top:20px}h1{letter-spacing:-1px}section{padding:20px}}
+</style></head><body><main>
+<div class="brand">◌ Voix douce <span class="badge">Prototype · enregistrements</span></div>
+<h1>Une voix en moins.<br>Le reste à écouter.</h1>
+<p class="lead">Enregistre ta voix seule pendant 10 secondes, puis une conversation. L’application essaie d’atténuer cette voix dans le nouvel enregistrement.</p>
+<div class="grid">
+<section><div class="step">01 · Ta voix</div><h2>Fais-toi reconnaître</h2><p class="muted">Parle seul, normalement, pendant 10 secondes. Évite la musique pour cette référence.</p>
+<button id="recordRef" class="wide">Enregistrer ma voix · 10 s</button><label class="file">Ou importer une référence<input id="refFile" type="file" accept="audio/*,.m4a,.wav,.mp3,.webm"></label>
+<p id="refInfo" class="muted">Aucune référence pour le moment.</p><audio id="refPlayer" controls hidden></audio></section>
+<section><div class="step">02 · Le mélange</div><h2>Enregistre la conversation</h2><p class="muted">Ta voix et une autre personne. Fais un premier essai de 15 à 30 secondes.</p>
+<button id="recordMix" class="wide" disabled>Enregistrer la conversation</button><button id="stop" class="wide stop" hidden>Arrêter et atténuer</button>
+<label class="file">Ou importer un enregistrement<input id="mixFile" type="file" accept="audio/*,.m4a,.wav,.mp3,.webm" disabled></label>
+<p id="mixInfo" class="muted">30 secondes maximum pour ce prototype.</p><audio id="mixPlayer" controls hidden></audio></section>
+</div>
+<div id="status" role="status" aria-live="polite">Commence par enregistrer ta voix.</div><progress id="progress" hidden></progress>
+<p class="muted">En lançant le traitement, les deux enregistrements sont envoyés au Space Hugging Face de swc2. Ce service tiers réalise l’extraction ; l’atténuation est calculée dans ton navigateur. Aucun audio n’est ajouté à GitHub. La référence reste dans cet onglet jusqu’à sa fermeture.</p>
+<button id="process" class="wide" disabled>Atténuer cette voix</button><button id="cancel" class="secondary wide" hidden>Annuler le traitement</button>
+<section id="results" class="result" hidden style="margin-top:20px"><div class="step">03 · Le résultat</div><h2>Écoute la différence</h2><p class="muted">L’atténuation dépend de la qualité de l’extraction. Vérifie aussi que l’autre voix reste naturelle.</p>
+<label for="strength">Intensité de l’atténuation : <strong id="strengthValue">100 %</strong></label><input id="strength" type="range" min="0" max="100" value="100">
+<p class="muted">0 % : mélange conservé · 100 % : soustraction complète de la voix estimée. Ce pourcentage n’est pas une mesure de la suppression réelle.</p>
+<label>Avant — mélange traité par le modèle<audio id="before" controls></audio></label>
+<label>Après — voix atténuée<audio id="after" controls></audio></label>
+<a id="download" class="download" download="voix-attenuee.wav">Télécharger le résultat</a>
+<details><summary>Écouter la voix que le modèle a isolée</summary><audio id="extracted" controls></audio><p class="muted">Si ce n’est pas la bonne voix, refais la référence. Si l’autre personne apparaît ici, sa voix risque aussi d’être atténuée.</p></details>
+<details><summary>Détails du traitement</summary><p id="diagnostic" class="muted"></p></details></section>
+<details><summary>J’ai déjà les deux fichiers du test Hugging Face</summary><section style="margin-top:12px"><p class="muted">Importe les deux sorties du même essai pour tester la suppression directement, sans rappeler le modèle.</p><label class="file">Mélange utilisé : deal_input.wav<input id="processedFile" type="file" accept=".wav,audio/wav"></label><label class="file">Voix isolée : temp_extracted.wav<input id="extractedFile" type="file" accept=".wav,audio/wav"></label><button id="localTest" class="secondary">Atténuer à partir de ces fichiers</button></section></details>
+<p class="muted" style="margin-top:25px">Modèle <a href="https://huggingface.co/spaces/swc2/Target-speaker-extraction" target="_blank" rel="noopener">iter_model · swc2</a>. Cette version traite des fichiers après l’enregistrement. L’écoute en direct dans les oreillettes reste une étape ultérieure.</p>
+</main><script>
+"use strict";
+
+function estimate(mix, voice) {
+ const n=Math.min(mix.length,voice.length);
+ if(n<1600) throw Error("Les fichiers sont trop courts.");
+ for(const a of [mix,voice]) for(const x of a) if(!Number.isFinite(x)) throw Error("Audio invalide.");
+ function score(lag,step) {
+  let xy=0,xx=0,yy=0;
+  for(let i=Math.max(0,-lag); i<Math.min(n,n-lag); i+=step) {
+   const x=mix[i],y=voice[i+lag];xy+=x*y;xx+=x*x;yy+=y*y;
+  }
+  return {lag,gain:yy>1e-12?xy/yy:0,corr:xx*yy>1e-20?xy/Math.sqrt(xx*yy):0};
+ }
+ let best=score(0,8);
+ for(let lag=-160;lag<=160;lag+=4) {const s=score(lag,8);if(Math.abs(s.corr)>Math.abs(best.corr)) best=s;}
+ const center=best.lag;
+ best=score(center,1);
+ for(let lag=center-4;lag<=center+4;lag++) {const s=score(lag,1);if(Math.abs(s.corr)>Math.abs(best.corr)) best=s;}
+ if(Math.abs(best.corr)<0.05 || !Number.isFinite(best.gain)) throw Error("La voix extraite ne correspond pas assez au mélange. Vérifie les deux fichiers ou refais un essai.");
+ const target=new Float32Array(mix.length);
+ for(let i=0;i<target.length;i++) {const j=i+best.lag;target[i]=j>=0&&j<voice.length?voice[j]*best.gain:0;}
+ let peak=0;
+ for(let i=0;i<mix.length;i++) peak=Math.max(peak,Math.abs(mix[i]),Math.abs(mix[i]-target[i]),Math.abs(target[i]));
+ return {...best,target,headroom:Math.min(1,0.98/(peak||1))};
+}
+function subtract(mix,target,intensity,headroom=1) {
+ const out=new Float32Array(mix.length);
+ for(let i=0;i<out.length;i++) out[i]=(mix[i]-intensity*target[i])*headroom;
+ return out;
+}
+function wavBytes(samples,rate=16000) {
+ const buffer=new ArrayBuffer(44+samples.length*2),v=new DataView(buffer);
+ const s=(p,t)=>{for(let i=0;i<t.length;i++)v.setUint8(p+i,t.charCodeAt(i));};
+ s(0,"RIFF");v.setUint32(4,36+samples.length*2,true);s(8,"WAVE");s(12,"fmt ");v.setUint32(16,16,true);
+ v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,rate,true);v.setUint32(28,rate*2,true);
+ v.setUint16(32,2,true);v.setUint16(34,16,true);s(36,"data");v.setUint32(40,samples.length*2,true);
+ for(let i=0;i<samples.length;i++){const a=Math.max(-1,Math.min(1,samples[i]));v.setInt16(44+i*2,Math.round(a*(a<0?32768:32767)),true);}
+ return buffer;
+}
+
+window.VoixDSP={estimate,subtract,wavBytes};
+const $=id=>document.getElementById(id),SR=16000;
+let reference=null,mixture=null,referenceSamples=null,mixSamples=null,busy=false,recording=false,rec=null,stream=null,timer=null,tick=null,context=null,runId=0,submission=null,resultState=null,clientModule=null;
+const urls=new Map();
+function status(message,error=false){$("status").textContent=message;$("status").className=error?"error":"";}
+function controls(){
+ $("recordRef").disabled=busy||recording;$("refFile").disabled=busy||recording;
+ $("recordMix").disabled=busy||recording||!reference;$("mixFile").disabled=busy||recording||!reference;
+ $("process").disabled=busy||recording||!reference||!mixture;
+ $("localTest").disabled=busy||recording;$("processedFile").disabled=busy||recording;$("extractedFile").disabled=busy||recording;
+ $("progress").hidden=!busy;$("cancel").hidden=!busy;$("strength").disabled=busy;
+}
+function setAudio(id,blob){const el=$(id);el.pause();if(urls.has(id))URL.revokeObjectURL(urls.get(id));const u=URL.createObjectURL(blob);urls.set(id,u);el.src=u;el.hidden=false;return u;}
+function wav(a){return new Blob([wavBytes(a)],{type:"audio/wav"});}
+function invalidate(){resultState=null;$("results").hidden=true;}
+async function decode(blob,maxSeconds){
+ if(!blob||blob.size===0)throw Error("Le fichier audio est vide.");
+ if(blob.size>30*1024*1024)throw Error("Fichier trop volumineux (30 Mo maximum).");
+ context ||= new (window.AudioContext||window.webkitAudioContext)();
+ const decoded=await context.decodeAudioData(await blob.arrayBuffer());
+ if(maxSeconds&&decoded.duration>maxSeconds+.3)throw Error("L’enregistrement dépasse "+maxSeconds+" secondes. Choisis un extrait plus court.");
+ const offline=new OfflineAudioContext(1,Math.ceil(decoded.duration*SR),SR),source=offline.createBufferSource();
+ source.buffer=decoded;source.connect(offline.destination);source.start();
+ const rendered=await offline.startRendering();return rendered.getChannelData(0).slice();
+}
+function checkSound(a){let sum=0;for(const x of a)sum+=x*x;if(Math.sqrt(sum/a.length)<.00015)throw Error("Je n’entends presque rien. Vérifie le microphone et recommence.");}
+async function accept(kind,blob,fromRecording=false){
+ const a=await decode(blob,kind==="mix"?30:120);checkSound(a);
+ if(a.length<SR*2)throw Error("L’enregistrement est trop court : parle pendant au moins 2 secondes.");
+ invalidate();
+ if(kind==="ref"){
+  if(a.length<SR*9.5)throw Error("La référence doit durer environ 10 secondes. Recommence en parlant jusqu’à la fin du compte à rebours.");
+  referenceSamples=a.slice(0,10*SR);reference=new File([wav(referenceSamples)],"reference.wav",{type:"audio/wav"});
+  setAudio("refPlayer",reference);$("refInfo").textContent="Référence prête · "+(referenceSamples.length/SR).toFixed(1)+" s";
+  status("Voix de référence prête. Enregistre maintenant une conversation.");
+ }else{
+  mixSamples=a.slice(0,30*SR);mixture=new File([wav(mixSamples)],"melange.wav",{type:"audio/wav"});
+  setAudio("mixPlayer",mixture);$("mixInfo").textContent="Conversation prête · "+(mixSamples.length/SR).toFixed(1)+" s";
+  status("Conversation prête. Lancement de l’atténuation…");
+ }
+ controls();
+}
+async function startRecording(kind){
+ if(busy||recording)return;
+ try{
+  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)throw Error("Ouvre cette page dans Chrome ou Safari récent en HTTPS pour utiliser le micro.");
+  recording=true;controls();status("Autorise le microphone dans ton navigateur.");
+  stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false},video:false});
+  const mime=["audio/webm;codecs=opus","audio/mp4","audio/webm"].find(x=>MediaRecorder.isTypeSupported(x));
+  rec=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);const chunks=[];let failed=false;
+  rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
+  rec.onerror=()=>{failed=true;status("L’enregistrement a échoué. Vérifie le microphone.",true);stopRecording();};
+  rec.onstop=async()=>{
+   clearTimeout(timer);clearInterval(tick);stream?.getTracks().forEach(t=>t.stop());recording=false;$("stop").hidden=true;$("recordMix").hidden=false;
+   try{if(!failed){busy=true;controls();await accept(kind,new Blob(chunks,{type:rec.mimeType}));}}
+   catch(e){status(friendly(e),true);}
+   finally{busy=false;controls();}
+   if(!failed&&kind==="mix"&&mixture)await processAudio();
+  };
+  const seconds=kind==="ref"?10:30,start=Date.now();
+  const update=()=>status(kind==="ref"?"Parle seul… "+Math.max(0,Math.ceil(seconds-(Date.now()-start)/1000))+" s restantes":"Conversation en cours · "+Math.floor((Date.now()-start)/1000)+" s / 30 s");
+  rec.start();update();tick=setInterval(update,200);timer=setTimeout(stopRecording,seconds*1000);
+  if(kind==="mix"){$("recordMix").hidden=true;$("stop").hidden=false;}
+ }catch(e){stream?.getTracks().forEach(t=>t.stop());recording=false;controls();status(friendly(e),true);}
+}
+function stopRecording(){if(rec?.state==="recording")rec.stop();clearTimeout(timer);clearInterval(tick);stream?.getTracks().forEach(t=>t.stop());}
+function friendly(e){
+ if(e?.name==="NotAllowedError")return "Le microphone est bloqué. Clique sur l’icône à gauche de l’adresse, autorise le microphone, puis réessaie.";
+ if(e?.name==="NotFoundError")return "Aucun microphone détecté. Branche un micro ou importe un fichier.";
+ return e?.message||String(e)||"Le traitement a échoué. Réessaie.";
+}
+async function getRemoteAudio(file){
+ const raw=typeof file==="string"?file:file?.url;
+ const path=typeof file==="object"?file?.path:null;
+ const u=raw?new URL(raw,"https://swc2-target-speaker-extraction.hf.space"):path?new URL("/file="+path,"https://swc2-target-speaker-extraction.hf.space"):null;
+ if(!u||u.protocol!=="https:"||u.hostname!=="swc2-target-speaker-extraction.hf.space")throw Error("Adresse de sortie inattendue du modèle.");
+ const response=await fetch(u,{signal:AbortSignal.timeout(60000)});
+ if(!response.ok)throw Error("Impossible de récupérer le résultat ("+response.status+").");
+ return decode(await response.blob(),31);
+}
+function finish(m,v,origin){
+ if(Math.abs(m.length-v.length)>SR*.1)throw Error("Les deux sorties n’ont pas la même durée. Utilise les fichiers issus du même essai.");
+ const model=estimate(m,v);resultState={mix:m,...model};$("strength").value=100;
+ setAudio("before",wav(Float32Array.from(m,x=>x*model.headroom)));
+ setAudio("extracted",wav(Float32Array.from(model.target,x=>x*model.headroom)));
+ $("diagnostic").textContent=origin+" · mono 16 kHz\nDécalage : "+(model.lag/SR*1000).toFixed(2)+" ms · gain corrigé : "+model.gain.toFixed(3)+" · corrélation : "+model.corr.toFixed(3)+"\nCorrection de niveau commune avant/après : "+model.headroom.toFixed(3)+".\nLa corrélation ne mesure ni la qualité de l’identification ni la suppression réelle. L’écoute des deux voix reste nécessaire.";
+ renderResult();$("results").hidden=false;status("Résultat prêt. Compare avant/après et vérifie que l’autre voix est préservée.");
+}
+function renderResult(){
+ if(!resultState)return;const p=Number($("strength").value)/100;$("strengthValue").textContent=Math.round(p*100)+" %";
+ const s=resultState,b=wav(subtract(s.mix,s.target,p,s.headroom)),url=setAudio("after",b);$("download").href=url;
+}
+async function processAudio(){
+ if(busy||recording||!reference||!mixture)return;
+ busy=true;const id=++runId;invalidate();controls();status("Connexion au modèle iter_model…");
+ let timeout;
+ try{
+  const task=(async()=>{
+   clientModule ||= await import("https://cdn.jsdelivr.net/npm/@gradio/client@1.8.0/dist/index.min.js");
+   const app=await clientModule.Client.connect("swc2/Target-speaker-extraction",{events:["data","status"]});
+   if(id!==runId)return;
+   submission=app.submit("/gradio_TSE",[clientModule.handle_file(mixture),clientModule.handle_file(reference),"mix","iter_model"]);
+   let data;
+   for await(const msg of submission){
+    if(id!==runId)return;
+    if(msg.type==="status"){
+     if(msg.stage==="error")throw Error(msg.message||"Le modèle a renvoyé une erreur.");
+     status(msg.stage==="pending"?"En attente du modèle"+(Number.isFinite(msg.position)?" · position "+(msg.position+1):"")+"…":"Extraction de ta voix en cours…");
+    }
+    if(msg.type==="data")data=msg.data;
+   }
+   if(id!==runId)return;
+   if(!Array.isArray(data)||data.length<2)throw Error("Le modèle n’a pas renvoyé les deux fichiers attendus.");
+   status("Voix extraite. Recalage et atténuation…");
+   const [m,v]=await Promise.all([getRemoteAudio(data[0]),getRemoteAudio(data[1])]);
+   if(id!==runId)return;
+   // Detect shared-filename cross-request races: returned mixture must match our upload.
+   if(Math.abs(m.length-mixSamples.length)>SR*.1)throw Error("Le service a renvoyé un autre mélange. Réessaie.");
+   let error=0,power=0;for(let i=0;i<Math.min(m.length,mixSamples.length);i++){error+=(m[i]-mixSamples[i])**2;power+=mixSamples[i]**2;}
+   if(error/(power+1e-12)>.015)throw Error("Le mélange retourné ne correspond pas à ton fichier. Le service est peut-être occupé : réessaie.");
+   finish(m,v,"Extraction iter_model");
+  })();
+  await Promise.race([task,new Promise((_,reject)=>{timeout=setTimeout(()=>reject(Error("Le modèle n’a pas répondu dans les 5 minutes. Réessaie plus tard, ou utilise les deux sorties de ton test précédent ci-dessous.")),300000);})]);
+ }catch(e){if(id===runId){status("Traitement interrompu. "+friendly(e),true);++runId;try{await submission?.cancel();}catch{}}}
+ finally{clearTimeout(timeout);if(id===runId||id+1===runId){busy=false;submission=null;controls();}}
+}
+$("recordRef").onclick=()=>startRecording("ref");$("recordMix").onclick=()=>startRecording("mix");$("stop").onclick=stopRecording;$("process").onclick=processAudio;
+for(const [id,kind] of [["refFile","ref"],["mixFile","mix"]])$(id).onchange=async e=>{
+ const file=e.target.files[0];if(!file)return;busy=true;invalidate();controls();let ok=false;
+ if(kind==="mix"){mixture=null;mixSamples=null;}else{reference=null;referenceSamples=null;}
+ try{await accept(kind,file);ok=true;}catch(error){status(friendly(error),true);}finally{busy=false;controls();e.target.value="";}
+ if(ok&&kind==="mix")await processAudio();
+};
+$("cancel").onclick=()=>{++runId;try{Promise.resolve(submission?.cancel()).catch(()=>{});}catch{}submission=null;busy=false;controls();status("Traitement annulé. Tu peux recommencer.");};
+$("strength").oninput=renderResult;
+$("localTest").onclick=async()=>{
+ if(busy||recording)return;busy=true;invalidate();controls();
+ try{
+  const a=$("processedFile").files[0],b=$("extractedFile").files[0];
+  if(!a||!b)throw Error("Choisis le mélange traité et la voix extraite du même essai.");
+  const [m,v]=await Promise.all([decode(a,30),decode(b,30)]);finish(m,v,"Fichiers du test précédent · traitement local");
+ }catch(e){status(friendly(e),true);}finally{busy=false;controls();}
+};
+document.querySelectorAll("audio").forEach(a=>a.addEventListener("play",()=>document.querySelectorAll("audio").forEach(b=>{if(a!==b)b.pause();})));
+window.addEventListener("pagehide",()=>{stopRecording();for(const u of urls.values())URL.revokeObjectURL(u);});
+controls();
+</script></body></html>
