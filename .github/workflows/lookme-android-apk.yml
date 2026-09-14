@@ -21,17 +21,19 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Restore LookMe v0.6 source
+      - name: Restore LookMe v0.7 source
         run: |
           set -euo pipefail
           rm -rf lookme
           mkdir -p lookme
-          curl -fsSL 'https://lbmgmfpvxggxoboxfsib.supabase.co/functions/v1/lookme-build-source' -o /tmp/lookme.zip
+          cat lookme-v07-source.part01 lookme-v07-source.part02 lookme-v07-source.part03 lookme-v07-source.part04 | base64 -d > /tmp/lookme.zip
           unzip -t /tmp/lookme.zip
           unzip -q /tmp/lookme.zip -d lookme
           test -f lookme/App.tsx
           test -f lookme/src/services/localVision.ts
           test -f lookme/src/services/localStylist.ts
+          grep -q 'Android V1 • 0.7' lookme/App.tsx
+          grep -q 'lookme-fashionpedia-v07.onnx' lookme/src/services/localVision.ts
 
       - name: Install SDK-compatible dependencies
         working-directory: lookme
@@ -90,6 +92,6 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: LookMe-Android-V0.6-APK
+          name: LookMe-Android-V0.7-APK
           path: lookme/android/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
