@@ -30,16 +30,8 @@ jobs:
           unzip -t /tmp/lookme.zip
           unzip -q /tmp/lookme.zip -d lookme
           test -f lookme/App.tsx
-          test -f lookme/src/services/localFashion.ts
+          test -f lookme/src/services/localVision.ts
           test -f lookme/src/services/localStylist.ts
-
-      - name: Bundle local Fashionpedia detector
-        run: |
-          set -euo pipefail
-          mkdir -p lookme/assets
-          curl -L --fail 'https://huggingface.co/louisJLN/yolo8-fashionpedia/resolve/main/results/yolov8n-fashionpedia-1.onnx?download=true' -o lookme/assets/fashionpedia.onnx
-          echo '6b581af3abe2b4ae97a84cbe9aef5ae37207a68ee966d22b0b8d7969d79e6920  lookme/assets/fashionpedia.onnx' | sha256sum -c -
-          ls -lh lookme/assets/fashionpedia.onnx
 
       - name: Install SDK-compatible dependencies
         working-directory: lookme
@@ -69,8 +61,7 @@ jobs:
           APK=$(find lookme/android/app/build/outputs/apk/release -name '*.apk' | head -1)
           test -n "$APK"
           unzip -l "$APK" | grep -q 'assets/index.android.bundle'
-          unzip -l "$APK" | grep -q 'fashionpedia.onnx'
-          echo "Verified JS bundle and local fashion model in $APK"
+          echo "Verified standalone JS bundle in $APK"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
