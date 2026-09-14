@@ -1,4 +1,4 @@
-name: Build LookMe Simple Android APK
+name: Build LookMe V1.2 TryOn Android APK
 
 on:
   push:
@@ -21,34 +21,21 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Restore stable source and apply V1.1 app
+      - name: Restore LookMe V1.2 source
         run: |
           set -euo pipefail
-          rm -rf lookme /tmp/lookme-v1-source.zip /tmp/lookme-v1-source.b64
+          rm -rf lookme /tmp/lookme-v1.2-source.b64 /tmp/lookme-v1.2-source.zip
           mkdir -p lookme
-          cat lookme-v1-source.b64.part00 lookme-v1-source.b64.part01 lookme-v1-source.b64.part02 lookme-v1-source.b64.part03 lookme-v1-source.b64.part04 lookme-v1-source.b64.part05 > /tmp/lookme-v1-source.b64
-          test "$(wc -c < /tmp/lookme-v1-source.b64)" -eq 33884
-          base64 -d /tmp/lookme-v1-source.b64 > /tmp/lookme-v1-source.zip
-          echo '7ac4ff0dd316cf6952ca152315596b6e0a2da02284397f4aceb2c29383bf1179  /tmp/lookme-v1-source.zip' | sha256sum -c -
-          unzip -q /tmp/lookme-v1-source.zip -d lookme
-          cat lookme-v1.1-App.part00 lookme-v1.1-App.part01 lookme-v1.1-App.part02 lookme-v1.1-App.part03 lookme-v1.1-App.part04 lookme-v1.1-App.part05 > lookme/App.tsx
-          cp lookme-v1.1-app.json lookme/app.json
-          cp lookme-v1.1-package.json lookme/package.json
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('lookme/App.tsx')
-          s=p.read_text()
-          for name in ['reviewImage','thumb','itemImg','lookImage']:
-              s=s.replace(f'style={{styles.{name}}}', f'style={{styles.{name} as any}}')
-          s=s.replace("fontWeight:'750'", "fontWeight:'700'")
-          p.write_text(s)
-          PY
-          grep -q 'V1.1 simple' lookme/App.tsx
-          grep -q 'Prendre une photo' lookme/App.tsx
-          grep -q '"version": "1.1.0"' lookme/app.json
-          grep -q '"versionCode": 11' lookme/app.json
-          ! grep -q 'expo-media-library' lookme/package.json
-          ! grep -q 'react-native-mlkit-face-detection' lookme/package.json
+          cat lookme-v1.2-source.b64.part00 lookme-v1.2-source.b64.part01 lookme-v1.2-source.b64.part02 lookme-v1.2-source.b64.part03 > /tmp/lookme-v1.2-source.b64
+          test "$(wc -c < /tmp/lookme-v1.2-source.b64)" -eq 32448
+          base64 -d /tmp/lookme-v1.2-source.b64 > /tmp/lookme-v1.2-source.zip
+          echo '24f26870e71ace85838223f5f6ab93dbf0e36ecf5b4a83056effdb0a70c22429  /tmp/lookme-v1.2-source.zip' | sha256sum -c -
+          unzip -t /tmp/lookme-v1.2-source.zip
+          unzip -q /tmp/lookme-v1.2-source.zip -d lookme
+          grep -q 'V1.2 try-on' lookme/App.tsx
+          grep -q 'Voir sur moi' lookme/App.tsx
+          grep -q '"version": "1.2.0"' lookme/app.json
+          grep -q '"versionCode": 12' lookme/app.json
 
       - name: Install SDK-compatible dependencies
         working-directory: lookme
@@ -114,7 +101,7 @@ jobs:
       - name: Upload APK and AAB
         uses: actions/upload-artifact@v4
         with:
-          name: LookMe-Android-V1.1-Simple
+          name: LookMe-Android-V1.2-TryOn
           path: |
             lookme/android/app/build/outputs/apk/release/*.apk
             lookme/android/app/build/outputs/bundle/release/*.aab
