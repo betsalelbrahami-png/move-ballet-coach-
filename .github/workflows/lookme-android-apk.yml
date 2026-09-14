@@ -21,7 +21,7 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Restore LookMe v0.7 source
+      - name: Restore and patch LookMe v0.8 source
         run: |
           set -euo pipefail
           rm -rf lookme
@@ -33,11 +33,33 @@ jobs:
           patch -p0 < /tmp/lookme-v07.patch
           sed -i "s/FileSystem.getInfoAsync(MODEL_PATH, { size:true })/FileSystem.getInfoAsync(MODEL_PATH)/" lookme/src/services/localVision.ts
           sed -i "s/FileSystem.getInfoAsync(MODEL_TMP, { size:true })/FileSystem.getInfoAsync(MODEL_TMP)/" lookme/src/services/localVision.ts
+          python - <<'PY'
+          from pathlib import Path
+          import json
+
+          p=Path('lookme/App.tsx')
+          s=p.read_text()
+          old="""          const info = await MediaLibrary.getAssetInfoAsync(asset);\n          const localUri = info.localUri || asset.uri;"""
+          new="""          // Android already gives us a file:// URI in the asset. Avoid getAssetInfoAsync():\n          // it also reads EXIF/GPS metadata and can require ACCESS_MEDIA_LOCATION.\n          const localUri = asset.uri;"""
+          if old not in s:
+              raise SystemExit('Expected getAssetInfoAsync block not found')
+          s=s.replace(old,new)
+          s=s.replace('Android V1 • 0.7','Android V1 • 0.8')
+          p.write_text(s)
+
+          app=Path('lookme/app.json')
+          data=json.loads(app.read_text())
+          data['expo']['version']='0.8.0'
+          data['expo']['android']['versionCode']=8
+          app.write_text(json.dumps(data, ensure_ascii=False, indent=2)+"\n")
+          PY
           test -f lookme/App.tsx
           test -f lookme/src/services/localVision.ts
           test -f lookme/src/services/localStylist.ts
-          grep -q 'Android V1 • 0.7' lookme/App.tsx
+          grep -q 'Android V1 • 0.8' lookme/App.tsx
+          ! grep -q 'getAssetInfoAsync(asset)' lookme/App.tsx
           grep -q 'lookme-fashion-v2.onnx' lookme/src/services/localVision.ts
+          grep -q '"version": "0.8.0"' lookme/app.json
 
       - name: Install SDK-compatible dependencies
         working-directory: lookme
@@ -103,7 +125,7 @@ jobs:
       - name: Upload APK and AAB
         uses: actions/upload-artifact@v4
         with:
-          name: LookMe-Android-V0.7-Release
+          name: LookMe-Android-V0.8-Release
           path: |
             lookme/android/app/build/outputs/apk/release/*.apk
             lookme/android/app/build/outputs/bundle/release/*.aab
