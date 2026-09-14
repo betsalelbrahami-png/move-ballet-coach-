@@ -1,1 +1,169 @@
-PLACEHOLDER
+diff -ruN /mnt/data/lookme_v08_pristine/App.tsx /mnt/data/lookme_v08_src/App.tsx
+--- /mnt/data/lookme_v08_pristine/App.tsx	2026-09-14 11:27:20.000000000 +0000
++++ /mnt/data/lookme_v08_src/App.tsx	2026-09-14 12:10:53.395924730 +0000
+@@ -231,7 +231,7 @@
+             const signature = (g.signature || `${g.category}-${g.subtype}-${(g.colors || []).join('-')}`).toLowerCase().trim();
+             const { data: duplicateRows } = await supabase
+               .from('lookme_garments')
+-              .select('id,appearance_count,image_path')
++              .select('id,appearance_count,image_path,confidence')
+               .eq('user_id', userId)
+               .eq('category', g.category)
+               .eq('signature', signature)
+@@ -240,8 +240,20 @@
+             const duplicate = duplicateRows?.[0];
+             if (duplicate) {
+               const count = (duplicate.appearance_count || 1) + 1;
+-              await supabase.from('lookme_garments').update({ appearance_count:count, last_seen_at:new Date().toISOString() }).eq('id', duplicate.id);
+-              setCloset(prev => prev.map(x => x.id === duplicate.id ? { ...x, appearanceCount:count } : x));
++              const bboxArea=(g.bbox?.w || 0)*(g.bbox?.h || 0);
++              const shouldReplace=(g.confidence || 0) > (duplicate.confidence || 0) + 0.06 || bboxArea > 0.24;
++              let replacementPath:string|undefined;
++              let replacementUri:string|undefined;
++              if (shouldReplace) {
++                replacementUri = await cropGarment(localUri, asset.width || 1000, asset.height || 1000, g.bbox);
++                replacementPath = await uploadLocalImage(replacementUri, 'lookme-photos', userId, 'garments');
++              }
++              await supabase.from('lookme_garments').update({
++                appearance_count:count,
++                last_seen_at:new Date().toISOString(),
++                ...(replacementPath ? { image_path:replacementPath, confidence:g.confidence } : {})
++              }).eq('id', duplicate.id);
++              setCloset(prev => prev.map(x => x.id === duplicate.id ? { ...x, appearanceCount:count, ...(replacementUri ? { localUri:replacementUri, storagePath:replacementPath || x.storagePath, confidence:g.confidence } : {}) } : x));
+               continue;
+             }
+ 
+@@ -296,6 +308,38 @@
+     }
+   }
+ 
++  async function addPhotoManually() {
++    if (!userId) return;
++    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes:['images'], allowsMultipleSelection:false, quality:1 });
++    if (res.canceled || !res.assets[0]) return;
++    setBusy(true);
++    try {
++      const asset=res.assets[0];
++      const localUri=asset.uri;
++      const analysis=await analyzePhotoLocal(localUri, setProgress);
++      if (!analysis.garments.length) {
++        Alert.alert('LookMe','Je ne reconnais pas assez bien de vêtement sur cette photo. Essaie une photo plus nette ou plus complète.');
++        return;
++      }
++      const sourcePath=await uploadLocalImage(localUri,'lookme-photos',userId,'manual-sources');
++      const { data:sourceRow,error:sourceError }=await supabase.from('lookme_source_photos').insert({ user_id:userId, local_asset_id:`manual-${Date.now()}`, storage_path:sourcePath, analysis_status:'processing' }).select('id').single();
++      if (sourceError) throw sourceError;
++      let added=0;
++      for (const g of analysis.garments.filter(x => (x.confidence ?? 0) >= 0.34)) {
++        const signature=(g.signature || `${g.category}-${g.subtype}-${(g.colors || []).join('-')}`).toLowerCase().trim();
++        const cropUri=await cropGarment(localUri, asset.width || 1000, asset.height || 1000, g.bbox);
++        const garmentPath=await uploadLocalImage(cropUri,'lookme-photos',userId,'garments');
++        const { data:inserted,error:insertError }=await supabase.from('lookme_garments').insert({ user_id:userId, source_photo_id:sourceRow.id, category:g.category, subtype:g.subtype, label:g.label, dominant_colors:g.colors, material:g.material || null, pattern:g.pattern || null, signature, image_path:garmentPath, confidence:g.confidence }).select('id').single();
++        if (insertError) throw insertError;
++        setCloset(prev => [{ ...g, signature, id:inserted.id, localUri:cropUri, storagePath:garmentPath, appearanceCount:1 }, ...prev]);
++        added++;
++      }
++      await supabase.from('lookme_source_photos').update({ analysis_status:'done' }).eq('id',sourceRow.id);
++      Alert.alert('LookMe', added ? `${added} pièce${added>1?'s':''} ajoutée${added>1?'s':''}.` : 'Aucune pièce assez nette à ajouter.');
++    } catch(e:any) { Alert.alert('Ajout', e.message || String(e)); }
++    finally { setBusy(false); setProgress(''); }
++  }
++
+   const visibleCloset = useMemo(() => closet.filter(x => filter === 'all' || x.category === filter), [closet, filter]);
+   function toggle(id:string) { setSelected(s => s.includes(id) ? s.filter(x => x !== id) : s.length < 5 ? [...s,id] : s); }
+ 
+@@ -364,7 +408,7 @@
+ 
+   return <SafeAreaView style={styles.safe}><StatusBar style="dark"/>
+     <ScrollView contentContainerStyle={styles.page}>
+-      <View style={styles.top}><Text style={styles.logo}>LookMe</Text><Text style={styles.badge}>Android V1 • 0.8</Text></View>
++      <View style={styles.top}><Text style={styles.logo}>LookMe</Text><Text style={styles.badge}>Android V1 • 0.9</Text></View>
+ 
+       {screen === 'auth' && <>
+         <View style={styles.hero}><Text style={{fontSize:72}}>🪞</Text></View>
+@@ -417,6 +461,7 @@
+           <Button secondary title="Essayer / modifier" onPress={() => openSuggestion(s)}/>
+         </View>)}
+ 
++        <Button title="Ajouter une photo de vêtement" disabled={busy} onPress={addPhotoManually}/>
+         <Button secondary title="Reprendre l’analyse des nouvelles photos" onPress={() => setScreen('scan')}/>
+         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginVertical:14}}>{(['all',...categories] as const).map(c => <Pressable key={c} onPress={() => setFilter(c)} style={[styles.chip, filter===c && styles.chipOn]}><Text style={filter===c?styles.chipTextOn:styles.chipText}>{c==='all'?'Tous':categoryLabel[c]}</Text></Pressable>)}</ScrollView>
+         <View style={styles.grid}>{visibleCloset.map(item => <Pressable key={item.id} onPress={() => { toggle(item.id); setScreen('create'); }} style={styles.item}>
+diff -ruN /mnt/data/lookme_v08_pristine/app.json /mnt/data/lookme_v08_src/app.json
+--- /mnt/data/lookme_v08_pristine/app.json	2026-09-14 11:27:20.000000000 +0000
++++ /mnt/data/lookme_v08_src/app.json	2026-09-14 12:09:36.698293734 +0000
+@@ -2,12 +2,12 @@
+   "expo": {
+     "name": "LookMe",
+     "slug": "lookme-android",
+-    "version": "0.8.0",
++    "version": "0.9.0",
+     "orientation": "portrait",
+     "userInterfaceStyle": "light",
+     "android": {
+       "package": "com.lookme.app",
+-      "versionCode": 8,
++      "versionCode": 9,
+       "permissions": [
+         "READ_MEDIA_IMAGES",
+         "READ_EXTERNAL_STORAGE"
+diff -ruN /mnt/data/lookme_v08_pristine/src/services/ai.ts /mnt/data/lookme_v08_src/src/services/ai.ts
+--- /mnt/data/lookme_v08_pristine/src/services/ai.ts	2026-09-14 11:27:20.000000000 +0000
++++ /mnt/data/lookme_v08_src/src/services/ai.ts	2026-09-14 12:09:36.698169507 +0000
+@@ -23,7 +23,7 @@
+ 
+ export async function generateTryOn(personUrl: string, garments: {url:string;category:GarmentCategory}[], occasion?: string) {
+   const { data, error } = await supabase.functions.invoke('lookme-generate-tryon', {
+-    body: { person_url: personUrl, garments, occasion },
++    body: { person_url: personUrl, garments, occasion, quality:'high', preserve_identity:true, preserve_garment_details:true },
+   });
+   if (error) throw error;
+   if (data?.error) throw new Error(data.error);
+diff -ruN /mnt/data/lookme_v08_pristine/src/services/localVision.ts /mnt/data/lookme_v08_src/src/services/localVision.ts
+--- /mnt/data/lookme_v08_pristine/src/services/localVision.ts	2026-09-14 11:27:20.000000000 +0000
++++ /mnt/data/lookme_v08_src/src/services/localVision.ts	2026-09-14 12:09:36.697456673 +0000
+@@ -87,13 +87,36 @@
+   return colorName(rs/n,gs/n,bs/n);
+ }
+ 
+-export async function analyzePhotoLocal(uri: string, onProgress?: (s:string)=>void): Promise<{contains_person:boolean;is_useful_fashion_photo:boolean;garments:AnalyzedGarment[]}> {
++export async function analyzePhotoLocal(uri: string, onProgress?: (s:string)=>void): Promise<{contains_person:boolean;is_useful_fashion_photo:boolean;quality_score:number;garments:AnalyzedGarment[]}> {
+   const resized = await ImageManipulator.manipulateAsync(uri, [{ resize:{ width:416, height:416 } }], { compress:0.94, format:ImageManipulator.SaveFormat.JPEG });
+   const b64 = await FileSystem.readAsStringAsync(resized.uri, { encoding: FileSystem.EncodingType.Base64 });
+   const bytes = new Uint8Array(decodeBase64(b64));
+   const decoded:any = jpeg.decode(bytes, { useTArray:true, formatAsRGBA:true });
+   if (!decoded?.data || decoded.width !== 416 || decoded.height !== 416) throw new Error('Photo non lisible.');
+ 
++  // Fast local quality gate: reject photos that are too dark/bright or too blurred.
++  let lumSum=0, lumSq=0, gradSum=0, gradN=0;
++  for (let y=1;y<415;y+=2) {
++    for (let x=1;x<415;x+=2) {
++      const i=(y*416+x)*4;
++      const lum=0.299*decoded.data[i]+0.587*decoded.data[i+1]+0.114*decoded.data[i+2];
++      lumSum+=lum; lumSq+=lum*lum;
++      const il=(y*416+x-1)*4, iu=((y-1)*416+x)*4;
++      const ll=0.299*decoded.data[il]+0.587*decoded.data[il+1]+0.114*decoded.data[il+2];
++      const lu=0.299*decoded.data[iu]+0.587*decoded.data[iu+1]+0.114*decoded.data[iu+2];
++      gradSum+=Math.abs(lum-ll)+Math.abs(lum-lu); gradN++;
++    }
++  }
++  const samples=207*207;
++  const meanLum=lumSum/samples;
++  const variance=Math.max(0,lumSq/samples-meanLum*meanLum);
++  const sharpness=gradN ? gradSum/gradN : 0;
++  const exposureScore = meanLum < 35 || meanLum > 235 ? 0.25 : meanLum < 55 || meanLum > 220 ? 0.6 : 1;
++  const textureScore = variance < 220 ? 0.45 : variance < 500 ? 0.75 : 1;
++  const sharpScore = sharpness < 8 ? 0.25 : sharpness < 14 ? 0.6 : sharpness < 22 ? 0.82 : 1;
++  const qualityScore=Math.max(0,Math.min(1,exposureScore*0.3+textureScore*0.25+sharpScore*0.45));
++  if (qualityScore < 0.48) return { contains_person:false, is_useful_fashion_photo:false, quality_score:qualityScore, garments:[] };
++
+   const plane = 416 * 416;
+   const input = new Float32Array(plane * 3);
+   for (let i=0;i<plane;i++) {
+@@ -134,5 +157,5 @@
+     });
+   }
+   garments.sort((a,b)=>(b.confidence || 0)-(a.confidence || 0));
+-  return { contains_person:garments.length>0, is_useful_fashion_photo:garments.length>0, garments:garments.slice(0,8) };
++  return { contains_person:garments.length>0, is_useful_fashion_photo:garments.length>0, quality_score:qualityScore, garments:garments.slice(0,8) };
+ }
