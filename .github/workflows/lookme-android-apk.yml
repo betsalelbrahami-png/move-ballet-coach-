@@ -39,6 +39,23 @@ jobs:
           npm install
           npx expo install --fix
 
+      - name: Fix ONNX Runtime for Expo 57 / Gradle 9
+        working-directory: lookme
+        run: |
+          set -euo pipefail
+          test -f node_modules/onnxruntime-react-native/android/build.gradle
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('node_modules/onnxruntime-react-native/android/build.gradle')
+          s=p.read_text()
+          old='if (VersionNumber.parse(REACT_NATIVE_VERSION) < VersionNumber.parse("0.71")) {'
+          if old in s:
+              s=s.replace(old, 'if (REACT_NATIVE_MAJOR_VERSION == 0 && REACT_NATIVE_MINOR_VERSION < 71) {')
+          p.write_text(s)
+          PY
+          rm -f node_modules/onnxruntime-react-native/unimodule.json
+          ! grep -q 'VersionNumber.parse(REACT_NATIVE_VERSION)' node_modules/onnxruntime-react-native/android/build.gradle
+
       - name: TypeScript check
         working-directory: lookme
         run: npx tsc --noEmit
@@ -50,6 +67,13 @@ jobs:
       - name: Prebuild Android
         working-directory: lookme
         run: npx expo prebuild --platform android --clean
+
+      - name: Verify ONNX native autolinking
+        working-directory: lookme
+        run: |
+          set -euo pipefail
+          npx expo-modules-autolinking react-native-config --platform android --json > /tmp/rnconfig.json
+          grep -qi 'onnxruntime-react-native' /tmp/rnconfig.json
 
       - name: Build standalone release APK
         working-directory: lookme/android
