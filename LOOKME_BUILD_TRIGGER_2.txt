@@ -1,0 +1,1 @@
+Trigger standalone APK rebuild with bundled JavaScript.
