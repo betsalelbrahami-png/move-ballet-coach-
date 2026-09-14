@@ -8,16 +8,20 @@ on:
 jobs:
   inspect:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Inspect FASHN Space API
+      - name: Smoke test FASHN Space API
         run: |
           python -m pip install --quiet gradio_client
           python - <<'PY'
-          from gradio_client import Client
+          from gradio_client import Client, handle_file
           c=Client('merve/fashn-vton-1.5', verbose=False)
-          print(c.view_api(print_info=False, return_format='dict'))
+          person='https://huggingface.co/spaces/merve/fashn-vton-1.5/resolve/main/assets/examples/person3.png'
+          garment='https://huggingface.co/spaces/merve/fashn-vton-1.5/resolve/main/assets/examples/garment3.jpeg'
+          r=c.predict(handle_file(person), handle_file(garment), 'tops', 'flat-lay', 10, 1.5, 42, True, api_name='/try_on')
+          print('RESULT',r)
           PY
