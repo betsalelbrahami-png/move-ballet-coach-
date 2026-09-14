@@ -1,0 +1,133 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Alert, Image, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
+import { getCurrentSession, signInWithEmail, signUpWithEmail, supabase } from './src/lib/supabase';
+import { analyzePhotoLocal } from './src/services/localVision';
+import { suggestLooksLocal } from './src/services/localStylist';
+import { createSignedUrl, uploadLocalImage } from './src/services/storage';
+import { descriptorSimilarity, makeVisualDescriptor } from './src/services/garmentIdentity';
+import type { ClosetItem, GarmentCategory, LookSuggestion, SavedLook, VisualDescriptor } from './src/types';
+
+type Screen = 'auth' | 'home' | 'closet' | 'add' | 'review' | 'create' | 'look' | 'saved';
+type DraftGarment = {
+  uri: string;
+  width: number;
+  height: number;
+  category: GarmentCategory;
+  subtype: string;
+  label: string;
+  colors: string[];
+  confidence: number;
+  qualityScore: number;
+  existingId?: string;
+};
+
+const categories: GarmentCategory[] = ['top','bottom','dress','outerwear','shoes','bag','accessory'];
+const categoryLabel: Record<GarmentCategory,string> = {
+  top:'Haut', bottom:'Bas', dress:'Robe', outerwear:'Veste / manteau', shoes:'Chaussures', bag:'Sac', accessory:'Accessoire'
+};
+const occasionChoices = ['Quotidien','Travail','Date','Soirée'];
+
+export default function App() {
+  const [screen, setScreen] = useState<Screen>('auth');
+  const [userId, setUserId] = useState<string>();
+  const [closet, setCloset] = useState<ClosetItem[]>([]);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [filter, setFilter] = useState<'all'|GarmentCategory>('all');
+  const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState('');
+  const [draft, setDraft] = useState<DraftGarment>();
+  const [suggestions, setSuggestions] = useState<LookSuggestion[]>([]);
+  const [savedLooks, setSavedLooks] = useState<SavedLook[]>([]);
+  const [occasion, setOccasion] = useState('Quotidien');
+  const [booting, setBooting] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [authBusy, setAuthBusy] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const session = await getCurrentSession();
+        if (session) {
+          setUserId(session.user.id);
+          setEmail(session.user.email || '');
+          await loadRemoteState(session.user.id);
+          setScreen('closet');
+        } else {
+          setScreen('auth');
+        }
+      } catch (e:any) {
+        Alert.alert('Connexion', e.message || String(e));
+        setScreen('auth');
+      } finally {
+        setBooting(false);
+      }
+    })();
+  }, []);
+
+  async function submitAuth(mode:'signup'|'signin') {
+    const clean=email.trim();
+    if (!clean.includes('@')) return Alert.alert('Email','Entre une adresse email valide.');
+    if (password.length < 6) return Alert.alert('Mot de passe','Choisis au moins 6 caractères.');
+    setAuthBusy(true);
+    try {
+      const data = mode === 'signup' ? await signUpWithEmail(clean,password) : await signInWithEmail(clean,password);
+      if (!data.session) {
+        Alert.alert('Vérifie ton email','Ton compte est créé. Ouvre le lien reçu par email, puis reviens te connecter.');
+        return;
+      }
+      setUserId(data.session.user.id);
+      await loadRemoteState(data.session.user.id);
+      setScreen('closet');
+    } catch(e:any) {
+      Alert.alert('Connexion', e.message || String(e));
+    } finally {
+      setAuthBusy(false);
+    }
+  }
+
+  async function loadRemoteState(uid:string) {
+    const { data: rows, error } = await supabase
+      .from('lookme_garments')
+      .select('id,category,subtype,label,dominant_colors,image_path,confidence,material,pattern,signature,appearance_count,visual_descriptor,best_quality,tryon_reference_path,reference_photos')
+      .eq('user_id', uid)
+      .eq('is_active', true)
+      .order('updated_at', { ascending:false });
+    if (error) throw error;
+
+    const loaded: ClosetItem[] = [];
+    for (const r of rows || []) {
+      if (!r.image_path) continue;
+      try {
+        loaded.push({
+          id:r.id,
+          category:r.category,
+          subtype:r.subtype || '',
+          label:r.label || categoryLabel[r.category as GarmentCategory],
+          colors:Array.isArray(r.dominant_colors) ? r.dominant_colors : [],
+          material:r.material || '',
+          pattern:r.pattern || '',
+          signature:r.signature || '',
+          confidence:r.confidence ?? 1,
+          bbox:{x:0,y:0,w:1,h:1},
+          localUri:await createSignedUrl('lookme-photos', r.image_path, 86400),
+          storagePath:r.image_path,
+          appearanceCount:r.appearance_count || 1,
+          visualDescriptor:r.visual_descriptor || undefined,
+          bestQuality:r.best_quality ?? undefined,
+          tryOnReferencePath:r.tryon_reference_path || undefined,
+          references:Array.isArray(r.reference_photos) ? r.reference_photos : [],
+        });
+      } catch {}
+    }
+    setCloset(loaded);
+
+    const { data: lookRows } = await supabase
+      .from('lookme_looks')
+      .select('id,title,occasion,garment_ids,generated_image_path')
+      .eq('user_id', uid)
+      .order('created_at', { ascending:false });
+    setSavedLooks((look

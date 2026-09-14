@@ -1,0 +1,122 @@
+pearanceCount:1,
+        visualDescriptor:descriptor,
+        bestQuality:draft.qualityScore,
+        tryOnReferencePath:path,
+        references:[{path,score:draft.qualityScore || 1}],
+      }, ...prev]);
+      setDraft(undefined);
+      setScreen('closet');
+    } catch(e:any) {
+      Alert.alert('Ajout',e.message || String(e));
+    } finally {
+      setBusy(false);
+      setProgress('');
+    }
+  }
+
+  async function deleteDraftItem() {
+    if (!userId || !draft?.existingId) return;
+    Alert.alert('Supprimer cette pièce ?','Elle disparaîtra de ton dressing.',[
+      {text:'Annuler',style:'cancel'},
+      {text:'Supprimer',style:'destructive',onPress:async()=>{
+        setBusy(true);
+        try {
+          const {error}=await supabase.from('lookme_garments').update({is_active:false,updated_at:new Date().toISOString()}).eq('id',draft.existingId).eq('user_id',userId);
+          if(error)throw error;
+          setCloset(prev=>prev.filter(x=>x.id!==draft.existingId));
+          setSelected(prev=>prev.filter(id=>id!==draft.existingId));
+          setDraft(undefined);
+          setScreen('closet');
+        }catch(e:any){Alert.alert('Suppression',e.message||String(e));}
+        finally{setBusy(false);}
+      }}
+    ]);
+  }
+
+  function editClosetItem(item:ClosetItem) {
+    setDraft({
+      uri:item.localUri,
+      width:1200,
+      height:1600,
+      category:item.category,
+      subtype:item.subtype,
+      label:item.label,
+      colors:item.colors,
+      confidence:item.confidence,
+      qualityScore:item.bestQuality || 1,
+      existingId:item.id,
+    });
+    setScreen('review');
+  }
+
+  const visibleCloset = useMemo(() => closet.filter(x => filter === 'all' || x.category === filter), [closet, filter]);
+  const selectedItems = useMemo(() => selected.map(id => closet.find(x => x.id===id)).filter(Boolean) as ClosetItem[], [selected, closet]);
+
+  function toggle(id:string) {
+    setSelected(s => s.includes(id) ? s.filter(x => x !== id) : s.length < 5 ? [...s,id] : s);
+  }
+
+  async function askStylist(choice:string) {
+    if (!closet.length) return;
+    setOccasion(choice);
+    const looks = suggestLooksLocal(closet, choice);
+    setSuggestions(looks);
+    if (!looks.length) Alert.alert('Styliste','Ajoute encore quelques pièces pour que je puisse construire un look complet.');
+  }
+
+  function openSuggestion(look:LookSuggestion) {
+    setSelected(look.garment_ids.filter(id => closet.some(x => x.id===id)).slice(0,5));
+    setScreen('look');
+  }
+
+  async function saveCurrentLook() {
+    if (!userId || !selected.length) return;
+    setBusy(true);
+    try {
+      const title=`Look ${savedLooks.length+1}`;
+      const {data,error}=await supabase.from('lookme_looks').insert({
+        user_id:userId,
+        title,
+        occasion,
+        garment_ids:selected,
+        generated_image_path:null,
+        is_ai_suggested:false,
+      }).select('id').single();
+      if(error)throw error;
+      setSavedLooks(prev=>[{id:data.id,title,occasion,itemIds:[...selected]},...prev]);
+      Alert.alert('LookMe','Look sauvegardé.');
+    }catch(e:any){Alert.alert('Sauvegarde',e.message||String(e));}
+    finally{setBusy(false);}
+  }
+
+  if (booting) return <SafeAreaView style={styles.safe}><View style={styles.center}><ActivityIndicator size="large"/><Text style={styles.p}>Ouverture de LookMe…</Text></View></SafeAreaView>;
+
+  return <SafeAreaView style={styles.safe}><StatusBar style="dark"/>
+    <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
+      <View style={styles.top}><Text style={styles.logo}>LookMe</Text><Text style={styles.badge}>V1.1 simple</Text></View>
+
+      {screen === 'auth' && <>
+        <View style={styles.hero}><Text style={{fontSize:72}}>👗</Text></View>
+        <Text style={styles.h1}>Ton vrai dressing, dans ton téléphone.</Text>
+        <Text style={styles.p}>Photographie une pièce. LookMe la reconnaît, la classe et te propose des combinaisons avec ce que tu possèdes vraiment.</Text>
+        <TextInput value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" placeholder="Email" style={styles.input}/>
+        <TextInput value={password} onChangeText={setPassword} secureTextEntry placeholder="Mot de passe" style={styles.input}/>
+        <Button title={authBusy ? 'Création…' : 'Créer mon compte'} disabled={authBusy} onPress={() => submitAuth('signup')}/>
+        <Button secondary title="J’ai déjà un compte" disabled={authBusy} onPress={() => submitAuth('signin')}/>
+      </>}
+
+      {screen === 'home' && <>
+        <View style={styles.hero}><Text style={{fontSize:72}}>📸</Text></View>
+        <Text style={styles.h1}>Un vêtement. Une photo. C’est rangé.</Text>
+        <Text style={styles.p}>Pas de scan interminable de ta galerie. Prends une bonne photo d’une pièce et LookMe fait le reste.</Text>
+        <Button title="Ouvrir mon dressing" onPress={() => setScreen('closet')}/>
+      </>}
+
+      {screen === 'add' && <>
+        <Text style={styles.h1}>Ajouter un vêtement</Text>
+        <Text style={styles.p}>Pour que LookMe soit fiable : une seule pièce, entière dans l’image, bonne lumière, fond simple. À plat ou sur un cintre, c’est parfait.</Text>
+        <View style={styles.guideCard}>
+          <Text style={styles.guideEmoji}>👕</Text>
+          <View style={{flex:1}}><Text style={styles.cardTitle}>Photo idéale</Text><Text style={styles.pSmall}>Le vêtement occupe une grande partie de la photo et rien ne le cache.</Text></View>
+        </View>
+        

@@ -21,15 +21,19 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Restore LookMe V1.1 source
+      - name: Restore stable source and apply V1.1 app
         run: |
           set -euo pipefail
-          rm -rf lookme
+          rm -rf lookme /tmp/lookme-v1-source.zip /tmp/lookme-v1-source.b64
           mkdir -p lookme
-          echo '1234e827ec9adca83bb75a7b3b6f9ff1a76a2f14d359fc82b3e59030d0933eb5  lookme-v1.1-source.zip' | sha256sum -c -
-          unzip -t lookme-v1.1-source.zip
-          unzip -q lookme-v1.1-source.zip -d lookme
-          test -f lookme/App.tsx
+          cat lookme-v1-source.b64.part00 lookme-v1-source.b64.part01 lookme-v1-source.b64.part02 lookme-v1-source.b64.part03 lookme-v1-source.b64.part04 lookme-v1-source.b64.part05 > /tmp/lookme-v1-source.b64
+          test "$(wc -c < /tmp/lookme-v1-source.b64)" -eq 33884
+          base64 -d /tmp/lookme-v1-source.b64 > /tmp/lookme-v1-source.zip
+          echo '7ac4ff0dd316cf6952ca152315596b6e0a2da02284397f4aceb2c29383bf1179  /tmp/lookme-v1-source.zip' | sha256sum -c -
+          unzip -q /tmp/lookme-v1-source.zip -d lookme
+          cat lookme-v1.1-App.part00 lookme-v1.1-App.part01 lookme-v1.1-App.part02 lookme-v1.1-App.part03 lookme-v1.1-App.part04 lookme-v1.1-App.part05 > lookme/App.tsx
+          cp lookme-v1.1-app.json lookme/app.json
+          cp lookme-v1.1-package.json lookme/package.json
           grep -q 'V1.1 simple' lookme/App.tsx
           grep -q 'Prendre une photo' lookme/App.tsx
           grep -q '"version": "1.1.0"' lookme/app.json

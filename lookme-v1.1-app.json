@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "LookMe",
+    "slug": "lookme-android",
+    "version": "1.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "android": {
+      "package": "com.lookme.app",
+      "versionCode": 11
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "LookMe utilise uniquement les photos que tu choisis pour ajouter des vêtements à ton dressing.",
+          "cameraPermission": "LookMe utilise l’appareil photo pour photographier tes vêtements."
+        }
+      ],
+      "onnxruntime-react-native"
+    ]
+  }
+}

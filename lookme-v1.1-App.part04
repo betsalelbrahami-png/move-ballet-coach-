@@ -1,0 +1,44 @@
+ invente ou déforme le vêtement.</Text>
+        <View style={styles.lookBoard}>{selectedItems.map(item=><View key={item.id} style={styles.lookPiece}><Image source={{uri:item.localUri}} style={styles.lookImage} resizeMode="contain"/><Text style={styles.lookLabel}>{categoryLabel[item.category]}</Text></View>)}</View>
+        <Button title="Sauvegarder ce look" disabled={busy||!selected.length} onPress={saveCurrentLook}/>
+        <Button secondary title="Modifier" onPress={()=>setScreen('create')}/>
+      </>}
+
+      {screen === 'saved' && <>
+        <Text style={styles.h1}>Mes looks</Text>
+        {!savedLooks.length && <Text style={styles.p}>Aucun look sauvegardé pour l’instant.</Text>}
+        {savedLooks.map(look=><Pressable key={look.id} style={styles.card} onPress={()=>{setSelected(look.itemIds.filter(id=>closet.some(x=>x.id===id)));setOccasion(look.occasion||'Quotidien');setScreen('look');}}>
+          <Text style={styles.cardTitle}>{look.title}</Text><Text style={styles.pSmall}>{look.occasion || 'Look personnel'}</Text>
+          <View style={styles.thumbRow}>{look.itemIds.map(id=>{const item=closet.find(x=>x.id===id);return item?<Image key={id} source={{uri:item.localUri}} style={styles.thumb}/>:null;})}</View>
+        </Pressable>)}
+      </>}
+    </ScrollView>
+
+    {(['closet','create','look','saved'] as Screen[]).includes(screen) && <View style={styles.nav}>
+      <Nav label="Dressing" active={screen==='closet'} onPress={()=>setScreen('closet')}/>
+      <Nav label="Créer" active={screen==='create'||screen==='look'} onPress={()=>setScreen('create')}/>
+      <Nav label="Looks" active={screen==='saved'} onPress={()=>setScreen('saved')}/>
+    </View>}
+  </SafeAreaView>;
+}
+
+function Button({title,onPress,disabled,secondary,danger}:{title:string;onPress:()=>void;disabled?:boolean;secondary?:boolean;danger?:boolean}) {
+  return <Pressable disabled={disabled} onPress={onPress} style={[styles.button,secondary&&styles.buttonSecondary,danger&&styles.buttonDanger,disabled&&{opacity:.45}]}><Text style={[styles.buttonText,secondary&&{color:'#111'}]}>{title}</Text></Pressable>;
+}
+function Nav({label,active,onPress}:{label:string;active:boolean;onPress:()=>void}) {
+  return <Pressable onPress={onPress} style={[styles.navBtn,active&&styles.navOn]}><Text style={{fontWeight:'800',color:active?'#fff':'#333'}}>{label}</Text></Pressable>;
+}
+
+const styles=StyleSheet.create({
+  safe:{flex:1,backgroundColor:'#F7F4EF'},page:{padding:18,paddingBottom:115},center:{flex:1,alignItems:'center',justifyContent:'center',padding:30},
+  input:{backgroundColor:'#fff',borderWidth:1,borderColor:'#E4DED5',borderRadius:16,paddingHorizontal:16,paddingVertical:15,fontSize:16,marginTop:10},
+  top:{flexDirection:'row',justifyContent:'space-between',alignItems:'center',marginBottom:16},logo:{fontSize:29,fontWeight:'900',letterSpacing:-1},badge:{backgroundColor:'#fff',borderWidth:1,borderColor:'#E8E1D8',paddingHorizontal:10,paddingVertical:7,borderRadius:99,color:'#777',fontSize:12,fontWeight:'700'},
+  hero:{height:220,borderRadius:30,backgroundColor:'#ECE6DE',alignItems:'center',justifyContent:'center',marginBottom:20},h1:{fontSize:32,fontWeight:'900',letterSpacing:-1.1,lineHeight:36,marginBottom:10},p:{fontSize:16,color:'#686868',lineHeight:23,marginBottom:18},pSmall:{fontSize:14,color:'#6F6F6F',lineHeight:20,marginTop:5},sectionTitle:{fontSize:16,fontWeight:'900',marginTop:18,marginBottom:10},
+  button:{backgroundColor:'#111',borderRadius:18,paddingVertical:16,paddingHorizontal:18,alignItems:'center',marginTop:10},buttonSecondary:{backgroundColor:'#fff',borderWidth:1,borderColor:'#E3DDD4'},buttonDanger:{backgroundColor:'#A22828'},buttonText:{color:'#fff',fontSize:16,fontWeight:'800'},
+  card:{backgroundColor:'#fff',borderWidth:1,borderColor:'#E8E1D8',borderRadius:23,padding:16,marginVertical:10},cardTitle:{fontSize:17,fontWeight:'800'},
+  guideCard:{backgroundColor:'#fff',borderWidth:1,borderColor:'#E8E1D8',borderRadius:24,padding:16,marginVertical:12,flexDirection:'row',gap:14,alignItems:'center'},guideEmoji:{fontSize:52},
+  addPanel:{flexDirection:'row',gap:10,marginBottom:12},quickAdd:{flex:1,backgroundColor:'#fff',borderWidth:1,borderColor:'#E8E1D8',borderRadius:22,padding:16,minHeight:132,justifyContent:'center'},quickEmoji:{fontSize:32,marginBottom:8},quickTitle:{fontSize:16,fontWeight:'900'},quickSub:{fontSize:12,color:'#888',marginTop:3},
+  detected:{backgroundColor:'#111',borderRadius:20,padding:16,marginTop:12},detectedTitle:{fontSize:20,fontWeight:'900',color:'#fff'},detectedSub:{fontSize:13,color:'#D8D8D8',marginTop:4},reviewImage:{width:'100%',height:420,borderRadius:24,backgroundColor:'#EEE'},
+  categoryWrap:{flexDirection:'row',flexWrap:'wrap',gap:8},categoryButton:{paddingHorizontal:13,paddingVertical:10,borderRadius:99,backgroundColor:'#fff',borderWidth:1,borderColor:'#E4DED5'},categoryButtonOn:{backgroundColor:'#111'},categoryText:{fontWeight:'750'},categoryTextOn:{fontWeight:'800',color:'#fff'},
+  chip:{paddingHorizontal:13,paddingVertical:9,borderRadius:99,backgroundColor:'#fff',borderWidth:1,borderColor:'#E6DFD6',marginRight:7},chipOn:{backgroundColor:'#111'},chipText:{fontWeight:'700'},chipTextOn:{color:'#fff',fontWeight:'800'},
+  grid:{flexDirection:'row',flexWrap:'wrap',gap:10},item:{width:'48%',backgroundColor:'#fff',borderWidth:1,borderColor:'#E8E1D8',borderRadius:22,overflow:'hidden',paddingBottom:11},selected:{borderWidth:3,borderColor:'#111'},itemImg:{width:'100%',height:190,backgroundColor:'#F2F0EC'},i

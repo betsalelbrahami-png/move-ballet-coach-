@@ -1,0 +1,141 @@
+Rows || []).map((r:any) => ({
+      id:r.id,
+      title:r.title || 'Look',
+      occasion:r.occasion || undefined,
+      itemIds:Array.isArray(r.garment_ids) ? r.garment_ids : [],
+      generatedPath:r.generated_image_path || undefined,
+    })));
+  }
+
+  async function openCamera() {
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert('Appareil photo','Autorise l’appareil photo pour photographier directement tes vêtements.');
+      return;
+    }
+    const res = await ImagePicker.launchCameraAsync({ mediaTypes:['images'], quality:1, allowsEditing:false });
+    if (!res.canceled && res.assets[0]) await analyzeNewPhoto(res.assets[0]);
+  }
+
+  async function openGallery() {
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes:['images'], allowsMultipleSelection:false, quality:1 });
+    if (!res.canceled && res.assets[0]) await analyzeNewPhoto(res.assets[0]);
+  }
+
+  async function analyzeNewPhoto(asset:any) {
+    if (!userId || !asset?.uri) return;
+    setBusy(true);
+    setProgress('Analyse du vêtement…');
+    try {
+      const analysis = await analyzePhotoLocal(asset.uri, setProgress);
+      const best = analysis.garments[0];
+      if (!best) {
+        Alert.alert(
+          'Photo à refaire',
+          'Je ne vois pas assez clairement le vêtement. Pose une seule pièce à plat ou sur un cintre, photographie-la en entier, avec une bonne lumière et un fond simple.'
+        );
+        return;
+      }
+      setDraft({
+        uri:asset.uri,
+        width:asset.width || 1200,
+        height:asset.height || 1600,
+        category:best.category,
+        subtype:best.subtype || '',
+        label:best.label || categoryLabel[best.category],
+        colors:best.colors || [],
+        confidence:best.confidence || 0,
+        qualityScore:analysis.quality_score || 0,
+      });
+      setScreen('review');
+    } catch(e:any) {
+      Alert.alert('Analyse', e.message || String(e));
+    } finally {
+      setBusy(false);
+      setProgress('');
+    }
+  }
+
+  async function saveDraft() {
+    if (!userId || !draft) return;
+    setBusy(true);
+    setProgress('Ajout au dressing…');
+    try {
+      if (draft.existingId) {
+        const { error } = await supabase.from('lookme_garments').update({
+          category:draft.category,
+          subtype:draft.subtype || categoryLabel[draft.category].toLowerCase(),
+          label:categoryLabel[draft.category],
+          updated_at:new Date().toISOString(),
+        }).eq('id',draft.existingId).eq('user_id',userId);
+        if (error) throw error;
+        setCloset(prev => prev.map(x => x.id === draft.existingId ? {...x,category:draft.category,label:categoryLabel[draft.category]} : x));
+        setDraft(undefined);
+        setScreen('closet');
+        return;
+      }
+
+      // Keep the full, clear garment photo. For this simplified V1 we deliberately do not
+      // cut the detected box: that was the main reason garments looked truncated or distorted.
+      const prepared = await ImageManipulator.manipulateAsync(
+        draft.uri,
+        [{ resize:{ width:1200 } }],
+        { compress:0.92, format:ImageManipulator.SaveFormat.JPEG }
+      );
+      const descriptor = await makeVisualDescriptor(prepared.uri);
+
+      const { data:candidates } = await supabase.from('lookme_garments')
+        .select('id,visual_descriptor')
+        .eq('user_id',userId)
+        .eq('category',draft.category)
+        .eq('is_active',true)
+        .limit(80);
+      const duplicate = (candidates || []).find((c:any) => descriptorSimilarity(descriptor,c.visual_descriptor as VisualDescriptor|undefined) >= 0.965);
+      if (duplicate) {
+        Alert.alert('Déjà dans ton dressing','Cette pièce ressemble beaucoup à une pièce déjà enregistrée. Je ne l’ajoute pas une deuxième fois.');
+        setDraft(undefined);
+        setScreen('closet');
+        return;
+      }
+
+      const path = await uploadLocalImage(prepared.uri,'lookme-photos',userId,'garments');
+      const sourceKey = `manual-${Date.now()}`;
+      const { data:sourceRow, error:sourceError } = await supabase.from('lookme_source_photos').insert({
+        user_id:userId,
+        local_asset_id:sourceKey,
+        storage_path:path,
+        analysis_status:'done',
+        face_similarity:null,
+      }).select('id').single();
+      if (sourceError) throw sourceError;
+
+      const signature = `${draft.category}-${draft.subtype}-${draft.colors.join('-')}`.toLowerCase();
+      const { data:inserted, error:insertError } = await supabase.from('lookme_garments').insert({
+        user_id:userId,
+        source_photo_id:sourceRow.id,
+        category:draft.category,
+        subtype:draft.subtype || categoryLabel[draft.category].toLowerCase(),
+        label:categoryLabel[draft.category],
+        dominant_colors:draft.colors,
+        signature,
+        image_path:path,
+        confidence:draft.confidence,
+        visual_descriptor:descriptor,
+        best_quality:draft.qualityScore,
+        tryon_reference_path:path,
+        reference_photos:[{path,score:draft.qualityScore || 1}],
+      }).select('id').single();
+      if (insertError) throw insertError;
+
+      setCloset(prev => [{
+        id:inserted.id,
+        category:draft.category,
+        subtype:draft.subtype || '',
+        label:categoryLabel[draft.category],
+        colors:draft.colors,
+        confidence:draft.confidence,
+        bbox:{x:0,y:0,w:1,h:1},
+        localUri:prepared.uri,
+        storagePath:path,
+        signature,
+        ap

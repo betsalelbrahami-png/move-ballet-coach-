@@ -1,0 +1,58 @@
+ <Button title="📷  Prendre une photo" disabled={busy} onPress={openCamera}/>
+        <Button secondary title="🖼️  Choisir une photo" disabled={busy} onPress={openGallery}/>
+        <Button secondary title="Retour au dressing" onPress={() => setScreen('closet')}/>
+        {busy && <View style={styles.card}><ActivityIndicator/><Text style={[styles.pSmall,{textAlign:'center'}]}>{progress || 'Analyse…'}</Text></View>}
+      </>}
+
+      {screen === 'review' && draft && <>
+        <Text style={styles.h1}>{draft.existingId ? 'Modifier la pièce' : 'Je l’ai reconnue'}</Text>
+        <Image source={{uri:draft.uri}} style={styles.reviewImage}/>
+        {!draft.existingId && <View style={styles.detected}><Text style={styles.detectedTitle}>{categoryLabel[draft.category]}</Text><Text style={styles.detectedSub}>{draft.colors[0] ? `${draft.colors[0]} • ` : ''}{Math.round(draft.confidence*100)}% de confiance</Text></View>}
+        <Text style={styles.sectionTitle}>Catégorie</Text>
+        <View style={styles.categoryWrap}>{categories.map(c => <Pressable key={c} onPress={() => setDraft(d=>d?{...d,category:c,label:categoryLabel[c]}:d)} style={[styles.categoryButton,draft.category===c&&styles.categoryButtonOn]}><Text style={draft.category===c?styles.categoryTextOn:styles.categoryText}>{categoryLabel[c]}</Text></Pressable>)}</View>
+        <Button title={busy ? 'Enregistrement…' : draft.existingId ? 'Enregistrer' : 'Ajouter au dressing'} disabled={busy} onPress={saveDraft}/>
+        {!draft.existingId && <Button secondary title="Refaire la photo" disabled={busy} onPress={() => {setDraft(undefined);setScreen('add');}}/>}
+        {draft.existingId && <Button danger title="Supprimer cette pièce" disabled={busy} onPress={deleteDraftItem}/>} 
+      </>}
+
+      {screen === 'closet' && <>
+        <Text style={styles.h1}>Mon dressing</Text>
+        <Text style={styles.p}>{closet.length ? `${closet.length} pièce${closet.length>1?'s':''}. Appuie sur une pièce pour la corriger ou la supprimer.` : 'Ton dressing est vide. Commence avec 3 à 5 pièces que tu portes souvent.'}</Text>
+        <View style={styles.addPanel}>
+          <Pressable onPress={openCamera} style={styles.quickAdd}><Text style={styles.quickEmoji}>📷</Text><Text style={styles.quickTitle}>Photographier</Text><Text style={styles.quickSub}>Le plus fiable</Text></Pressable>
+          <Pressable onPress={openGallery} style={styles.quickAdd}><Text style={styles.quickEmoji}>🖼️</Text><Text style={styles.quickTitle}>Galerie</Text><Text style={styles.quickSub}>Une bonne photo</Text></Pressable>
+        </View>
+        {busy && <View style={styles.card}><ActivityIndicator/><Text style={[styles.pSmall,{textAlign:'center'}]}>{progress || 'Analyse…'}</Text></View>}
+
+        {closet.length>0 && <View style={styles.card}>
+          <Text style={styles.cardTitle}>Une idée de tenue ?</Text>
+          <Text style={styles.pSmall}>Je combine uniquement les pièces que tu as ajoutées.</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginTop:12}}>{occasionChoices.map(o => <Pressable key={o} onPress={() => askStylist(o)} style={[styles.chip, occasion===o&&styles.chipOn]}><Text style={occasion===o?styles.chipTextOn:styles.chipText}>{o}</Text></Pressable>)}</ScrollView>
+        </View>}
+
+        {suggestions.map((s,i)=><View key={`${s.title}-${i}`} style={styles.card}>
+          <Text style={styles.cardTitle}>{s.title || `Look ${i+1}`}</Text>
+          <View style={styles.thumbRow}>{s.garment_ids.map(id=>{const item=closet.find(x=>x.id===id);return item?<Image key={id} source={{uri:item.localUri}} style={styles.thumb}/>:null;})}</View>
+          <Button secondary title="Voir ce look" onPress={()=>openSuggestion(s)}/>
+        </View>)}
+
+        {closet.length>0 && <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginVertical:14}}>{(['all',...categories] as const).map(c=><Pressable key={c} onPress={()=>setFilter(c)} style={[styles.chip,filter===c&&styles.chipOn]}><Text style={filter===c?styles.chipTextOn:styles.chipText}>{c==='all'?'Tous':categoryLabel[c]}</Text></Pressable>)}</ScrollView>}
+        <View style={styles.grid}>{visibleCloset.map(item=><Pressable key={item.id} onPress={()=>editClosetItem(item)} style={styles.item}>
+          <Image source={{uri:item.localUri}} style={styles.itemImg} resizeMode="contain"/>
+          <Text style={styles.itemTitle}>{categoryLabel[item.category]}</Text>
+          {!!item.colors?.[0]&&<Text style={styles.mutedText}>{item.colors[0]}</Text>}
+        </Pressable>)}</View>
+      </>}
+
+      {screen === 'create' && <>
+        <Text style={styles.h1}>Créer un look</Text>
+        <Text style={styles.p}>Choisis jusqu’à 5 pièces. LookMe les affiche ensemble avec leurs vraies photos — pas une image IA qui déforme tes vêtements.</Text>
+        <View style={styles.grid}>{closet.map(item=><Pressable key={item.id} onPress={()=>toggle(item.id)} style={[styles.item,selected.includes(item.id)&&styles.selected]}>
+          <Image source={{uri:item.localUri}} style={styles.itemImg} resizeMode="contain"/><Text style={styles.itemTitle}>{categoryLabel[item.category]}</Text>
+        </Pressable>)}</View>
+        <Button title={`Voir mon look (${selected.length})`} disabled={!selected.length} onPress={()=>setScreen('look')}/>
+      </>}
+
+      {screen === 'look' && <>
+        <Text style={styles.h1}>Ton look</Text>
+        <Text style={styles.p}>Ce sont tes vraies pièces. Tu peux juger la combinaison sans que l’IA

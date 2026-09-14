@@ -1,0 +1,5 @@
+temTitle:{fontSize:14,fontWeight:'800',paddingHorizontal:10,paddingTop:9},mutedText:{fontSize:12,color:'#858585',paddingHorizontal:10,paddingTop:3},
+  thumbRow:{flexDirection:'row',gap:8,marginVertical:12,flexWrap:'wrap'},thumb:{width:66,height:76,borderRadius:13,backgroundColor:'#F0EEEA',resizeMode:'contain'},
+  lookBoard:{backgroundColor:'#fff',borderWidth:1,borderColor:'#E8E1D8',borderRadius:28,padding:12,flexDirection:'row',flexWrap:'wrap',gap:10},lookPiece:{width:'48%',backgroundColor:'#F8F6F2',borderRadius:20,padding:8},lookImage:{width:'100%',height:205},lookLabel:{fontWeight:'800',textAlign:'center',paddingVertical:8},
+  nav:{position:'absolute',bottom:14,left:14,right:14,backgroundColor:'#fff',borderWidth:1,borderColor:'#E8E1D8',borderRadius:21,padding:8,flexDirection:'row',gap:6},navBtn:{flex:1,paddingVertical:12,alignItems:'center',borderRadius:14},navOn:{backgroundColor:'#111'}
+});
