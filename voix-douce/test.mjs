@@ -20,8 +20,10 @@ try{
   for(let i=0;i<n;i++){t[i]=.2*Math.sin(2*Math.PI*317*i/16000);b[i]=.14*Math.sin(2*Math.PI*739*i/16000);m[i]=t[i]+b[i];}
   const e=VoixDSP.estimate(m,Float32Array.from(t,x=>2.8*x)),o=VoixDSP.subtract(m,e.target,1);
   const error=Math.sqrt(o.reduce((s,x,i)=>s+(x-b[i])**2,0)/n);
-  const delayed=new Float32Array(n);for(let i=0;i<n-37;i++)delayed[i+37]=t[i]*-2;
-  const d=VoixDSP.estimate(m,delayed);
+  const delayed=new Float32Array(n),randomMix=new Float32Array(n);let seed=42;
+  for(let i=0;i<n;i++){seed=(1664525*seed+1013904223)>>>0;randomMix[i]=(seed/4294967296-.5)*.2;}
+  for(let i=0;i<n-37;i++)delayed[i+37]=randomMix[i]*-2;
+  const d=VoixDSP.estimate(randomMix,delayed);
   return {error,gain:e.gain,lag:d.lag,delayedGain:d.gain,zeroExact:VoixDSP.subtract(m,e.target,0).every((x,i)=>x===m[i])};
  });
  assert(report.dsp.error<1e-6);assert(report.dsp.zeroExact);assert.equal(report.dsp.lag,37);
