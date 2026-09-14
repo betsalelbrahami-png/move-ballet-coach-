@@ -1,0 +1,38 @@
+name: Inspect LookMe Fashionpedia ONNX
+
+on:
+  push:
+    branches: [lookme-android-v1]
+  workflow_dispatch:
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download model
+        run: |
+          curl -L --fail 'https://huggingface.co/louisJLN/yolo8-fashionpedia/resolve/main/results/yolov8n-fashionpedia-1.onnx?download=true' -o best.onnx
+          ls -lh best.onnx
+          sha256sum best.onnx
+      - name: Inspect model
+        run: |
+          python -m pip install --quiet onnx onnxruntime numpy
+          python - <<'PY'
+          import onnx, onnxruntime as ort, numpy as np
+          m=onnx.load('best.onnx')
+          print('IR',m.ir_version,'opsets',[(x.domain,x.version) for x in m.opset_import])
+          sess=ort.InferenceSession('best.onnx', providers=['CPUExecutionProvider'])
+          print('inputs')
+          for x in sess.get_inputs(): print(x.name,x.type,x.shape)
+          print('outputs')
+          for x in sess.get_outputs(): print(x.name,x.type,x.shape)
+          inp=sess.get_inputs()[0]
+          shape=[1 if isinstance(d,str) or d is None else int(d) for d in inp.shape]
+          arr=np.zeros(shape,dtype=np.float32)
+          out=sess.run(None,{inp.name:arr})
+          for i,o in enumerate(out): print('runtime output',i,'shape',o.shape,'dtype',o.dtype,'min',float(o.min()),'max',float(o.max()))
+          PY
