@@ -48,6 +48,8 @@ function estimate(mix, voice) {
  const center=best.lag;
  best=score(center,1);
  for(let lag=center-4;lag<=center+4;lag++) {const s=score(lag,1);if(Math.abs(s.corr)>Math.abs(best.corr)) best=s;}
+ const zero=score(0,1);
+ if(Math.abs(zero.corr)>=Math.abs(best.corr)*0.995)best=zero;
  if(Math.abs(best.corr)<0.05 || !Number.isFinite(best.gain)) throw Error("La voix extraite ne correspond pas assez au mélange. Vérifie les deux fichiers ou refais un essai.");
  const target=new Float32Array(mix.length);
  for(let i=0;i<target.length;i++) {const j=i+best.lag;target[i]=j>=0&&j<voice.length?voice[j]*best.gain:0;}
