@@ -31,6 +31,8 @@ jobs:
           unzip -q /tmp/lookme.zip -d lookme
           sed -e 's|/tmp/v06orig/|lookme/|g' -e 's|/tmp/v07/|lookme/|g' lookme-v07.patch > /tmp/lookme-v07.patch
           patch -p0 < /tmp/lookme-v07.patch
+          sed -i "s/FileSystem.getInfoAsync(MODEL_PATH, { size:true })/FileSystem.getInfoAsync(MODEL_PATH)/" lookme/src/services/localVision.ts
+          sed -i "s/FileSystem.getInfoAsync(MODEL_TMP, { size:true })/FileSystem.getInfoAsync(MODEL_TMP)/" lookme/src/services/localVision.ts
           test -f lookme/App.tsx
           test -f lookme/src/services/localVision.ts
           test -f lookme/src/services/localStylist.ts
