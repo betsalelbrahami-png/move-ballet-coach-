@@ -141,6 +141,7 @@ function stopRecording(){if(rec?.state==="recording")rec.stop();clearTimeout(tim
 function friendly(e){
  if(e?.name==="NotAllowedError")return "Le microphone est bloqué. Clique sur l’icône à gauche de l’adresse, autorise le microphone, puis réessaie.";
  if(e?.name==="NotFoundError")return "Aucun microphone détecté. Branche un micro ou importe un fichier.";
+ if(/fetch|network/i.test(e?.message||String(e)))return "La connexion au modèle a échoué. Vérifie ta connexion puis réessaie. Tu peux aussi importer les deux fichiers de ton essai précédent ci-dessous.";
  return e?.message||String(e)||"Le traitement a échoué. Réessaie.";
 }
 async function getRemoteAudio(file){
@@ -170,8 +171,8 @@ async function processAudio(){
  let timeout;
  try{
   const task=(async()=>{
-   clientModule ||= await import("https://cdn.jsdelivr.net/npm/@gradio/client@1.8.0/dist/index.min.js");
-   const app=await clientModule.Client.connect("swc2/Target-speaker-extraction",{events:["data","status"]});
+   clientModule ||= await import("https://cdn.jsdelivr.net/npm/@gradio/client@2.6.0/dist/index.min.js");
+   const app=await clientModule.Client.connect("swc2/Target-speaker-extraction",{events:["data","status"],credentials:"omit"});
    if(id!==runId)return;
    submission=app.submit("/gradio_TSE",[clientModule.handle_file(mixture),clientModule.handle_file(reference),"mix","iter_model"]);
    let data;
