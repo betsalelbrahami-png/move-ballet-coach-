@@ -100,14 +100,17 @@ jobs:
           print('stylist backend ok')
           PY
 
-          curl -fsSL --max-time 240 -X POST "$BASE/lookme-generate-tryon" \
+          STATUS=$(curl -sS --max-time 240 -w '%{http_code}' -X POST "$BASE/lookme-generate-tryon" \
             -H 'Content-Type: application/json' \
             -d '{"person_url":"https://placehold.co/512x768/png","garment_urls":["https://placehold.co/512x512/png"],"occasion":"everyday"}' \
-            -o /tmp/tryon.json
-          python - <<'PY'
-          import json
+            -o /tmp/tryon.json)
+          python - "$STATUS" <<'PY'
+          import json,sys
+          status=int(sys.argv[1])
           d=json.load(open('/tmp/tryon.json'))
-          assert 'error' not in d, d
+          if status >= 400 or 'error' in d:
+              print('try-on error:', d.get('error', d))
+              raise SystemExit(1)
           b=d.get('image_base64','')
           assert len(b) > 1000, len(b)
           print('try-on backend ok')
