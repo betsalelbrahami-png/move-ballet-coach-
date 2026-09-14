@@ -8,13 +8,23 @@ on:
 jobs:
   probe:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - name: Probe Supabase VTON bridge
+      - name: Probe LookMe try-on function
         run: |
-          curl -sS --max-time 120 'https://lbmgmfpvxggxoboxfsib.supabase.co/functions/v1/lookme-vton-probe' | tee /tmp/probe.json
+          set -euo pipefail
+          curl -sS --max-time 300 -X POST \
+            'https://lbmgmfpvxggxoboxfsib.supabase.co/functions/v1/lookme-generate-tryon' \
+            -H 'Content-Type: application/json' \
+            -d '{"person_url":"https://huggingface.co/spaces/merve/fashn-vton-1.5/resolve/main/assets/examples/person3.png","garments":[{"url":"https://huggingface.co/spaces/merve/fashn-vton-1.5/resolve/main/assets/examples/garment3.jpeg","category":"top"}]}' \
+            -o /tmp/tryon.json
           python - <<'PY'
           import json
-          d=json.load(open('/tmp/probe.json'))
-          print(json.dumps(d,indent=2)[:30000])
-          assert d.get('ok') is True, d
+          d=json.load(open('/tmp/tryon.json'))
+          if d.get('error'):
+              raise SystemExit('TRYON ERROR: '+str(d['error']))
+          b=d.get('image_base64','')
+          assert len(b) > 10000, len(b)
+          assert d.get('image_url'), d
+          print('LOOKME TRY-ON OK', len(b), d['image_url'][:120])
           PY
