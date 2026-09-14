@@ -1,0 +1,26 @@
+name: Probe Qwen Accessory Edit
+
+on:
+  push:
+    branches: [lookme-android-v1]
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Inspect public image-edit Space API
+        run: |
+          mkdir -p /tmp/qprobe && cd /tmp/qprobe
+          npm init -y >/dev/null
+          npm install @gradio/client >/dev/null
+          node --input-type=module <<'JS'
+          import { Client } from '@gradio/client';
+          const client = await Client.connect('Qwen/Qwen-Image-Edit-2509');
+          const api = await client.view_api();
+          console.log(JSON.stringify(api, null, 2));
+          JS
