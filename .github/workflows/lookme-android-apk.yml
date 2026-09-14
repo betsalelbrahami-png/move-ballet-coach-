@@ -40,10 +40,11 @@ jobs:
           p=Path('lookme/App.tsx')
           s=p.read_text()
           old="""          const info = await MediaLibrary.getAssetInfoAsync(asset);\n          const localUri = info.localUri || asset.uri;"""
-          new="""          // Android already gives us a file:// URI in the asset. Avoid getAssetInfoAsync():\n          // it also reads EXIF/GPS metadata and can require ACCESS_MEDIA_LOCATION.\n          const localUri = asset.uri;"""
+          new="""          // Android already gives us a usable URI in the asset. Avoid getAssetInfoAsync():\n          // it also reads EXIF/GPS metadata and can require ACCESS_MEDIA_LOCATION.\n          const localUri = asset.uri;"""
           if old not in s:
               raise SystemExit('Expected getAssetInfoAsync block not found')
           s=s.replace(old,new)
+          s=s.replace('asset.width || info.width || 1000, asset.height || info.height || 1000', 'asset.width || 1000, asset.height || 1000')
           s=s.replace('Android V1 • 0.7','Android V1 • 0.8')
           p.write_text(s)
 
@@ -58,6 +59,8 @@ jobs:
           test -f lookme/src/services/localStylist.ts
           grep -q 'Android V1 • 0.8' lookme/App.tsx
           ! grep -q 'getAssetInfoAsync(asset)' lookme/App.tsx
+          ! grep -q 'info.width' lookme/App.tsx
+          ! grep -q 'info.height' lookme/App.tsx
           grep -q 'lookme-fashion-v2.onnx' lookme/src/services/localVision.ts
           grep -q '"version": "0.8.0"' lookme/app.json
 
