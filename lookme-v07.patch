@@ -1,0 +1,279 @@
+diff -ruN /tmp/v06orig/App.tsx /tmp/v07/App.tsx
+--- /tmp/v06orig/App.tsx	2026-09-14 08:21:22.000000000 +0000
++++ /tmp/v07/App.tsx	2026-09-14 09:31:18.000000000 +0000
+@@ -172,6 +172,7 @@
+     setProgress('Lecture de la photothèque…');
+     let failures = 0;
+     let newItems = 0;
++    let firstFailure = '';
+     try {
+       const { data: doneRows } = await supabase
+         .from('lookme_source_photos')
+@@ -225,7 +226,7 @@
+           if (sourceError) throw sourceError;
+           sourceId = sourceRow.id;
+ 
+-          for (const g of analysis.garments.filter(x => (x.confidence ?? 0) >= 0.52)) {
++          for (const g of analysis.garments.filter(x => (x.confidence ?? 0) >= 0.30)) {
+             const signature = (g.signature || `${g.category}-${g.subtype}-${(g.colors || []).join('-')}`).toLowerCase().trim();
+             const { data: duplicateRows } = await supabase
+               .from('lookme_garments')
+@@ -274,15 +275,19 @@
+           await supabase.from('lookme_source_photos').update({ analysis_status:'done' }).eq('id', sourceId);
+         } catch (e:any) {
+           failures++;
++          const msg=e?.message || String(e);
++          if (!firstFailure) firstFailure=msg;
+           if (sourceId) await supabase.from('lookme_source_photos').update({ analysis_status:'failed' }).eq('id', sourceId);
++          else await supabase.from('lookme_source_photos').upsert({ user_id:userId, local_asset_id:asset.id, analysis_status:'failed' }, { onConflict:'user_id,local_asset_id' });
+           if (failures === 1) setProgress(`Une photo a échoué, LookMe continue…`);
++          if (/moteur LookMe|ONNX|InferenceSession|modèle/i.test(msg)) throw new Error(msg);
+         }
+       }
+ 
+       setScanCount({done:assets.length,total:assets.length});
+       setProgress(`Terminé : ${newItems} nouvelles pièces, ${failures} photos ignorées/échouées.`);
+       setScreen('closet');
+-      if (newItems === 0 && failures > 0) Alert.alert('Analyse', 'Aucune nouvelle pièce n’a été ajoutée. LookMe a ignoré certaines photos et pourra les reprendre plus tard.');
++      if (newItems === 0 && failures > 0) Alert.alert('Analyse', `Aucune nouvelle pièce n’a été ajoutée. ${firstFailure ? `Problème détecté : ${firstFailure}` : 'LookMe pourra reprendre les photos plus tard.'}`);
+     } catch (e:any) {
+       Alert.alert('Analyse', e.message || String(e));
+     } finally {
+@@ -319,13 +324,13 @@
+     setScreen('tryon');
+     try {
+       const personUrl = await createSignedUrl('lookme-photos', basePath, 3600);
+-      const garmentUrls:string[] = [];
++      const garments:{url:string;category:GarmentCategory}[] = [];
+       for (const id of selected) {
+         const item = closet.find(x => x.id === id);
+         if (!item?.storagePath) continue;
+-        garmentUrls.push(await createSignedUrl('lookme-photos', item.storagePath, 3600));
++        garments.push({ url:await createSignedUrl('lookme-photos', item.storagePath, 3600), category:item.category });
+       }
+-      const base64 = await generateTryOn(personUrl, garmentUrls, occasion);
++      const base64 = await generateTryOn(personUrl, garments, occasion);
+       setGeneratedBase64(base64);
+       setGenerated(`data:image/png;base64,${base64}`);
+     } catch (e:any) {
+@@ -358,7 +363,7 @@
+ 
+   return <SafeAreaView style={styles.safe}><StatusBar style="dark"/>
+     <ScrollView contentContainerStyle={styles.page}>
+-      <View style={styles.top}><Text style={styles.logo}>LookMe</Text><Text style={styles.badge}>Android V1 • 0.6</Text></View>
++      <View style={styles.top}><Text style={styles.logo}>LookMe</Text><Text style={styles.badge}>Android V1 • 0.7</Text></View>
+ 
+       {screen === 'auth' && <>
+         <View style={styles.hero}><Text style={{fontSize:72}}>🪞</Text></View>
+diff -ruN /tmp/v06orig/app.json /tmp/v07/app.json
+--- /tmp/v06orig/app.json	2026-09-14 08:20:57.000000000 +0000
++++ /tmp/v07/app.json	2026-09-14 09:31:19.000000000 +0000
+@@ -2,12 +2,12 @@
+   "expo": {
+     "name": "LookMe",
+     "slug": "lookme-android",
+-    "version": "0.6.0",
++    "version": "0.7.0",
+     "orientation": "portrait",
+     "userInterfaceStyle": "light",
+     "android": {
+       "package": "com.lookme.app",
+-      "versionCode": 6,
++      "versionCode": 7,
+       "permissions": [
+         "READ_MEDIA_IMAGES",
+         "READ_EXTERNAL_STORAGE"
+diff -ruN /tmp/v06orig/src/services/ai.ts /tmp/v07/src/services/ai.ts
+--- /tmp/v06orig/src/services/ai.ts	2026-09-14 06:03:38.000000000 +0000
++++ /tmp/v07/src/services/ai.ts	2026-09-14 09:31:18.000000000 +0000
+@@ -1,6 +1,7 @@
+ import { supabase } from '../lib/supabase';
+-import type { AnalyzedGarment, ClosetItem, LookSuggestion } from '../types';
++import type { AnalyzedGarment, ClosetItem, LookSuggestion, GarmentCategory } from '../types';
+ 
++// Kept for backwards compatibility. V0.7 uses local vision and local styling.
+ export async function analyzePhoto(imageUrl: string): Promise<{ contains_person: boolean; is_useful_fashion_photo?: boolean; garments: AnalyzedGarment[] }> {
+   const { data, error } = await supabase.functions.invoke('lookme-analyze-photo', { body: { image_url: imageUrl } });
+   if (error) throw error;
+@@ -13,24 +14,16 @@
+ }
+ 
+ export async function suggestLooks(closet: ClosetItem[], occasion: string): Promise<LookSuggestion[]> {
+-  const garments = closet.map(x => ({
+-    id: x.id,
+-    category: x.category,
+-    subtype: x.subtype,
+-    label: x.label,
+-    colors: x.colors,
+-    material: x.material,
+-    pattern: x.pattern,
+-  }));
++  const garments = closet.map(x => ({ id:x.id, category:x.category, subtype:x.subtype, label:x.label, colors:x.colors, material:x.material, pattern:x.pattern }));
+   const { data, error } = await supabase.functions.invoke('lookme-suggest-looks', { body: { garments, occasion } });
+   if (error) throw error;
+   if (data?.error) throw new Error(data.error);
+   return Array.isArray(data?.looks) ? data.looks : [];
+ }
+ 
+-export async function generateTryOn(personUrl: string, garmentUrls: string[], occasion?: string) {
++export async function generateTryOn(personUrl: string, garments: {url:string;category:GarmentCategory}[], occasion?: string) {
+   const { data, error } = await supabase.functions.invoke('lookme-generate-tryon', {
+-    body: { person_url: personUrl, garment_urls: garmentUrls, occasion },
++    body: { person_url: personUrl, garments, occasion },
+   });
+   if (error) throw error;
+   if (data?.error) throw new Error(data.error);
+diff -ruN /tmp/v06orig/src/services/localVision.ts /tmp/v07/src/services/localVision.ts
+--- /tmp/v06orig/src/services/localVision.ts	2026-09-14 08:20:56.000000000 +0000
++++ /tmp/v07/src/services/localVision.ts	2026-09-14 09:31:17.000000000 +0000
+@@ -6,7 +6,9 @@
+ import type { AnalyzedGarment, GarmentCategory } from '../types';
+ 
+ const MODEL_URL = 'https://huggingface.co/HasanKabir23/Yolov26s-DeepFashion2/resolve/main/best.onnx?download=true';
+-const MODEL_PATH = `${FileSystem.documentDirectory}lookme-fashion-v1.onnx`;
++const MODEL_PATH = `${FileSystem.documentDirectory}lookme-fashion-v2.onnx`;
++const MODEL_TMP = `${FileSystem.cacheDirectory}lookme-fashion-v2.tmp`;
++const MIN_MODEL_BYTES = 8_000_000;
+ let sessionPromise: Promise<ort.InferenceSession> | undefined;
+ 
+ const names = [
+@@ -16,27 +18,82 @@
+ const cats: GarmentCategory[] = ['top','top','outerwear','outerwear','top','top','bottom','bottom','bottom','dress','dress','dress','dress'];
+ const subtype = ['short_sleeved_shirt','long_sleeved_shirt','short_sleeved_outerwear','long_sleeved_outerwear','vest','sling','shorts','trousers','skirt','short_sleeved_dress','long_sleeved_dress','vest_dress','sling_dress'];
+ 
+-async function modelSession(onProgress?: (s:string)=>void) {
+-  if (!sessionPromise) sessionPromise = (async () => {
+-    const info = await FileSystem.getInfoAsync(MODEL_PATH);
+-    if (!info.exists) {
+-      onProgress?.('Préparation du moteur LookMe…');
+-      const r = await FileSystem.downloadAsync(MODEL_URL, MODEL_PATH);
+-      if (r.status < 200 || r.status >= 300) throw new Error('Impossible de préparer le moteur LookMe.');
++async function ensureModel(onProgress?: (s:string)=>void) {
++  let info = await FileSystem.getInfoAsync(MODEL_PATH, { size:true });
++  if (info.exists && (info.size || 0) >= MIN_MODEL_BYTES) return;
++  try { if (info.exists) await FileSystem.deleteAsync(MODEL_PATH, { idempotent:true }); } catch {}
++  onProgress?.('Préparation du moteur LookMe…');
++  let lastError: unknown;
++  for (let attempt=1; attempt<=2; attempt++) {
++    try {
++      await FileSystem.deleteAsync(MODEL_TMP, { idempotent:true });
++      const r = await FileSystem.downloadAsync(MODEL_URL, MODEL_TMP);
++      if (r.status < 200 || r.status >= 300) throw new Error(`Téléchargement ${r.status}`);
++      const downloaded = await FileSystem.getInfoAsync(MODEL_TMP, { size:true });
++      if (!downloaded.exists || (downloaded.size || 0) < MIN_MODEL_BYTES) throw new Error('Modèle incomplet');
++      await FileSystem.moveAsync({ from:MODEL_TMP, to:MODEL_PATH });
++      return;
++    } catch (e) {
++      lastError = e;
++      if (attempt === 1) onProgress?.('Le moteur se prépare encore…');
+     }
+-    return ort.InferenceSession.create(MODEL_PATH, { executionProviders: ['cpu'] });
+-  })();
++  }
++  throw new Error(`Impossible de préparer le moteur LookMe${lastError instanceof Error ? ` : ${lastError.message}` : ''}.`);
++}
++
++async function modelSession(onProgress?: (s:string)=>void) {
++  if (!sessionPromise) {
++    sessionPromise = (async () => {
++      await ensureModel(onProgress);
++      // CPU is the default execution provider on React Native and is the most compatible path.
++      return ort.InferenceSession.create(MODEL_PATH);
++    })().catch(e => {
++      sessionPromise = undefined;
++      throw e;
++    });
++  }
+   return sessionPromise;
+ }
+ 
+ function clamp(v:number){ return Math.max(0, Math.min(1, v)); }
+ 
++function colorName(r:number,g:number,b:number) {
++  const max=Math.max(r,g,b), min=Math.min(r,g,b), d=max-min;
++  if (max < 55) return 'noir';
++  if (min > 210 && d < 35) return 'blanc';
++  if (d < 25) return max < 135 ? 'gris foncé' : 'gris';
++  if (r > 145 && g < 105 && b < 105) return 'rouge';
++  if (r > 150 && g > 95 && g < 175 && b < 90) return 'orange';
++  if (r > 155 && g > 145 && b < 100) return 'jaune';
++  if (g > r * 1.18 && g > b * 1.08) return 'vert';
++  if (b > r * 1.12 && b > g * 1.08) return 'bleu';
++  if (r > 135 && b > 120 && g < Math.min(r,b) * 0.85) return 'violet';
++  if (r > 150 && b > 125 && g > 80) return 'rose';
++  if (r > 95 && g > 55 && g < r * 0.85 && b < g * 0.85) return 'marron';
++  return r >= g && r >= b ? 'beige' : g >= b ? 'vert' : 'bleu';
++}
++
++function dominantColor(data:Uint8Array, x:number,y:number,w:number,h:number) {
++  const x0=Math.max(0,Math.floor(x*416)), y0=Math.max(0,Math.floor(y*416));
++  const x1=Math.min(415,Math.ceil((x+w)*416)), y1=Math.min(415,Math.ceil((y+h)*416));
++  let rs=0,gs=0,bs=0,n=0;
++  const sx=Math.max(1,Math.floor((x1-x0)/14)), sy=Math.max(1,Math.floor((y1-y0)/14));
++  for(let yy=y0;yy<=y1;yy+=sy) for(let xx=x0;xx<=x1;xx+=sx){
++    const p=(yy*416+xx)*4; const r=data[p],g=data[p+1],b=data[p+2];
++    if (r>245 && g>245 && b>245) continue;
++    rs+=r;gs+=g;bs+=b;n++;
++  }
++  if(!n) return 'inconnu';
++  return colorName(rs/n,gs/n,bs/n);
++}
++
+ export async function analyzePhotoLocal(uri: string, onProgress?: (s:string)=>void): Promise<{contains_person:boolean;is_useful_fashion_photo:boolean;garments:AnalyzedGarment[]}> {
+-  const resized = await ImageManipulator.manipulateAsync(uri, [{ resize:{ width:416, height:416 } }], { compress:0.95, format:ImageManipulator.SaveFormat.JPEG });
++  const resized = await ImageManipulator.manipulateAsync(uri, [{ resize:{ width:416, height:416 } }], { compress:0.94, format:ImageManipulator.SaveFormat.JPEG });
+   const b64 = await FileSystem.readAsStringAsync(resized.uri, { encoding: FileSystem.EncodingType.Base64 });
+   const bytes = new Uint8Array(decodeBase64(b64));
+   const decoded:any = jpeg.decode(bytes, { useTArray:true, formatAsRGBA:true });
+   if (!decoded?.data || decoded.width !== 416 || decoded.height !== 416) throw new Error('Photo non lisible.');
++
+   const plane = 416 * 416;
+   const input = new Float32Array(plane * 3);
+   for (let i=0;i<plane;i++) {
+@@ -44,24 +101,38 @@
+     input[plane+i] = decoded.data[i*4+1] / 255;
+     input[plane*2+i] = decoded.data[i*4+2] / 255;
+   }
++
+   const session = await modelSession(onProgress);
+-  const out = await session.run({ images: new ort.Tensor('float32', input, [1,3,416,416]) });
+-  const raw:any = out.output0;
++  const inputName = session.inputNames?.[0] || 'images';
++  const outputs = await session.run({ [inputName]: new ort.Tensor('float32', input, [1,3,416,416]) });
++  const outputName = session.outputNames?.[0] || 'output0';
++  const raw:any = outputs[outputName] || Object.values(outputs)[0];
+   const data = raw?.data as Float32Array | undefined;
++  const dims = Array.isArray(raw?.dims) ? raw.dims.map(Number) : [];
+   if (!data) throw new Error('Le moteur LookMe n’a pas pu lire la photo.');
++
++  // YOLO26 end-to-end segmentation export: [1, 300, 38].
++  const rows = dims.length >= 3 ? dims[dims.length-2] : 300;
++  const rowSize = dims.length >= 3 ? dims[dims.length-1] : Math.floor(data.length / rows);
++  if (rows < 1 || rowSize < 6 || data.length < rows * rowSize) throw new Error(`Format du moteur inattendu (${dims.join('×') || data.length}).`);
++
+   const garments: AnalyzedGarment[] = [];
+-  const row = 38;
+-  for (let i=0;i<300;i++) {
+-    const o=i*row;
++  for (let i=0;i<Math.min(rows,300);i++) {
++    const o=i*rowSize;
+     const score=Number(data[o+4]);
+     const cls=Math.round(Number(data[o+5]));
+-    if (score < 0.38 || cls < 0 || cls >= names.length) continue;
++    if (score < 0.28 || cls < 0 || cls >= names.length) continue;
+     const x1=Number(data[o]), y1=Number(data[o+1]), x2=Number(data[o+2]), y2=Number(data[o+3]);
+     if (![x1,y1,x2,y2,score].every(Number.isFinite)) continue;
+     const x=clamp(Math.min(x1,x2)/416), y=clamp(Math.min(y1,y2)/416);
+     const w=clamp(Math.abs(x2-x1)/416), h=clamp(Math.abs(y2-y1)/416);
+-    if (w < 0.03 || h < 0.03) continue;
+-    garments.push({ category:cats[cls], subtype:subtype[cls], label:names[cls], colors:[], material:'', pattern:'', signature:`${cats[cls]}-${subtype[cls]}`, confidence:score, bbox:{x,y,w,h} });
++    if (w < 0.035 || h < 0.035) continue;
++    const color=dominantColor(decoded.data,x,y,w,h);
++    garments.push({
++      category:cats[cls], subtype:subtype[cls], label:names[cls], colors:color === 'inconnu' ? [] : [color],
++      material:'', pattern:'', signature:`${cats[cls]}-${subtype[cls]}-${color}`, confidence:score, bbox:{x,y,w,h}
++    });
+   }
++  garments.sort((a,b)=>(b.confidence || 0)-(a.confidence || 0));
+   return { contains_person:garments.length>0, is_useful_fashion_photo:garments.length>0, garments:garments.slice(0,8) };
+ }
