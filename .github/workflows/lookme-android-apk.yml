@@ -50,7 +50,7 @@ jobs:
           s=p.read_text()
           old='if (VersionNumber.parse(REACT_NATIVE_VERSION) < VersionNumber.parse("0.71")) {'
           if old in s:
-              s=s.replace(old, 'if (REACT_NATIVE_MAJOR_VERSION == 0 && REACT_NATIVE_MINOR_VERSION < 71) {')
+              s=s.replace(old, 'if (false) { // React Native 0.86: legacy pre-0.71 dependency branch disabled')
           p.write_text(s)
           PY
           rm -f node_modules/onnxruntime-react-native/unimodule.json
