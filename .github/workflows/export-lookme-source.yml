@@ -1,0 +1,46 @@
+name: Export LookMe Source
+
+on:
+  push:
+    branches: [lookme-android-v1]
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore exact LookMe v0.8 source
+        run: |
+          set -euo pipefail
+          rm -rf lookme
+          mkdir -p lookme
+          curl -fsSL 'https://lbmgmfpvxggxoboxfsib.supabase.co/functions/v1/lookme-build-source' -o /tmp/lookme.zip
+          unzip -q /tmp/lookme.zip -d lookme
+          sed -e 's|/tmp/v06orig/|lookme/|g' -e 's|/tmp/v07/|lookme/|g' lookme-v07.patch > /tmp/lookme-v07.patch
+          patch -p0 < /tmp/lookme-v07.patch
+          sed -i "s/FileSystem.getInfoAsync(MODEL_PATH, { size:true })/FileSystem.getInfoAsync(MODEL_PATH)/" lookme/src/services/localVision.ts
+          sed -i "s/FileSystem.getInfoAsync(MODEL_TMP, { size:true })/FileSystem.getInfoAsync(MODEL_TMP)/" lookme/src/services/localVision.ts
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path('lookme/App.tsx')
+          s=p.read_text()
+          old="""          const info = await MediaLibrary.getAssetInfoAsync(asset);\n          const localUri = info.localUri || asset.uri;"""
+          new="""          // Android already gives us a usable URI in the asset. Avoid getAssetInfoAsync():\n          // it also reads EXIF/GPS metadata and can require ACCESS_MEDIA_LOCATION.\n          const localUri = asset.uri;"""
+          if old in s:
+              s=s.replace(old,new)
+          s=s.replace('asset.width || info.width || 1000, asset.height || info.height || 1000', 'asset.width || 1000, asset.height || 1000')
+          s=s.replace('Android V1 • 0.7','Android V1 • 0.8')
+          p.write_text(s)
+          app=Path('lookme/app.json')
+          data=json.loads(app.read_text())
+          data['expo']['version']='0.8.0'
+          data['expo']['android']['versionCode']=8
+          app.write_text(json.dumps(data, ensure_ascii=False, indent=2)+"\n")
+          PY
+      - name: Upload exact source
+        uses: actions/upload-artifact@v4
+        with:
+          name: LookMe-v0.8-source
+          path: lookme
+          if-no-files-found: error
