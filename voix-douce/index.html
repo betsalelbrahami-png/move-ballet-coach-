@@ -44,7 +44,7 @@ function estimate(mix, voice) {
   return {lag,gain:yy>1e-12?xy/yy:0,corr:xx*yy>1e-20?xy/Math.sqrt(xx*yy):0};
  }
  let best=score(0,8);
- for(let lag=-160;lag<=160;lag+=4) {const s=score(lag,8);if(Math.abs(s.corr)>Math.abs(best.corr)) best=s;}
+ for(let lag=-160;lag<=160;lag++) {const s=score(lag,8);if(Math.abs(s.corr)>Math.abs(best.corr)) best=s;}
  const center=best.lag;
  best=score(center,1);
  for(let lag=center-4;lag<=center+4;lag++) {const s=score(lag,1);if(Math.abs(s.corr)>Math.abs(best.corr)) best=s;}
@@ -116,18 +116,18 @@ async function startRecording(kind){
  if(busy||recording)return;
  try{
   if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)throw Error("Ouvre cette page dans Chrome ou Safari récent en HTTPS pour utiliser le micro.");
-  recording=true;controls();status("Autorise le microphone dans ton navigateur.");
+  recording=true;invalidate();if(kind==="mix"){mixture=null;mixSamples=null;}else{reference=null;referenceSamples=null;}controls();status("Autorise le microphone dans ton navigateur.");
   stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false},video:false});
   const mime=["audio/webm;codecs=opus","audio/mp4","audio/webm"].find(x=>MediaRecorder.isTypeSupported(x));
-  rec=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);const chunks=[];let failed=false;
+  rec=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);const chunks=[];let failed=false,accepted=false;
   rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
   rec.onerror=()=>{failed=true;status("L’enregistrement a échoué. Vérifie le microphone.",true);stopRecording();};
   rec.onstop=async()=>{
    clearTimeout(timer);clearInterval(tick);stream?.getTracks().forEach(t=>t.stop());recording=false;$("stop").hidden=true;$("recordMix").hidden=false;
-   try{if(!failed){busy=true;controls();await accept(kind,new Blob(chunks,{type:rec.mimeType}));}}
+   try{if(!failed){busy=true;controls();await accept(kind,new Blob(chunks,{type:rec.mimeType}));accepted=true;}}
    catch(e){status(friendly(e),true);}
    finally{busy=false;controls();}
-   if(!failed&&kind==="mix"&&mixture)await processAudio();
+   if(accepted&&kind==="mix"&&mixture)await processAudio();
   };
   const seconds=kind==="ref"?10:30,start=Date.now();
   const update=()=>status(kind==="ref"?"Parle seul… "+Math.max(0,Math.ceil(seconds-(Date.now()-start)/1000))+" s restantes":"Conversation en cours · "+Math.floor((Date.now()-start)/1000)+" s / 30 s");
