@@ -1,0 +1,26 @@
+name: Benchmark Voix Live
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'voix-live/benchmark.mjs'
+      - '.github/workflows/benchmark-voix-live.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Measure iter_model latency for live-sized chunks
+        run: node voix-live/benchmark.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: voix-live-benchmark
+          path: /tmp/voix-live-benchmark.json
