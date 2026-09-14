@@ -1,0 +1,20 @@
+name: Probe LookMe VTON Space
+
+on:
+  push:
+    branches: [lookme-android-v1]
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe Supabase VTON bridge
+        run: |
+          curl -sS --max-time 120 'https://lbmgmfpvxggxoboxfsib.supabase.co/functions/v1/lookme-vton-probe' | tee /tmp/probe.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/probe.json'))
+          print(json.dumps(d,indent=2)[:30000])
+          assert d.get('ok') is True, d
+          PY
