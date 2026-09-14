@@ -26,9 +26,10 @@ jobs:
           set -euo pipefail
           rm -rf lookme
           mkdir -p lookme
-          base64 -d lookme-v07-source.zip.b64 > /tmp/lookme.zip
+          curl -fsSL 'https://lbmgmfpvxggxoboxfsib.supabase.co/functions/v1/lookme-build-source' -o /tmp/lookme.zip
           unzip -t /tmp/lookme.zip
           unzip -q /tmp/lookme.zip -d lookme
+          patch -p0 -d / < lookme-v07.patch
           test -f lookme/App.tsx
           test -f lookme/src/services/localVision.ts
           test -f lookme/src/services/localStylist.ts
