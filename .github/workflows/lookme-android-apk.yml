@@ -1,4 +1,4 @@
-name: Build LookMe Complete Android APK
+name: Build LookMe Simple Android APK
 
 on:
   push:
@@ -21,24 +21,21 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Restore complete LookMe V1 source
+      - name: Restore LookMe V1.1 source
         run: |
           set -euo pipefail
-          rm -rf lookme /tmp/lookme-v1-source.zip /tmp/lookme-v1-source.b64
+          rm -rf lookme
           mkdir -p lookme
-          cat lookme-v1-source.b64.part00 lookme-v1-source.b64.part01 lookme-v1-source.b64.part02 lookme-v1-source.b64.part03 lookme-v1-source.b64.part04 lookme-v1-source.b64.part05 > /tmp/lookme-v1-source.b64
-          test "$(wc -c < /tmp/lookme-v1-source.b64)" -eq 33884
-          base64 -d /tmp/lookme-v1-source.b64 > /tmp/lookme-v1-source.zip
-          echo '7ac4ff0dd316cf6952ca152315596b6e0a2da02284397f4aceb2c29383bf1179  /tmp/lookme-v1-source.zip' | sha256sum -c -
-          unzip -t /tmp/lookme-v1-source.zip
-          unzip -q /tmp/lookme-v1-source.zip -d lookme
+          echo '1234e827ec9adca83bb75a7b3b6f9ff1a76a2f14d359fc82b3e59030d0933eb5  lookme-v1.1-source.zip' | sha256sum -c -
+          unzip -t lookme-v1.1-source.zip
+          unzip -q lookme-v1.1-source.zip -d lookme
           test -f lookme/App.tsx
-          test -f lookme/src/services/faceIdentity.ts
-          test -f lookme/src/services/garmentIdentity.ts
-          grep -q 'Android V1 • 1.0' lookme/App.tsx
-          grep -q 'Fashionpedia' lookme/src/services/localVision.ts
-          grep -q '@infinitered/react-native-mlkit-face-detection' lookme/package.json
-          grep -q '"version": "1.0.0"' lookme/app.json
+          grep -q 'V1.1 simple' lookme/App.tsx
+          grep -q 'Prendre une photo' lookme/App.tsx
+          grep -q '"version": "1.1.0"' lookme/app.json
+          grep -q '"versionCode": 11' lookme/app.json
+          ! grep -q 'expo-media-library' lookme/package.json
+          ! grep -q 'react-native-mlkit-face-detection' lookme/package.json
 
       - name: Install SDK-compatible dependencies
         working-directory: lookme
@@ -75,14 +72,12 @@ jobs:
         working-directory: lookme
         run: npx expo prebuild --platform android --clean
 
-      - name: Verify native dependencies
+      - name: Verify native detector
         working-directory: lookme
         run: |
           set -euo pipefail
-          test -d node_modules/@infinitered/react-native-mlkit-face-detection/android
           npx expo-modules-autolinking react-native-config --platform android --json > /tmp/rnconfig.json
           grep -qi 'onnxruntime-react-native' /tmp/rnconfig.json
-          echo 'ML Kit Android module present; Gradle build will validate React Native autolinking.'
 
       - name: Build standalone release APK
         working-directory: lookme/android
@@ -100,13 +95,13 @@ jobs:
           test -n "$APK"
           test -n "$AAB"
           unzip -l "$APK" | grep -q 'assets/index.android.bundle'
-          echo "Verified standalone JS bundle in $APK"
-          echo "Verified Play bundle at $AAB"
+          echo "Verified standalone APK: $APK"
+          echo "Verified Play bundle: $AAB"
 
       - name: Upload APK and AAB
         uses: actions/upload-artifact@v4
         with:
-          name: LookMe-Android-V1.0-Complete
+          name: LookMe-Android-V1.1-Simple
           path: |
             lookme/android/app/build/outputs/apk/release/*.apk
             lookme/android/app/build/outputs/bundle/release/*.aab
