@@ -29,7 +29,8 @@ jobs:
           curl -fsSL 'https://lbmgmfpvxggxoboxfsib.supabase.co/functions/v1/lookme-build-source' -o /tmp/lookme.zip
           unzip -t /tmp/lookme.zip
           unzip -q /tmp/lookme.zip -d lookme
-          patch -p0 -d / < lookme-v07.patch
+          sed -e 's|/tmp/v06orig/|lookme/|g' -e 's|/tmp/v07/|lookme/|g' lookme-v07.patch > /tmp/lookme-v07.patch
+          patch -p0 < /tmp/lookme-v07.patch
           test -f lookme/App.tsx
           test -f lookme/src/services/localVision.ts
           test -f lookme/src/services/localStylist.ts
