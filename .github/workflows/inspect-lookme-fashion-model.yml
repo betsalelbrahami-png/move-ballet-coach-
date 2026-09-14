@@ -20,12 +20,12 @@ jobs:
           curl -fsSL 'https://lbmgmfpvxggxoboxfsib.supabase.co/functions/v1/lookme-build-source' -o /tmp/lookme.zip
           rm -rf /tmp/lookme && mkdir -p /tmp/lookme
           unzip -q /tmp/lookme.zip -d /tmp/lookme
-          echo '--- package.json ---'
-          cat /tmp/lookme/package.json
-          echo '--- localVision.ts ---'
-          cat /tmp/lookme/src/services/localVision.ts
-          echo '--- App imports ---'
-          grep -nE "localVision|localFashion|localStylist|tryOn|tryon|FASHN|generate" /tmp/lookme/App.tsx || true
+          echo '--- ai.ts ---'
+          cat /tmp/lookme/src/services/ai.ts
+          echo '--- App try-on block ---'
+          sed -n '300,345p' /tmp/lookme/App.tsx
+          echo '--- auth block ---'
+          sed -n '35,115p' /tmp/lookme/App.tsx
       - name: Smoke test FASHN Space API
         run: |
           python -m pip install --quiet gradio_client
