@@ -26,14 +26,14 @@ jobs:
           set -euo pipefail
           rm -rf lookme
           mkdir -p lookme
-          cat lookme-v07-source.part01 lookme-v07-source.part02 lookme-v07-source.part03 lookme-v07-source.part04 | base64 -d > /tmp/lookme.zip
+          base64 -d lookme-v07-source.zip.b64 > /tmp/lookme.zip
           unzip -t /tmp/lookme.zip
           unzip -q /tmp/lookme.zip -d lookme
           test -f lookme/App.tsx
           test -f lookme/src/services/localVision.ts
           test -f lookme/src/services/localStylist.ts
           grep -q 'Android V1 • 0.7' lookme/App.tsx
-          grep -q 'lookme-fashionpedia-v07.onnx' lookme/src/services/localVision.ts
+          grep -q 'lookme-fashion-v2.onnx' lookme/src/services/localVision.ts
 
       - name: Install SDK-compatible dependencies
         working-directory: lookme
@@ -81,17 +81,26 @@ jobs:
         working-directory: lookme/android
         run: ./gradlew assembleRelease
 
-      - name: Verify standalone APK
+      - name: Build Play Store bundle preview
+        working-directory: lookme/android
+        run: ./gradlew bundleRelease
+
+      - name: Verify release artifacts
         run: |
           set -euo pipefail
           APK=$(find lookme/android/app/build/outputs/apk/release -name '*.apk' | head -1)
+          AAB=$(find lookme/android/app/build/outputs/bundle/release -name '*.aab' | head -1)
           test -n "$APK"
+          test -n "$AAB"
           unzip -l "$APK" | grep -q 'assets/index.android.bundle'
           echo "Verified standalone JS bundle in $APK"
+          echo "Verified Play bundle at $AAB"
 
-      - name: Upload APK
+      - name: Upload APK and AAB
         uses: actions/upload-artifact@v4
         with:
-          name: LookMe-Android-V0.7-APK
-          path: lookme/android/app/build/outputs/apk/release/*.apk
+          name: LookMe-Android-V0.7-Release
+          path: |
+            lookme/android/app/build/outputs/apk/release/*.apk
+            lookme/android/app/build/outputs/bundle/release/*.aab
           if-no-files-found: error
