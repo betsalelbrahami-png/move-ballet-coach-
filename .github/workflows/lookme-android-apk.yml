@@ -34,6 +34,15 @@ jobs:
           cat lookme-v1.1-App.part00 lookme-v1.1-App.part01 lookme-v1.1-App.part02 lookme-v1.1-App.part03 lookme-v1.1-App.part04 lookme-v1.1-App.part05 > lookme/App.tsx
           cp lookme-v1.1-app.json lookme/app.json
           cp lookme-v1.1-package.json lookme/package.json
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('lookme/App.tsx')
+          s=p.read_text()
+          for name in ['reviewImage','thumb','itemImg','lookImage']:
+              s=s.replace(f'style={{styles.{name}}}', f'style={{styles.{name} as any}}')
+          s=s.replace("fontWeight:'750'", "fontWeight:'700'")
+          p.write_text(s)
+          PY
           grep -q 'V1.1 simple' lookme/App.tsx
           grep -q 'Prendre une photo' lookme/App.tsx
           grep -q '"version": "1.1.0"' lookme/app.json
