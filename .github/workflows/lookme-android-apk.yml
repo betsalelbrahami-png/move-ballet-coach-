@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -33,30 +33,18 @@ jobs:
         run: |
           npm install
           npx expo install --fix
-          npm install --save-dev @react-native-community/cli
 
       - name: Prebuild Android
         working-directory: lookme
         run: npx expo prebuild --platform android --clean
 
-      - name: Bundle JavaScript into APK
-        working-directory: lookme
-        run: |
-          mkdir -p android/app/src/main/assets
-          npx react-native bundle \
-            --platform android \
-            --dev false \
-            --entry-file node_modules/expo/AppEntry.js \
-            --bundle-output android/app/src/main/assets/index.android.bundle \
-            --assets-dest android/app/src/main/res
-
-      - name: Build standalone debug APK
+      - name: Build standalone release APK
         working-directory: lookme/android
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleRelease
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: LookMe-Android-Standalone-APK
-          path: lookme/android/app/build/outputs/apk/debug/app-debug.apk
+          name: LookMe-Android-Release-APK
+          path: lookme/android/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
