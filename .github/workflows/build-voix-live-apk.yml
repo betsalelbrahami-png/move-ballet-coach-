@@ -52,7 +52,7 @@ jobs:
           gradle-version: '8.9'
 
       - name: Build Android APK
-        run: gradle -p voix-live-android :app:assembleDebug --stacktrace
+        run: gradle -p voix-live-android :app:testDebugUnitTest :app:assembleDebug --stacktrace
 
       - name: Verify packaged model
         run: |
@@ -61,7 +61,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Voix-Live-Android-v1.0-local
+          name: Voix-Live-Android-v1.1-continu
           path: voix-live-android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           compression-level: 0

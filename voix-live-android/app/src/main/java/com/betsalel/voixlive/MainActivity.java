@@ -101,11 +101,11 @@ public final class MainActivity extends Activity {
         TextView eyebrow = label("VOIX LIVE · LOCAL", 13, accent);
         eyebrow.setTypeface(Typeface.DEFAULT_BOLD);
         root.addView(eyebrow);
-        TextView titleView = label("Entendre le monde,\nsans ta propre voix.", 34, text);
+        TextView titleView = label("Entendre le monde,\nsans cette voix.", 34, text);
         titleView.setTypeface(Typeface.DEFAULT_BOLD);
         titleView.setLineSpacing(dp(2), 1f);
         root.addView(titleView, margins(-1, -2, 0, 10, 0, 0));
-        TextView intro = label("Ton téléphone reconnaît ta voix et la retire du son envoyé à tes écouteurs. Le traitement reste sur l’appareil.", 16, muted);
+        TextView intro = label("Enregistre la voix à supprimer. Le téléphone retarde ensuite le son de la pièce, filtre cette voix et envoie un flux continu aux écouteurs.", 16, muted);
         intro.setLineSpacing(dp(3), 1f);
         root.addView(intro, margins(-1, -2, 0, 0, 0, 24));
 
@@ -113,10 +113,10 @@ public final class MainActivity extends Activity {
         profileCard.addView(sectionTitle("1 · PROFIL VOCAL"));
         profileStatus = label("Aucun profil enregistré", 16, text);
         profileCard.addView(profileStatus, margins(-1, -2, 0, 8, 0, 14));
-        recordButton = actionButton("ENREGISTRER MA VOIX · 10 S", false);
+        recordButton = actionButton("ENREGISTRER LA VOIX · 10 S", false);
         recordButton.setOnClickListener(v -> toggleProfileRecording());
         profileCard.addView(recordButton);
-        TextView profileHint = label("Parle naturellement, seul et dans une pièce calme. L’app gardera automatiquement les 4 secondes les plus nettes.", 13, muted);
+        TextView profileHint = label("Fais parler uniquement la voix cible, dans une pièce calme et près du téléphone. L’app gardera automatiquement les 4 secondes les plus nettes.", 13, muted);
         profileHint.setLineSpacing(dp(2), 1f);
         profileCard.addView(profileHint, margins(-1, -2, 0, 12, 0, 0));
         root.addView(profileCard, margins(-1, -2, 0, 0, 0, 14));
@@ -148,7 +148,7 @@ public final class MainActivity extends Activity {
         liveCard.addView(liveStatus, margins(-1, -2, 0, 12, 0, 0));
         root.addView(liveCard, margins(-1, -2, 0, 0, 0, 18));
 
-        TextView reality = label("À savoir · Le modèle travaille par blocs de 2 secondes. Le premier son filtré arrive donc après environ 3 secondes. Il retire ta voix du flux électronique des écouteurs, mais pas la voix que tu entends naturellement par l’air et les os du crâne.", 13, muted);
+        TextView reality = label("À savoir · Le flux reste volontairement 2 à 3 secondes en arrière. Les fenêtres de 2 secondes se chevauchent et sont lues sans interruption. Désactive le mode Transparence des écouteurs : sinon leur son ambiant direct contourne le filtre de l’app.", 13, muted);
         reality.setLineSpacing(dp(2), 1f);
         root.addView(reality);
         return scroll;
@@ -208,7 +208,7 @@ public final class MainActivity extends Activity {
             recording = false;
             runOnUiThread(() -> {
                 recordButton.setEnabled(true);
-                recordButton.setText("RÉENREGISTRER MA VOIX · 10 S");
+                recordButton.setText("RÉENREGISTRER LA VOIX · 10 S");
             });
         }
     }
@@ -219,7 +219,7 @@ public final class MainActivity extends Activity {
             return;
         }
         if (!VoiceProfileStore.exists(this)) {
-            Toast.makeText(this, "Enregistre d’abord ta voix pendant 10 secondes.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Enregistre d’abord la voix à supprimer pendant 10 secondes.", Toast.LENGTH_LONG).show();
             return;
         }
         if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
@@ -243,7 +243,7 @@ public final class MainActivity extends Activity {
         boolean hasProfile = VoiceProfileStore.exists(this);
         profileStatus.setText(hasProfile ? "✓ Profil enregistré sur ce téléphone" : "Aucun profil enregistré");
         profileStatus.setTextColor(hasProfile ? accent : text);
-        recordButton.setText(hasProfile ? "RÉENREGISTRER MA VOIX · 10 S" : "ENREGISTRER MA VOIX · 10 S");
+        recordButton.setText(hasProfile ? "RÉENREGISTRER LA VOIX · 10 S" : "ENREGISTRER LA VOIX · 10 S");
         boolean active = VoiceProcessingService.isRunning();
         liveButton.setText(active ? "ARRÊTER L’ÉCOUTE" : "ACTIVER L’ÉCOUTE");
         liveButton.setBackground(makeBackground(active ? danger : accent, 24));

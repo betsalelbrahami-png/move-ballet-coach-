@@ -45,12 +45,22 @@ public final class VoiceProcessingService extends Service {
     private static final String CHANNEL_ID = "voix_live_listening";
     private static final int NOTIFICATION_ID = 41;
     private static final int SAMPLE_RATE = 16_000;
-    private static final int FRAME_SAMPLES = 32_000;
+    // iter_model still sees the same two-second waveform that succeeded in the
+    // recorded prototype. A new window starts every second and only its stable
+    // centre is played. The listener gets one continuous, deliberately delayed
+    // stream instead of unrelated two-second recordings.
+    private static final int WINDOW_SAMPLES = 32_000;
+    private static final int HOP_SAMPLES = 16_000;
+    private static final int OUTPUT_OFFSET_SAMPLES = 8_000;
+    private static final int PLAYBACK_PREBUFFER_CHUNKS = 2;
+    private static final int MAX_ALIGNMENT_SAMPLES = 1_920; // 120 ms at 16 kHz
     private static final String MODEL_ASSET = "iter_model_2s.onnx";
 
     private static volatile boolean running;
     private final AtomicBoolean active = new AtomicBoolean(false);
     private volatile int attenuationPercent = 100;
+    private volatile int lastAlignmentMs;
+    private volatile float lastGain = 1.0f;
     private Thread engineThread;
 
     public static boolean isRunning() { return running; }
@@ -96,6 +106,7 @@ public final class VoiceProcessingService extends Service {
         AudioTrack player = null;
         OrtSession session = null;
         Thread captureThread = null;
+        Thread playbackThread = null;
         AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
         try {
             if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
@@ -112,34 +123,53 @@ public final class VoiceProcessingService extends Service {
             recorder = createRecorder();
             player = createPlayer();
             audioManager.requestAudioFocus(null, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
-            ArrayBlockingQueue<short[]> frames = new ArrayBlockingQueue<>(4);
+            ArrayBlockingQueue<short[]> capturedHops = new ArrayBlockingQueue<>(8);
+            ArrayBlockingQueue<short[]> filteredHops = new ArrayBlockingQueue<>(6);
             AudioRecord finalRecorder = recorder;
-            captureThread = new Thread(() -> capture(finalRecorder, frames), "voix-live-capture");
+            AudioTrack finalPlayer = player;
+            captureThread = new Thread(() -> capture(finalRecorder, capturedHops), "voix-live-capture");
+            playbackThread = new Thread(() -> playback(finalPlayer, filteredHops), "voix-live-playback");
             recorder.startRecording();
-            player.play();
             captureThread.start();
-            updateNotification("Écoute filtrée active");
-            broadcast("Écoute active · remplissage du tampon…", true);
+            playbackThread.start();
+            updateNotification("Écoute filtrée continue");
+            broadcast("Écoute active · remplissage du tampon 0/2…", true);
 
-            int slowFrames = 0;
-            long processed = 0;
+            short[] window = new short[WINDOW_SAMPLES];
+            int filledSamples = 0;
+            int slowWindows = 0;
             while (active.get()) {
-                short[] pcm = frames.poll(1, TimeUnit.SECONDS);
-                if (pcm == null) continue;
-                long started = System.nanoTime();
-                short[] filtered = filterFrame(session, pcm, enrollment, attenuationPercent / 100.0f);
-                long inferenceMs = (System.nanoTime() - started) / 1_000_000L;
-                int written = 0;
-                while (active.get() && written < filtered.length) {
-                    int count = player.write(filtered, written, filtered.length - written, AudioTrack.WRITE_BLOCKING);
-                    if (count < 0) throw new IllegalStateException("Sortie audio impossible : " + count);
-                    written += count;
+                short[] hop = capturedHops.poll(2, TimeUnit.SECONDS);
+                if (hop == null) continue;
+
+                if (filledSamples < WINDOW_SAMPLES) {
+                    System.arraycopy(hop, 0, window, filledSamples, HOP_SAMPLES);
+                    filledSamples += HOP_SAMPLES;
+                    if (filledSamples < WINDOW_SAMPLES) {
+                        broadcast("Écoute active · remplissage du tampon 1/2…", true);
+                        continue;
+                    }
+                } else {
+                    System.arraycopy(window, HOP_SAMPLES, window, 0, WINDOW_SAMPLES - HOP_SAMPLES);
+                    System.arraycopy(hop, 0, window, WINDOW_SAMPLES - HOP_SAMPLES, HOP_SAMPLES);
                 }
-                processed++;
-                slowFrames = inferenceMs > 2_100 ? slowFrames + 1 : 0;
-                String state = slowFrames >= 3
-                        ? "Téléphone trop lent · quelques blocs sont sautés"
-                        : "Voix atténuée · délai ≈ " + ((2_000 + inferenceMs) / 100) / 10.0 + " s · bloc " + processed;
+
+                long started = System.nanoTime();
+                short[] filteredWindow = filterWindow(session, window, enrollment, attenuationPercent / 100.0f);
+                long inferenceMs = (System.nanoTime() - started) / 1_000_000L;
+
+                short[] stableCentre = new short[HOP_SAMPLES];
+                System.arraycopy(filteredWindow, OUTPUT_OFFSET_SAMPLES, stableCentre, 0, HOP_SAMPLES);
+                if (!filteredHops.offer(stableCentre, 2, TimeUnit.SECONDS)) {
+                    throw new IllegalStateException("La sortie audio n’arrive pas à suivre");
+                }
+
+                slowWindows = inferenceMs > 950 ? slowWindows + 1 : 0;
+                String state = slowWindows >= 3
+                        ? "Téléphone trop lent pour maintenir le flux continu"
+                        : "Flux filtré continu · retard ≈ 2–3 s · calcul " + inferenceMs
+                        + " ms · alignement " + lastAlignmentMs + " ms · gain "
+                        + Math.round(lastGain * 100f) / 100f;
                 broadcast(state, true);
             }
         } catch (InterruptedException ignored) {
@@ -150,12 +180,17 @@ public final class VoiceProcessingService extends Service {
             active.set(false);
             running = false;
             if (captureThread != null) captureThread.interrupt();
+            if (playbackThread != null) playbackThread.interrupt();
             if (recorder != null) {
                 try { recorder.stop(); } catch (Exception ignored) {}
-                recorder.release();
             }
             if (player != null) {
                 try { player.stop(); } catch (Exception ignored) {}
+            }
+            joinQuietly(captureThread);
+            joinQuietly(playbackThread);
+            if (recorder != null) recorder.release();
+            if (player != null) {
                 player.release();
             }
             if (session != null) {
@@ -167,36 +202,71 @@ public final class VoiceProcessingService extends Service {
         }
     }
 
-    private void capture(AudioRecord recorder, ArrayBlockingQueue<short[]> frames) {
+    private void capture(AudioRecord recorder, ArrayBlockingQueue<short[]> hops) {
         Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO);
         try {
             while (active.get() && !Thread.currentThread().isInterrupted()) {
-                short[] frame = new short[FRAME_SAMPLES];
+                short[] hop = new short[HOP_SAMPLES];
                 int offset = 0;
-                while (active.get() && offset < frame.length) {
-                    int read = recorder.read(frame, offset, frame.length - offset, AudioRecord.READ_BLOCKING);
+                while (active.get() && offset < hop.length) {
+                    int read = recorder.read(hop, offset, hop.length - offset, AudioRecord.READ_BLOCKING);
                     if (read < 0) throw new IllegalStateException("Erreur micro : " + read);
                     offset += read;
                 }
                 if (!active.get()) return;
-                if (!frames.offer(frame)) {
-                    frames.poll();
-                    frames.offer(frame);
-                }
+                if (!hops.offer(hop, 1500, TimeUnit.MILLISECONDS))
+                    throw new IllegalStateException("Le traitement ne suit plus le microphone");
             }
+        } catch (InterruptedException ignored) {
+            Thread.currentThread().interrupt();
         } catch (Throwable error) {
             active.set(false);
             broadcast("Erreur micro : " + friendly(error), false);
         }
     }
 
-    private short[] filterFrame(OrtSession session, short[] pcm, float[][] enrollment, float strength) throws Exception {
-        float[][] mixture = new float[1][FRAME_SAMPLES];
-        float mixPeak = 1e-6f;
-        for (int i = 0; i < FRAME_SAMPLES; i++) {
+    private void playback(AudioTrack player, ArrayBlockingQueue<short[]> filteredHops) {
+        Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO);
+        try {
+            short[][] prebuffer = new short[PLAYBACK_PREBUFFER_CHUNKS][];
+            for (int i = 0; i < prebuffer.length; i++) {
+                prebuffer[i] = filteredHops.poll(10, TimeUnit.SECONDS);
+                if (prebuffer[i] == null || !active.get()) {
+                    if (active.get()) {
+                        active.set(false);
+                        broadcast("Le tampon filtré n’a pas pu démarrer", false);
+                    }
+                    return;
+                }
+            }
+            player.play();
+            for (short[] hop : prebuffer) writeAll(player, hop);
+            while (active.get() && !Thread.currentThread().isInterrupted()) {
+                short[] hop = filteredHops.poll(2, TimeUnit.SECONDS);
+                if (hop != null) writeAll(player, hop);
+            }
+        } catch (InterruptedException ignored) {
+            Thread.currentThread().interrupt();
+        } catch (Throwable error) {
+            active.set(false);
+            broadcast("Erreur écouteurs : " + friendly(error), false);
+        }
+    }
+
+    private void writeAll(AudioTrack player, short[] pcm) {
+        int written = 0;
+        while (active.get() && written < pcm.length) {
+            int count = player.write(pcm, written, pcm.length - written, AudioTrack.WRITE_BLOCKING);
+            if (count < 0) throw new IllegalStateException("Sortie audio impossible : " + count);
+            written += count;
+        }
+    }
+
+    private short[] filterWindow(OrtSession session, short[] pcm, float[][] enrollment, float strength) throws Exception {
+        float[][] mixture = new float[1][WINDOW_SAMPLES];
+        for (int i = 0; i < WINDOW_SAMPLES; i++) {
             float value = pcm[i] / 32768.0f;
             mixture[0][i] = value;
-            mixPeak = Math.max(mixPeak, Math.abs(value));
         }
         OrtEnvironment env = OrtEnvironment.getEnvironment();
         try (OnnxTensor mixTensor = OnnxTensor.createTensor(env, mixture);
@@ -208,18 +278,67 @@ public final class VoiceProcessingService extends Service {
             inputs.put("enrollment_length", lengthTensor);
             try (OrtSession.Result result = session.run(inputs)) {
                 float[][] target = (float[][]) result.get(0).getValue();
-                float targetPeak = 1e-6f;
-                for (float value : target[0]) targetPeak = Math.max(targetPeak, Math.abs(value));
-                float scale = mixPeak / targetPeak;
-                short[] output = new short[FRAME_SAMPLES];
-                for (int i = 0; i < FRAME_SAMPLES; i++) {
-                    float residual = mixture[0][i] - strength * target[0][i] * scale;
+                int lag = bestLag(mixture[0], target[0]);
+                float gain = optimalGain(mixture[0], target[0], lag);
+                lastAlignmentMs = Math.round(lag * 1000f / SAMPLE_RATE);
+                lastGain = gain;
+                short[] output = new short[WINDOW_SAMPLES];
+                for (int i = 0; i < WINDOW_SAMPLES; i++) {
+                    int targetIndex = i + lag;
+                    float targetSample = targetIndex >= 0 && targetIndex < target[0].length
+                            ? target[0][targetIndex] : 0f;
+                    float residual = mixture[0][i] - strength * gain * targetSample;
                     output[i] = (short) Math.round(softLimit(residual) * 32767.0f);
                 }
-                smoothStart(output);
                 return output;
             }
         }
+    }
+
+    // Same alignment and least-squares gain calculation as the recorded web
+    // prototype which passed the listening test.
+    static int bestLag(float[] mixture, float[] target) {
+        int stride = Math.max(1, SAMPLE_RATE / 1_000);
+        int maximumLag = MAX_ALIGNMENT_SAMPLES / stride;
+        int count = Math.min(mixture.length / stride, target.length / stride);
+        if (count < 100) return 0;
+        int best = 0;
+        double bestScore = Double.NEGATIVE_INFINITY;
+        for (int lag = -maximumLag; lag <= maximumLag; lag++) {
+            double xy = 0, xx = 0, yy = 0;
+            int start = Math.max(0, -lag);
+            int end = Math.min(count, count - lag);
+            int used = 0;
+            for (int i = start; i < end; i += 2) {
+                float x = mixture[i * stride];
+                float y = target[(i + lag) * stride];
+                xy += x * y;
+                xx += x * x;
+                yy += y * y;
+                used++;
+            }
+            double score = used > 20 ? Math.abs(xy / Math.sqrt((xx + 1e-12) * (yy + 1e-12))) : 0;
+            if (score > bestScore) {
+                bestScore = score;
+                best = lag;
+            }
+        }
+        return best * stride;
+    }
+
+    static float optimalGain(float[] mixture, float[] target, int lag) {
+        double numerator = 0;
+        double denominator = 0;
+        for (int i = 0; i < mixture.length; i++) {
+            int targetIndex = i + lag;
+            if (targetIndex >= 0 && targetIndex < target.length) {
+                float value = target[targetIndex];
+                numerator += mixture[i] * value;
+                denominator += value * value;
+            }
+        }
+        if (denominator <= 1e-9) return 0f;
+        return Math.max(0f, Math.min(3f, (float) (numerator / denominator)));
     }
 
     private static float softLimit(float value) {
@@ -227,19 +346,10 @@ public final class VoiceProcessingService extends Service {
         return value;
     }
 
-    private static void smoothStart(short[] output) {
-        int fade = Math.min(160, output.length);
-        short first = output[0];
-        for (int i = 0; i < fade; i++) {
-            float amount = i / (float) fade;
-            output[i] = (short) Math.round(first * (1f - amount) + output[i] * amount);
-        }
-    }
-
     private AudioRecord createRecorder() {
         int min = AudioRecord.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
         AudioRecord record = new AudioRecord(MediaRecorder.AudioSource.VOICE_RECOGNITION, SAMPLE_RATE,
-                AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, Math.max(min, FRAME_SAMPLES * 2));
+                AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, Math.max(min, WINDOW_SAMPLES * 2));
         if (record.getState() != AudioRecord.STATE_INITIALIZED) {
             record.release();
             throw new IllegalStateException("Le micro 16 kHz n’est pas disponible");
@@ -252,7 +362,7 @@ public final class VoiceProcessingService extends Service {
                 .setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build();
         AudioFormat format = new AudioFormat.Builder().setEncoding(AudioFormat.ENCODING_PCM_16BIT)
                 .setSampleRate(SAMPLE_RATE).setChannelMask(AudioFormat.CHANNEL_OUT_MONO).build();
-        AudioTrack track = new AudioTrack(attributes, format, FRAME_SAMPLES * 4,
+        AudioTrack track = new AudioTrack(attributes, format, WINDOW_SAMPLES * 4,
                 AudioTrack.MODE_STREAM, AudioManager.AUDIO_SESSION_ID_GENERATE);
         if (track.getState() != AudioTrack.STATE_INITIALIZED) {
             track.release();
@@ -325,6 +435,12 @@ public final class VoiceProcessingService extends Service {
     private static String friendly(Throwable error) {
         String value = error.getMessage();
         return value == null || value.trim().isEmpty() ? error.getClass().getSimpleName() : value;
+    }
+
+    private static void joinQuietly(Thread thread) {
+        if (thread == null || thread == Thread.currentThread()) return;
+        try { thread.join(1_000); }
+        catch (InterruptedException ignored) { Thread.currentThread().interrupt(); }
     }
 
     private static int clamp(int value, int min, int max) { return Math.max(min, Math.min(max, value)); }
