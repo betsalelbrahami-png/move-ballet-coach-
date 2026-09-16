@@ -34,7 +34,7 @@ jobs:
           pip install --index-url https://download.pytorch.org/whl/cpu torch==2.7.1
           pip install onnx==1.18.0 onnxruntime==1.22.0 hydra-core==1.3.2 'huggingface-hub<1.0'
           python voix-live-android/tools/export_iter_model.py \
-            --output voix-live-android/app/src/main/assets/iter_model_2s.onnx
+            --output voix-live-android/app/src/main/assets/iter_model_4s_10s.onnx
 
       - uses: actions/setup-java@v4
         with:
@@ -56,12 +56,12 @@ jobs:
 
       - name: Verify packaged model
         run: |
-          unzip -l voix-live-android/app/build/outputs/apk/debug/app-debug.apk | grep iter_model_2s.onnx
+          unzip -l voix-live-android/app/build/outputs/apk/debug/app-debug.apk | grep iter_model_4s_10s.onnx
           ls -lh voix-live-android/app/build/outputs/apk/debug/app-debug.apk
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Voix-Live-Android-v1.1-continu
+          name: Voix-Live-Android-v1.2-stable
           path: voix-live-android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           compression-level: 0

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Check the Android delayed-stream DSP with the exact exported iter_model.
+"""Check the Android V1.2 delayed-stream DSP with the exported iter_model.
 
-The script is intentionally independent from Android. It runs two-second ONNX
-windows with a one-second hop, keeps the stable centre second, and measures how
-much target/interferer energy remains in the concatenated stream.
+The script is intentionally independent from Android. It runs non-overlapping
+four-second ONNX windows with the complete ten-second enrollment and measures
+how much target/interferer energy remains in the concatenated stream.
 """
 
 from __future__ import annotations
@@ -21,10 +21,10 @@ import soundfile as sf
 
 
 SAMPLE_RATE = 16_000
-WINDOW = 32_000
-HOP = 16_000
-CENTRE = 8_000
-ENROLLMENT = 64_000
+WINDOW = 64_000
+HOP = 64_000
+CENTRE = 0
+ENROLLMENT = 160_000
 MAX_LAG = 1_920
 
 

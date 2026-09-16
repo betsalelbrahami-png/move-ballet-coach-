@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Download iter_model from the referenced HF Space and export fixed-shape ONNX."""
+"""Download iter_model and export the slower, higher-context mobile variant."""
 
 import argparse
 from pathlib import Path
@@ -23,8 +23,8 @@ FILES = [
     "model/spex_plus.py",
     "model/spex_plus_plus.py",
 ]
-MIX_SAMPLES = 32_000
-ENROLLMENT_SAMPLES = 64_000
+MIX_SAMPLES = 64_000
+ENROLLMENT_SAMPLES = 160_000
 
 
 def main() -> None:
@@ -34,11 +34,20 @@ def main() -> None:
     output = Path(args.output).resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
 
-    source = Path(snapshot_download(
-        repo_id="swc2/Target-speaker-extraction",
-        repo_type="space",
-        allow_patterns=FILES,
-    ))
+    source = None
+    for attempt in range(4):
+        try:
+            source = Path(snapshot_download(
+                repo_id="swc2/Target-speaker-extraction",
+                repo_type="space",
+                allow_patterns=FILES,
+            ))
+            break
+        except Exception:
+            if attempt == 3:
+                raise
+            time.sleep(10 * (attempt + 1))
+    assert source is not None
     sys.path.insert(0, str(source))
     cfg = OmegaConf.load(source / "config/config_ira.yaml")
     cfg.test.checkpoint = str(source / "ckpt/3_loss_post.pt.tar")

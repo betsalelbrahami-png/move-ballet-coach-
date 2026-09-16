@@ -45,16 +45,15 @@ public final class VoiceProcessingService extends Service {
     private static final String CHANNEL_ID = "voix_live_listening";
     private static final int NOTIFICATION_ID = 41;
     private static final int SAMPLE_RATE = 16_000;
-    // iter_model still sees the same two-second waveform that succeeded in the
-    // recorded prototype. A new window starts every second and only its stable
-    // centre is played. The listener gets one continuous, deliberately delayed
-    // stream instead of unrelated two-second recordings.
-    private static final int WINDOW_SAMPLES = 32_000;
-    private static final int HOP_SAMPLES = 16_000;
-    private static final int OUTPUT_OFFSET_SAMPLES = 8_000;
+    // V1.2 favours extraction quality and sustainable phone load: every sample
+    // is analysed exactly once in a full four-second iter_model window. Two
+    // processed windows are queued before playback to absorb compute jitter.
+    private static final int WINDOW_SAMPLES = 64_000;
+    private static final int HOP_SAMPLES = 64_000;
+    private static final int OUTPUT_OFFSET_SAMPLES = 0;
     private static final int PLAYBACK_PREBUFFER_CHUNKS = 2;
     private static final int MAX_ALIGNMENT_SAMPLES = 1_920; // 120 ms at 16 kHz
-    private static final String MODEL_ASSET = "iter_model_2s.onnx";
+    private static final String MODEL_ASSET = "iter_model_4s_10s.onnx";
 
     private static volatile boolean running;
     private final AtomicBoolean active = new AtomicBoolean(false);
@@ -133,7 +132,7 @@ public final class VoiceProcessingService extends Service {
             captureThread.start();
             playbackThread.start();
             updateNotification("Écoute filtrée continue");
-            broadcast("Écoute active · remplissage du tampon 0/2…", true);
+            broadcast("Écoute active · préparation du premier passage de 4 s…", true);
 
             short[] window = new short[WINDOW_SAMPLES];
             int filledSamples = 0;
@@ -146,7 +145,7 @@ public final class VoiceProcessingService extends Service {
                     System.arraycopy(hop, 0, window, filledSamples, HOP_SAMPLES);
                     filledSamples += HOP_SAMPLES;
                     if (filledSamples < WINDOW_SAMPLES) {
-                        broadcast("Écoute active · remplissage du tampon 1/2…", true);
+                        broadcast("Écoute active · préparation du tampon…", true);
                         continue;
                     }
                 } else {
@@ -164,10 +163,10 @@ public final class VoiceProcessingService extends Service {
                     throw new IllegalStateException("La sortie audio n’arrive pas à suivre");
                 }
 
-                slowWindows = inferenceMs > 950 ? slowWindows + 1 : 0;
+                slowWindows = inferenceMs > 3_900 ? slowWindows + 1 : 0;
                 String state = slowWindows >= 3
                         ? "Téléphone trop lent pour maintenir le flux continu"
-                        : "Flux filtré continu · retard ≈ 2–3 s · calcul " + inferenceMs
+                        : "Flux filtré continu · retard ≈ 8–12 s · calcul " + inferenceMs
                         + " ms · alignement " + lastAlignmentMs + " ms · gain "
                         + Math.round(lastGain * 100f) / 100f;
                 broadcast(state, true);

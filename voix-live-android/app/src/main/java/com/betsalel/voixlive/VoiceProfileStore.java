@@ -10,7 +10,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 final class VoiceProfileStore {
-    static final int ENROLLMENT_SAMPLES = 64_000;
+    static final int ENROLLMENT_SAMPLES = 160_000;
     private static final String FILE_NAME = "voice_profile_16khz.pcm";
 
     private VoiceProfileStore() {}
@@ -20,29 +20,20 @@ final class VoiceProfileStore {
         return file.isFile() && file.length() == ENROLLMENT_SAMPLES * 2L;
     }
 
-    static void saveBestSegment(Context context, short[] tenSeconds) throws IOException {
+    static void saveRecording(Context context, short[] tenSeconds) throws IOException {
         if (tenSeconds.length < ENROLLMENT_SAMPLES) throw new IOException("Enregistrement trop court");
-        int step = 8_000;
-        int bestStart = 0;
-        double bestScore = -1;
-        for (int start = 0; start + ENROLLMENT_SAMPLES <= tenSeconds.length; start += step) {
-            double energy = 0;
-            int clipped = 0;
-            for (int i = start; i < start + ENROLLMENT_SAMPLES; i += 4) {
-                double value = tenSeconds[i] / 32768.0;
-                energy += value * value;
-                if (Math.abs(tenSeconds[i]) > 32_000) clipped++;
-            }
-            double rms = Math.sqrt(energy / (ENROLLMENT_SAMPLES / 4.0));
-            double score = rms * Math.max(0.1, 1.0 - clipped / 800.0);
-            if (score > bestScore) {
-                bestScore = score;
-                bestStart = start;
-            }
+        double energy = 0;
+        int clipped = 0;
+        for (int i = 0; i < ENROLLMENT_SAMPLES; i += 4) {
+            double value = tenSeconds[i] / 32768.0;
+            energy += value * value;
+            if (Math.abs(tenSeconds[i]) > 32_000) clipped++;
         }
-        if (bestScore < 0.008) throw new IOException("La voix est trop faible. Rapproche le téléphone et recommence.");
+        double rms = Math.sqrt(energy / (ENROLLMENT_SAMPLES / 4.0));
+        if (rms < 0.008) throw new IOException("La voix est trop faible. Rapproche le téléphone et recommence.");
+        if (clipped > 2_000) throw new IOException("La voix sature. Éloigne légèrement le téléphone et recommence.");
         ByteBuffer bytes = ByteBuffer.allocate(ENROLLMENT_SAMPLES * 2).order(ByteOrder.LITTLE_ENDIAN);
-        for (int i = 0; i < ENROLLMENT_SAMPLES; i++) bytes.putShort(tenSeconds[bestStart + i]);
+        for (int i = 0; i < ENROLLMENT_SAMPLES; i++) bytes.putShort(tenSeconds[i]);
         try (FileOutputStream stream = new FileOutputStream(file(context))) {
             stream.write(bytes.array());
         }

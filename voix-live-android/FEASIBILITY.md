@@ -1,8 +1,9 @@
 # Voix Live — preuve de faisabilité faible latence
 
-> Mise à jour v1.1 : ce verdict concerne uniquement l’objectif inférieur à
-> 150 ms. Le prototype reprend désormais avec un flux continu volontairement
-> retardé de 2 à 3 secondes, accepté pour l’essai utilisateur.
+> Mise à jour v1.2 : ce verdict concerne uniquement l’objectif inférieur à
+> 150 ms. Après l’échec de la V1.1 sur téléphone, le prototype utilise désormais
+> la référence complète de 10 secondes et des fenêtres non chevauchées de
+> 4 secondes, avec un retard volontaire d’environ 8 à 12 secondes.
 
 Date du test : 15 septembre 2026
 

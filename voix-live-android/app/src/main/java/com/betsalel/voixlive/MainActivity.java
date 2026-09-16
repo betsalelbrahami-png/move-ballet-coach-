@@ -105,7 +105,7 @@ public final class MainActivity extends Activity {
         titleView.setTypeface(Typeface.DEFAULT_BOLD);
         titleView.setLineSpacing(dp(2), 1f);
         root.addView(titleView, margins(-1, -2, 0, 10, 0, 0));
-        TextView intro = label("Enregistre la voix à supprimer. Le téléphone retarde ensuite le son de la pièce, filtre cette voix et envoie un flux continu aux écouteurs.", 16, muted);
+        TextView intro = label("Enregistre 10 secondes complètes de la voix à supprimer. Le téléphone traite ensuite la pièce par fenêtres de 4 secondes et restitue un flux continu différé.", 16, muted);
         intro.setLineSpacing(dp(3), 1f);
         root.addView(intro, margins(-1, -2, 0, 0, 0, 24));
 
@@ -116,7 +116,7 @@ public final class MainActivity extends Activity {
         recordButton = actionButton("ENREGISTRER LA VOIX · 10 S", false);
         recordButton.setOnClickListener(v -> toggleProfileRecording());
         profileCard.addView(recordButton);
-        TextView profileHint = label("Fais parler uniquement la voix cible, dans une pièce calme et près du téléphone. L’app gardera automatiquement les 4 secondes les plus nettes.", 13, muted);
+        TextView profileHint = label("Fais parler uniquement la voix cible pendant les 10 secondes entières, dans une pièce calme et près du téléphone.", 13, muted);
         profileHint.setLineSpacing(dp(2), 1f);
         profileCard.addView(profileHint, margins(-1, -2, 0, 12, 0, 0));
         root.addView(profileCard, margins(-1, -2, 0, 0, 0, 14));
@@ -148,7 +148,7 @@ public final class MainActivity extends Activity {
         liveCard.addView(liveStatus, margins(-1, -2, 0, 12, 0, 0));
         root.addView(liveCard, margins(-1, -2, 0, 0, 0, 18));
 
-        TextView reality = label("À savoir · Le flux reste volontairement 2 à 3 secondes en arrière. Les fenêtres de 2 secondes se chevauchent et sont lues sans interruption. Désactive le mode Transparence des écouteurs : sinon leur son ambiant direct contourne le filtre de l’app.", 13, muted);
+        TextView reality = label("À savoir · Le démarrage demande environ 8 à 12 secondes, puis les passages filtrés sont lus à la suite. Désactive le mode Transparence des écouteurs : sinon leur son ambiant direct contourne le filtre de l’app.", 13, muted);
         reality.setLineSpacing(dp(2), 1f);
         root.addView(reality);
         return scroll;
@@ -190,7 +190,7 @@ public final class MainActivity extends Activity {
                     recordButton.setText("ENREGISTREMENT EN COURS");
                 });
             }
-            VoiceProfileStore.saveBestSegment(this, samples);
+            VoiceProfileStore.saveRecording(this, samples);
             runOnUiThread(() -> {
                 Toast.makeText(this, "Profil vocal enregistré", Toast.LENGTH_SHORT).show();
                 refreshState();
