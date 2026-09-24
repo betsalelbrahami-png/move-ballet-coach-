@@ -1,0 +1,27 @@
+name: Inspect DWQ Android source
+
+on:
+  push:
+    paths:
+      - ".github/workflows/inspect-dwq-android.yml"
+  workflow_dispatch:
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect source archive
+        shell: bash
+        run: |
+          set -e
+          rm -rf /tmp/dwq && mkdir -p /tmp/dwq
+          unzip -q "DanceWorldQuest-Android-v1.4-source.zip" -d /tmp/dwq
+          echo "=== FILE TREE ==="
+          find /tmp/dwq -maxdepth 7 -type f | sort | sed 's#^/tmp/dwq/##'
+          echo "=== GRADLE FILES ==="
+          find /tmp/dwq -type f \( -name "build.gradle" -o -name "build.gradle.kts" -o -name "settings.gradle" -o -name "settings.gradle.kts" -o -name "gradle.properties" \) -print -exec sh -c 'echo "--- $1"; sed -n "1,240p" "$1"' _ {} \;
+          echo "=== MANIFESTS ==="
+          find /tmp/dwq -type f -name "AndroidManifest.xml" -print -exec sh -c 'echo "--- $1"; cat "$1"' _ {} \;
+          echo "=== MAIN ACTIVITY CANDIDATES ==="
+          grep -RIl "class MainActivity\|extends Activity\|extends AppCompatActivity\|WebView" /tmp/dwq --include="*.kt" --include="*.java" | while read f; do echo "--- $f"; sed -n "1,320p" "$f"; done
