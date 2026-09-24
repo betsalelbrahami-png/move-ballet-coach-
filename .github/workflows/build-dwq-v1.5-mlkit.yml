@@ -1,0 +1,202 @@
+name: Build DWQ v1.5 ML Kit
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "DanceWorldQuest-Android-v1.4-source.zip"
+      - "dwq-v1.5-mlkit/**"
+      - ".github/workflows/build-dwq-v1.5-mlkit.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Gradle 9.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.1.0"
+
+      - name: Prepare DWQ v1.5 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf build-v15
+          mkdir -p build-v15
+          unzip -q DanceWorldQuest-Android-v1.4-source.zip -d build-v15
+          mv build-v15/DanceWorldQuest-Android-v1.3.4 build-v15/DanceWorldQuest-Android-v1.5
+          project="build-v15/DanceWorldQuest-Android-v1.5"
+          pkg="$project/app/src/main/java/com/danceworldquest/app"
+
+          cp dwq-v1.5-mlkit/PoseBridge.java "$pkg/PoseBridge.java"
+          cp dwq-v1.5-mlkit/PoseActivity.java "$pkg/PoseActivity.java"
+          cp dwq-v1.5-mlkit/PoseOverlay.java "$pkg/PoseOverlay.java"
+          cp dwq-v1.5-mlkit/PoseScorer.java "$pkg/PoseScorer.java"
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          project = Path("build-v15/DanceWorldQuest-Android-v1.5")
+          gradle = project / "app/build.gradle"
+          text = gradle.read_text()
+          text = text.replace("versionCode 17", "versionCode 18")
+          text = text.replace('versionName "1.4"', 'versionName "1.5"')
+          anchor = "    implementation 'androidx.core:core:1.16.0'\n"
+          deps = """    implementation 'androidx.core:core:1.16.0'
+              implementation 'androidx.activity:activity:1.11.0'
+              implementation 'androidx.camera:camera-core:1.6.1'
+              implementation 'androidx.camera:camera-camera2:1.6.1'
+              implementation 'androidx.camera:camera-lifecycle:1.6.1'
+              implementation 'androidx.camera:camera-view:1.6.1'
+              implementation 'com.google.mlkit:pose-detection:18.0.0-beta5'
+          """
+          if "com.google.mlkit:pose-detection" not in text:
+              text = text.replace(anchor, deps)
+          gradle.write_text(text)
+
+          manifest = project / "app/src/main/AndroidManifest.xml"
+          text = manifest.read_text()
+          activity = """        <activity
+                      android:name=".PoseActivity"
+                      android:exported="false"
+                      android:screenOrientation="portrait" />
+          """
+          if 'android:name=".PoseActivity"' not in text:
+              text = text.replace("    </application>", activity + "    </application>")
+          manifest.write_text(text)
+
+          main = project / "app/src/main/java/com/danceworldquest/app/MainActivity.java"
+          text = main.read_text()
+          anchor = '        webView.addJavascriptInterface(new NotifyBridge(), "AndroidNotify");'
+          addition = anchor + '\n        webView.addJavascriptInterface(new PoseBridge(this), "AndroidPose");'
+          if '"AndroidPose"' not in text:
+              if anchor not in text:
+                  raise SystemExit("MainActivity bridge anchor not found")
+              text = text.replace(anchor, addition)
+          main.write_text(text)
+
+          html = project / "app/src/main/assets/www/index.html"
+          text = html.read_text()
+          beta = r"""
+          <script id="dwq-native-pose-v15">
+          (() => {
+            if (!window.AndroidPose) return;
+            window.DWQNativePose = {
+              start(mode = 'free') { window.AndroidPose.start(mode); },
+              lastResult() {
+                try { return JSON.parse(window.AndroidPose.getLastResult() || '{}'); }
+                catch (_) { return {}; }
+              }
+            };
+            if (document.getElementById('dwq-ai-coach-beta')) return;
+            const btn = document.createElement('button');
+            btn.id = 'dwq-ai-coach-beta';
+            btn.type = 'button';
+            btn.textContent = 'AI Coach β';
+            btn.setAttribute('aria-label', 'Open AI Coach beta');
+            Object.assign(btn.style, {
+              position: 'fixed',
+              right: '14px',
+              bottom: 'calc(14px + env(safe-area-inset-bottom))',
+              zIndex: '2147483000',
+              border: '1px solid rgba(255,255,255,.28)',
+              borderRadius: '999px',
+              padding: '10px 13px',
+              background: 'rgba(12,12,16,.84)',
+              color: '#fff',
+              font: '600 12px system-ui, sans-serif',
+              letterSpacing: '.02em',
+              boxShadow: '0 6px 22px rgba(0,0,0,.28)'
+            });
+            btn.addEventListener('click', () => window.DWQNativePose.start('free'));
+            document.body.appendChild(btn);
+          })();
+          </script>
+          """
+          if "dwq-native-pose-v15" not in text:
+              idx = text.lower().rfind("</body>")
+              if idx >= 0:
+                  text = text[:idx] + beta + "\n" + text[idx:]
+              else:
+                  text += beta
+          html.write_text(text)
+
+          assert "versionCode 18" in gradle.read_text()
+          assert 'versionName "1.5"' in gradle.read_text()
+          assert "com.google.mlkit:pose-detection:18.0.0-beta5" in gradle.read_text()
+          assert '"AndroidPose"' in main.read_text()
+          assert 'android:name=".PoseActivity"' in manifest.read_text()
+          assert "dwq-native-pose-v15" in html.read_text()
+          PY
+
+      - name: Build debug APK and release AAB
+        working-directory: build-v15/DanceWorldQuest-Android-v1.5
+        run: gradle --no-daemon :app:assembleDebug :app:bundleRelease --stacktrace
+
+      - name: Sign Google Play AAB
+        env:
+          KEYSTORE_BASE64: ${{ secrets.DWQ_UPLOAD_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.DWQ_UPLOAD_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.DWQ_UPLOAD_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.DWQ_UPLOAD_KEY_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$KEYSTORE_BASE64"
+          test -n "$STORE_PASSWORD"
+          test -n "$KEY_ALIAS"
+          test -n "$KEY_PASSWORD"
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/dwq-upload.jks"
+          AAB="build-v15/DanceWorldQuest-Android-v1.5/app/build/outputs/bundle/release/app-release.aab"
+          jarsigner -keystore "$RUNNER_TEMP/dwq-upload.jks" -storepass "$STORE_PASSWORD" -keypass "$KEY_PASSWORD" "$AAB" "$KEY_ALIAS"
+          jarsigner -verify -verbose -certs "$AAB" >/dev/null
+
+      - name: Package patched source
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f DanceWorldQuest-Android-v1.5-MLKit-source.zip
+          cd build-v15
+          zip -qr ../DanceWorldQuest-Android-v1.5-MLKit-source.zip DanceWorldQuest-Android-v1.5 \
+            -x "*/build/*" "*/.gradle/*"
+          cd ..
+          unzip -l DanceWorldQuest-Android-v1.5-MLKit-source.zip | head -40
+
+      - name: Save v1.5 source archive in repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "DWQ Build Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add DanceWorldQuest-Android-v1.5-MLKit-source.zip
+          if git diff --cached --quiet; then
+            echo "Source archive unchanged."
+          else
+            git commit -m "Build DWQ v1.5 ML Kit source"
+            git push
+          fi
+
+      - name: Upload DWQ v1.5 artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: DanceWorldQuest-v1.5-MLKit
+          path: |
+            build-v15/DanceWorldQuest-Android-v1.5/app/build/outputs/apk/debug/app-debug.apk
+            build-v15/DanceWorldQuest-Android-v1.5/app/build/outputs/bundle/release/app-release.aab
+            DanceWorldQuest-Android-v1.5-MLKit-source.zip
+          if-no-files-found: error
+          retention-days: 14
