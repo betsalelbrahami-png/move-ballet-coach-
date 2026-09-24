@@ -147,7 +147,14 @@ jobs:
         working-directory: build-v15/DanceWorldQuest-Android-v1.5
         run: gradle --no-daemon :app:assembleDebug :app:bundleRelease --stacktrace
 
-      - name: Sign Google Play AAB
+      - name: Prepare named build outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "build-v15/DanceWorldQuest-Android-v1.5/app/build/outputs/apk/debug/app-debug.apk"              "DanceWorldQuest-v1.5-MLKit-debug.apk"
+          cp "build-v15/DanceWorldQuest-Android-v1.5/app/build/outputs/bundle/release/app-release.aab"              "DanceWorldQuest-v1.5-MLKit-UNSIGNED.aab"
+
+      - name: Sign Google Play AAB when upload key is available
         env:
           KEYSTORE_BASE64: ${{ secrets.DWQ_UPLOAD_KEYSTORE_BASE64 }}
           STORE_PASSWORD: ${{ secrets.DWQ_UPLOAD_STORE_PASSWORD }}
@@ -156,14 +163,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -n "$KEYSTORE_BASE64"
-          test -n "$STORE_PASSWORD"
-          test -n "$KEY_ALIAS"
-          test -n "$KEY_PASSWORD"
+          if [ -z "${KEYSTORE_BASE64:-}" ] || [ -z "${STORE_PASSWORD:-}" ] || [ -z "${KEY_ALIAS:-}" ] || [ -z "${KEY_PASSWORD:-}" ]; then
+            echo "Google Play upload signing secrets are not configured. Keeping the unsigned AAB artifact."
+            exit 0
+          fi
           printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/dwq-upload.jks"
-          AAB="build-v15/DanceWorldQuest-Android-v1.5/app/build/outputs/bundle/release/app-release.aab"
-          jarsigner -keystore "$RUNNER_TEMP/dwq-upload.jks" -storepass "$STORE_PASSWORD" -keypass "$KEY_PASSWORD" "$AAB" "$KEY_ALIAS"
-          jarsigner -verify -verbose -certs "$AAB" >/dev/null
+          cp "DanceWorldQuest-v1.5-MLKit-UNSIGNED.aab" "DanceWorldQuest-v1.5-MLKit-SIGNED.aab"
+          jarsigner -keystore "$RUNNER_TEMP/dwq-upload.jks" -storepass "$STORE_PASSWORD" -keypass "$KEY_PASSWORD"             "DanceWorldQuest-v1.5-MLKit-SIGNED.aab" "$KEY_ALIAS"
+          jarsigner -verify -verbose -certs "DanceWorldQuest-v1.5-MLKit-SIGNED.aab" >/dev/null
+          echo "Signed AAB ready."
 
       - name: Package patched source
         shell: bash
@@ -171,10 +179,9 @@ jobs:
           set -euo pipefail
           rm -f DanceWorldQuest-Android-v1.5-MLKit-source.zip
           cd build-v15
-          zip -qr ../DanceWorldQuest-Android-v1.5-MLKit-source.zip DanceWorldQuest-Android-v1.5 \
-            -x "*/build/*" "*/.gradle/*"
+          zip -qr ../DanceWorldQuest-Android-v1.5-MLKit-source.zip DanceWorldQuest-Android-v1.5             -x "*/build/*" "*/.gradle/*"
           cd ..
-          unzip -l DanceWorldQuest-Android-v1.5-MLKit-source.zip | head -40
+          unzip -t DanceWorldQuest-Android-v1.5-MLKit-source.zip >/dev/null
 
       - name: Save v1.5 source archive in repository
         shell: bash
@@ -195,8 +202,9 @@ jobs:
         with:
           name: DanceWorldQuest-v1.5-MLKit
           path: |
-            build-v15/DanceWorldQuest-Android-v1.5/app/build/outputs/apk/debug/app-debug.apk
-            build-v15/DanceWorldQuest-Android-v1.5/app/build/outputs/bundle/release/app-release.aab
+            DanceWorldQuest-v1.5-MLKit-debug.apk
+            DanceWorldQuest-v1.5-MLKit-UNSIGNED.aab
+            DanceWorldQuest-v1.5-MLKit-SIGNED.aab
             DanceWorldQuest-Android-v1.5-MLKit-source.zip
           if-no-files-found: error
           retention-days: 14
